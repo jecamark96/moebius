@@ -215,6 +215,176 @@ lemma I6_40:
   by (metis (mono_tags, opaque_lifting) comp_eq_elim gyroauto_id id_def local.gyr_nested_1 scale_distrib)
 
 
+definition colinear::"'a=>'a=>'a=>bool" where
+  "colinear x y z \<longleftrightarrow> (y=z \<or> (\<exists>t::real. (x = y\<oplus> t \<otimes> (\<ominus> y \<oplus> z))))"
+
+lemma colinear_aab:
+  shows "colinear a a b"
+  by (metis colinear_def local.gyro_right_id local.gyro_rigth_inv scale_distrib scale_minus)
+lemma colinear_bab:
+  shows "colinear b a b"
+  by (metis colinear_def local.gyro_equation_right scale_1)
+
+
+lemma T6_20:
+  assumes "colinear p1 a b" "colinear p2 a b" "a\<noteq>b" "p1\<noteq>p2"
+  shows "\<forall>x. (colinear x p1 p2 \<longrightarrow> colinear x a b)"
+proof
+  fix x
+  show "colinear x p1 p2 \<longrightarrow> colinear x a b"
+  proof-
+    obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
+      using assms(1) colinear_def 
+      using assms(3) by auto
+    moreover  obtain "t2" where "p2 =  a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
+      using assms(2) colinear_def
+      using assms(3) by blast
+    moreover
+    {
+    assume "colinear x p1 p2"
+    then have "colinear x a b"
+    proof-
+      obtain "t" where "x =  p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2)"
+        using \<open>colinear x p1 p2\<close> colinear_def 
+        using assms(4) by blast
+      moreover have "x = ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b))  \<oplus> t \<otimes> (\<ominus> ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus> (a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)))"
+        by (simp add: \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation)
+      moreover have "x = ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b))  \<oplus> t  \<otimes> gyr a (t1 \<otimes> (\<ominus> a \<oplus> b))  ( t1 \<otimes>(\<ominus> (\<ominus> a \<oplus> b)) \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)) "
+        by (metis \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation(1) local.gyro_translation_2a mult.right_neutral mult_minus_right scale_assoc scale_minus scale_minus1)
+     
+      moreover have "x = ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b))  \<oplus> t  \<otimes> gyr a (t1 \<otimes> (\<ominus> a \<oplus> b))  (  (-t1 + t2) \<otimes> (\<ominus> a \<oplus> b)) "
+        using \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation(1) local.gyro_translation_2a scale_distrib scale_minus by presburger
+      moreover have "x = ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b))  \<oplus>  gyr a (t1 \<otimes> (\<ominus> a \<oplus> b))  (  (t*(-t1 + t2)) \<otimes> (\<ominus> a \<oplus> b))"
+        using calculation(4) gyroauto_property scale_assoc by presburger
+      moreover have "x =  a \<oplus> (t1 \<otimes> (\<ominus> a \<oplus> b)  \<oplus>   (  (t*(-t1 + t2)) \<otimes> (\<ominus> a \<oplus> b)))"
+        by (simp add: calculation(5) local.gyro_left_assoc)
+      moreover have "x =   a \<oplus> (t1 + t*(-t1 + t2)) \<otimes> (\<ominus> a \<oplus> b)"
+          using calculation(6) scale_distrib by auto
+      (*have "colinear x a b" using `colinear x p1 p2` sorry*)
+        ultimately  show ?thesis 
+          using colinear_def by blast
+    qed
+    }
+    ultimately show ?thesis 
+      by blast
+  qed
+qed
+
+
+lemma T6_20_1:
+   assumes "colinear p1 a b" "colinear p2 a b" "p1\<noteq>p2"  "a\<noteq>b"
+   shows "\<forall>x. (colinear x a b\<longrightarrow> colinear x p1 p2)"
+proof
+  fix x
+  show "colinear x a b \<longrightarrow> colinear x p1 p2"
+  proof-
+    obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
+    using assms(1) colinear_def 
+    using assms(4) by blast
+    moreover  obtain "t3" where "p2 =  a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)"
+      using assms(2) colinear_def 
+      using assms(4) by blast
+    moreover {
+      assume "colinear x a b"
+      then have "colinear x p1 p2" 
+      proof-
+          obtain "t2" where "x= a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
+            using \<open>colinear x a b\<close> colinear_def
+            using assms(4) by blast
+          moreover have "t3\<noteq>t1 \<or> t3 = t1" by blast
+          moreover {
+            assume "t3=t1" 
+            then have ?thesis 
+              using \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)\<close> assms(3) by blast
+          } moreover {
+            assume "t3\<noteq>t1"
+            then obtain "t" where "t = (t2-t1)/(t3-t1)" 
+              by simp
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) = (  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus> t \<otimes> (\<ominus> ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus> ( a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)))"
+              using \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)\<close> by blast
+             
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) =  (  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus> t \<otimes> gyr a (t1 \<otimes> (\<ominus> a \<oplus> b)) (t1 \<otimes> (\<ominus>  (\<ominus> a \<oplus> b)) \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b) )"
+              by (metis \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)\<close> local.gyro_inv_idem local.gyro_translation_2a mult_minus_right scale_assoc scale_minus scale_minus1)
+           
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) = (  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus>  gyr a (t1 \<otimes> (\<ominus> a \<oplus> b)) (( (-t1+t3)*t) \<otimes> (\<ominus> a \<oplus> b) )"
+              by (metis (no_types, opaque_lifting) calculation(3) gyroauto_property minus_mult_commute mult.commute mult.right_neutral scale_assoc scale_distrib scale_minus1)
+          
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) =  a \<oplus>  ( t1 \<otimes> (\<ominus> a \<oplus> b)  \<oplus>  ( (-t1+t3)*t) \<otimes> (\<ominus> a \<oplus> b)) "
+              using calculation(4) local.gyro_left_assoc by presburger
+
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) = a \<oplus> (t1 +  (-t1+t3)*t) \<otimes> ( (\<ominus> a \<oplus> b))"
+              using calculation(5) scale_distrib by presburger
+            moreover have "t1 +  (-t1+t3)*t = t2"
+              by (simp add: \<open>t3 \<noteq> t1\<close> calculation(1))
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) =  a \<oplus> t2 \<otimes>  (\<ominus> a \<oplus> b) "
+              using calculation(6) calculation(7) by blast
+            moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) = x"
+              using \<open>x = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation(8) by blast
+            ultimately have ?thesis
+              using colinear_def by blast
+          }
+              
+          ultimately show ?thesis by blast
+      qed
+    }
+    ultimately show ?thesis 
+      by blast
+  qed
+qed
+
+definition gyroline::"'a\<Rightarrow>'a\<Rightarrow> 'a set" where
+    "gyroline a b = {x. colinear x a b}"
+
+(*
+lemma T6_20_1:
+   assumes "colinear p1 a b" "colinear p2 a b"
+   shows "\<forall>x. (colinear x a b\<longrightarrow> colinear x p1 p2)"
+proof-
+  fix x
+  show ?thesis 
+  proof-
+    obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
+      using assms(1) colinear_def by blast
+    moreover  obtain "t2" where "p2 =  a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
+      using assms(2) colinear_def by blast
+    moreover have "\<ominus> p1 \<oplus> p2 = (-t1 + t2)  \<otimes> (\<ominus> a \<oplus> b) "
+    proof-
+      have "\<ominus> p1 =  \<ominus> a \<oplus> (-t1) \<otimes> (\<ominus> a \<oplus> b)"
+        by (simp add: calculation(1) local.gyroautomorphic_inverse local.gyrominus_def scale_minus)
+      moreover have "\<ominus> p1 \<oplus> p2 = ( \<ominus> a \<oplus> ((-t1) \<otimes> (\<ominus> a \<oplus> b))) \<oplus> (a \<oplus> (t2 \<otimes> (\<ominus> a \<oplus> b)))"
+        using \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation by presburger
+      moreover have "\<ominus> p1 \<oplus> p2 =  \<ominus> a \<oplus> ((-t1) \<otimes> (\<ominus> a \<oplus> b))  \<oplus> a \<oplus> (t2 \<otimes> (\<ominus> a \<oplus> b))"
+        sorry
+    qed
+  qed
+  qed
+ *)
+
+lemma colinear_sym1:
+  assumes "colinear a b c"
+  shows "colinear b a c"
+  using T6_20_1 assms colinear_aab colinear_bab colinear_def by blast
+
+lemma colinear_sym2:
+  assumes "colinear a b c"
+  shows "colinear a c b"
+  by (metis T6_20 assms colinear_aab colinear_bab)
+
+lemma colinear_transitive:
+  assumes "colinear a b c" "colinear d b c"
+ "b\<noteq>c"
+shows "colinear a d b" 
+  by (metis T6_20 assms(1) assms(2) assms(3) colinear_bab colinear_sym1 colinear_sym2)
+
+
+(*
+fun same_gyrolines::"'a\<times>'a\<Rightarrow>'a\<times>'a\<Rightarrow>bool" where 
+  "same_gyrolines (a,b) (p1,p2) \<longleftrightarrow> (if (a=b)\<or>(p1=p2) then False else (\<exists>x::'a. (\<exists>y. (x\<noteq>y) \<and> colinear x a b
+    \<and> colinear y a b \<and> colinear x p1 p2 \<and> colinear y p1 p2)))"
+*)
+
+    
+
 end
   
 end
