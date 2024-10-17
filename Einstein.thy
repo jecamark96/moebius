@@ -1495,7 +1495,7 @@ proof-
 qed
 
 lemma e_gyro_left_assoc:
-  "a \<oplus>\<^sub>E (b \<oplus>\<^sub>E z) = (a \<oplus>\<^sub>E b) \<oplus>\<^sub>E e_gyr a b z"
+  shows "a \<oplus>\<^sub>E (b \<oplus>\<^sub>E z) = (a \<oplus>\<^sub>E b) \<oplus>\<^sub>E e_gyr a b z"
 proof-
   have "(1/2) \<otimes>\<^sub>E (a \<oplus>\<^sub>E (b \<oplus>\<^sub>E z)) = ((1/2) \<otimes>\<^sub>E a) \<oplus>\<^sub>m((1/2) \<otimes>\<^sub>E (b \<oplus>\<^sub>E z) )"
     by (metis Moebius_gyrodom'.of_dom e_otimes'_def e_otimes.rep_eq iso_ei_mo_half m_otimes.rep_eq)
