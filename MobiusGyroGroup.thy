@@ -1041,6 +1041,8 @@ proof-
     by (simp add: calculation(4))
   ultimately show ?thesis by auto
 qed
+
+
 lemma gamma_factor_eq1:
   shows "gamma_factor (\<llangle>  a  \<oplus>\<^sub>m b \<rrangle>\<^sub>m) = (gamma_factor (Rep_PoincareDisc a))* (gamma_factor (Rep_PoincareDisc b))*(cmod(1+(cnj (Rep_PoincareDisc a))*(Rep_PoincareDisc b)))"
 proof-
@@ -1386,6 +1388,7 @@ next
     using Moebius_gyrodom'.gyrodom'_axioms Moebius_gyrodom'.gyronorm_def gyrodom'.gyronorm_def gyroplus_PoincareDisc_def by fastforce 
 qed
 
+  
 definition m_gyr_general::"PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" where
     "m_gyr_general u v w = \<ominus>\<^sub>m(u\<oplus>\<^sub>mv)\<oplus>\<^sub>m(u \<oplus>\<^sub>m(v \<oplus>\<^sub>m w))"
 
