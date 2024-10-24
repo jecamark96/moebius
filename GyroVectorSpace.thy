@@ -44,26 +44,33 @@ lemma norm_zero_iff:
 
 end
 
-
-
 locale gyrovector_space = 
   gyrocommutative_gyrogroup "gyrozero :: 'a::gyrogroup" 
                             "gyroplus :: 'a \<Rightarrow> 'a \<Rightarrow> 'a"  
                             "gyroinv :: 'a \<Rightarrow> 'a"
                             "gyr :: 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a" + 
   gyrodom to_dom for to_dom :: "'a::gyrogroup \<Rightarrow> 'b::{real_inner, real_div_algebra}" +
-fixes scale :: "real \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<otimes>" 105) 
-fixes change::"real\<Rightarrow> 'a"
-fixes change2::"'a\<Rightarrow>real"
-  assumes scale_1: "\<And> a. 1 \<otimes> a = a"
-  assumes scale_distrib: "\<And> r1 r2 a. (r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus> r2 \<otimes> a"
-  assumes scale_assoc: "\<And> r1 r2 a. (r1 * r2) \<otimes> a = r1 \<otimes> (r2 \<otimes> a)"
-  assumes scale_prop1: "\<And> r a. (r\<noteq>0 \<longrightarrow>(to_dom (abs r \<otimes> a) /\<^sub>R \<llangle>r \<otimes> a\<rrangle>) = ((to_dom a) /\<^sub>R \<llangle>a\<rrangle>))" 
-  assumes gyroauto_property: "\<And> u v r a. gyr u v (r \<otimes> a) = r \<otimes> (gyr u v a)"
-  assumes gyroauto_id: "\<And> r1 r2 v. gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
-  assumes homogeneity: "\<And> r a.  (\<llangle>r \<otimes> a\<rrangle>) =  (change2 ((abs r) \<otimes> (change (\<llangle>a\<rrangle>))))"
-assumes gyrotriangle: "\<And> a b. \<llangle>(a \<oplus> b)\<rrangle> \<le> change2 ((change (\<llangle>a\<rrangle>)) \<oplus> (change (\<llangle>b\<rrangle>)))"
+  fixes scale :: "real \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<otimes>" 105) 
+  fixes of_real :: "real \<Rightarrow> 'a"
+  fixes to_real :: "'a \<Rightarrow> real"
+  assumes scale_1: "\<And> a :: 'a. 1 \<otimes> a = a"
+  assumes scale_distrib: "\<And> (r1 :: real) (r2 :: real) (a :: 'a). (r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus> r2 \<otimes> a"
+  assumes scale_assoc: "\<And> (r1 :: real) (r2 :: real) (a :: 'a). (r1 * r2) \<otimes> a = r1 \<otimes> (r2 \<otimes> a)"
+  assumes scale_prop1: "\<And> (r :: real) (a :: 'a). (r \<noteq> 0  \<Longrightarrow> (to_dom (abs r \<otimes> a) /\<^sub>R \<llangle>r \<otimes> a\<rrangle>) = ((to_dom a) /\<^sub>R \<llangle>a\<rrangle>))" 
+  assumes gyroauto_property: "\<And> (u :: 'a) (v :: 'a) (r :: real) (a :: 'a). gyr u v (r \<otimes> a) = r \<otimes> (gyr u v a)"
+  assumes gyroauto_id: "\<And> (r1 :: real) (r2 :: real) (v :: 'a). gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
+  assumes homogeneity: "\<And> (r :: real) (a :: 'a).  (\<llangle>r \<otimes> a\<rrangle>) = (to_real ((abs r) \<otimes> (of_real (\<llangle>a\<rrangle>))))"
+  assumes gyrotriangle: "\<And> (a :: 'a) (b :: 'a). \<llangle>(a \<oplus> b)\<rrangle> \<le> to_real ((of_real (\<llangle>a\<rrangle>)) \<oplus> (of_real (\<llangle>b\<rrangle>)))"
 begin
+
+abbreviation add_real (infixl "\<oplus>\<^sub>R" 100) where 
+  "add_real r1 r2 \<equiv> to_real (of_real r1 \<oplus> of_real r2)"
+
+abbreviation mult_real (infix "\<otimes>\<^sub>R" 100) where
+  "mult_real r a \<equiv> to_real (r \<otimes> of_real a)"
+
+thm gyrotriangle
+thm homogeneity
 
 lemma scale_minus1: 
   shows "(-1) \<otimes> a = \<ominus> a"
@@ -110,7 +117,7 @@ proof-
     by (metis times2)
 qed
 
-definition gyrodistance ("d\<^sub>\<oplus>") where 
+definition gyrodistance :: "'a \<Rightarrow> 'a \<Rightarrow> real" ("d\<^sub>\<oplus>") where 
   "d\<^sub>\<oplus> a b = \<llangle>\<ominus> a \<oplus> b\<rrangle>"
 
 lemma "d\<^sub>\<oplus> a b = \<llangle>b \<ominus>\<^sub>b a\<rrangle>"
@@ -130,11 +137,11 @@ lemma gyrodistance_metric_sym:
   by (metis gyrodistance_def gyrogroup_class.gyro_inv_idem gyrogroup_class.gyrominus_def gyrogroup_class.gyroplus_inv minus_norm norm_gyr)
 
 lemma gyrodistance_gyrotriangle:
-  shows "d\<^sub>\<oplus> a c \<le> (change2 ((change (d\<^sub>\<oplus> a b))  \<oplus> (change (d\<^sub>\<oplus> b c))))"
+  shows "d\<^sub>\<oplus> a c \<le> d\<^sub>\<oplus> a b  \<oplus>\<^sub>R d\<^sub>\<oplus> b c"
 proof-
-  have "\<llangle>\<ominus>a \<oplus> c\<rrangle> = \<llangle>(\<ominus>a \<oplus> b)  \<oplus> gyr (\<ominus>a) b (\<ominus>b \<oplus> c)\<rrangle>"
+  have "\<llangle>\<ominus>a \<oplus> c\<rrangle> = \<llangle>(\<ominus>a \<oplus> b) \<oplus> gyr (\<ominus>a) b (\<ominus>b \<oplus> c)\<rrangle>"
     using gyro_polygonal_addition_lemma by auto
-  also have "... \<le> change2 ((change (\<llangle>\<ominus>a \<oplus> b\<rrangle>)) \<oplus> (change (\<llangle>gyr (\<ominus>a) b (\<ominus>b \<oplus> c)\<rrangle>)))"
+  also have "... \<le>  (\<llangle>\<ominus>a \<oplus> b\<rrangle>) \<oplus>\<^sub>R (\<llangle>gyr (\<ominus>a) b (\<ominus>b \<oplus> c)\<rrangle>)"
     by (simp add: gyrotriangle)
   finally show ?thesis
     unfolding gyrodistance_def norm_gyr
@@ -162,7 +169,7 @@ lemma I6_33:
   by (metis (no_types, opaque_lifting) div_by_1 divide_divide_eq_right divide_minus1 gyrogroup_class.gyro_equation_left gyrogroup_class.gyro_left_cancel' scale_assoc scale_minus1 times_divide_eq_left)
 
 lemma I6_34:
-  shows "(1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b)\<oplus> b  = (1/2::real) \<otimes> (b \<ominus>\<^sub>c\<^sub>b a)\<oplus> a "
+  shows "(1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b) \<oplus> b  = (1/2::real) \<otimes> (b \<ominus>\<^sub>c\<^sub>b a) \<oplus> a "
 proof -
   have f1: "\<And>a aa. 2 \<otimes> a \<oplus> aa = a \<oplus> (a \<oplus> aa)"
     by (simp add: local.gyro_left_assoc times2)
@@ -174,7 +181,7 @@ qed
 
 
 lemma I6_35:
-  shows "gyr b a  = gyr b ((1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b)\<oplus> b)\<circ> (gyr ((1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b)\<oplus> b) a )"
+  shows "gyr b a = gyr b ((1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b) \<oplus> b) \<circ> (gyr ((1/2::real) \<otimes> (a \<ominus>\<^sub>c\<^sub>b b) \<oplus> b) a)"
 proof-
   obtain "x" "y" where "x\<oplus>y = a \<and> \<ominus> x \<oplus> y = b"
     by (metis (no_types, opaque_lifting) I6_34 gyrogroup_class.coautomorphic_inverse gyrogroup_class.cogyrominus_def gyrogroup_class.gyro_inv_idem gyrogroup_class.gyro_left_cancel' mult_minus_right scale_1 scale_assoc scale_minus)
@@ -195,7 +202,7 @@ qed
 
 
 lemma I6_38:
-  shows " a \<oplus> (1/2::real) \<otimes> (\<ominus> a \<oplus>\<^sub>c b) =  (1/2::real) \<otimes> (a \<oplus> b)"
+  shows " a \<oplus> (1/2::real) \<otimes> (\<ominus> a \<oplus>\<^sub>c b) = (1/2::real) \<otimes> (a \<oplus> b)"
 proof -
   have f1: "\<And>r ra a. r \<otimes> (ra \<otimes> a) = ra \<otimes> (r \<otimes> a)"
     by (metis (full_types) mult.commute scale_assoc)
@@ -207,27 +214,26 @@ qed
 
 
 lemma I6_39:
-  shows "a \<oplus> (1/2::real) \<otimes> (\<ominus> a \<oplus> b) =  (1/2::real) \<otimes> (a \<oplus>\<^sub>c b)"
+  shows "a \<oplus> (1/2::real) \<otimes> (\<ominus> a \<oplus> b) = (1/2::real) \<otimes> (a \<oplus>\<^sub>c b)"
   by (metis I6_38 local.gyro_equation_right local.gyro_inv_idem)
 
 lemma I6_40:
-  shows "\<forall>x. gyr ((r+s)\<otimes>a) b x = gyr (r\<otimes>a) (s\<otimes>a \<oplus> b) (gyr (s\<otimes>a) b x) "
+  shows "gyr ((r+s)\<otimes>a) b x = gyr (r\<otimes>a) (s\<otimes>a \<oplus> b) (gyr (s\<otimes>a) b x) "
   by (metis (mono_tags, opaque_lifting) comp_eq_elim gyroauto_id id_def local.gyr_nested_1 scale_distrib)
 
-
-definition colinear::"'a=>'a=>'a=>bool" where
-  "colinear x y z \<longleftrightarrow> (y=z \<or> (\<exists>t::real. (x = y\<oplus> t \<otimes> (\<ominus> y \<oplus> z))))"
+definition colinear :: "'a => 'a => 'a => bool" where
+  "colinear x y z \<longleftrightarrow> (y = z \<or> (\<exists>t::real. (x = y \<oplus> t \<otimes> (\<ominus> y \<oplus> z))))"
 
 lemma colinear_aab:
   shows "colinear a a b"
   by (metis colinear_def local.gyro_right_id local.gyro_rigth_inv scale_distrib scale_minus)
+
 lemma colinear_bab:
   shows "colinear b a b"
   by (metis colinear_def local.gyro_equation_right scale_1)
 
-
 lemma T6_20:
-  assumes "colinear p1 a b" "colinear p2 a b" "a\<noteq>b" "p1\<noteq>p2"
+  assumes "colinear p1 a b" "colinear p2 a b" "a \<noteq> b" "p1 \<noteq> p2"
   shows "\<forall>x. (colinear x p1 p2 \<longrightarrow> colinear x a b)"
 proof
   fix x
@@ -260,8 +266,7 @@ proof
         by (simp add: calculation(5) local.gyro_left_assoc)
       moreover have "x =   a \<oplus> (t1 + t*(-t1 + t2)) \<otimes> (\<ominus> a \<oplus> b)"
           using calculation(6) scale_distrib by auto
-      (*have "colinear x a b" using `colinear x p1 p2` sorry*)
-        ultimately  show ?thesis 
+      ultimately  show ?thesis 
           using colinear_def by blast
     qed
     }
@@ -272,8 +277,8 @@ qed
 
 
 lemma T6_20_1:
-   assumes "colinear p1 a b" "colinear p2 a b" "p1\<noteq>p2"  "a\<noteq>b"
-   shows "\<forall>x. (colinear x a b\<longrightarrow> colinear x p1 p2)"
+   assumes "colinear p1 a b" "colinear p2 a b" "p1 \<noteq> p2"  "a \<noteq> b"
+   shows "\<forall>x. (colinear x a b \<longrightarrow> colinear x p1 p2)"
 proof
   fix x
   show "colinear x a b \<longrightarrow> colinear x p1 p2"
@@ -332,34 +337,6 @@ proof
   qed
 qed
 
-definition gyroline::"'a\<Rightarrow>'a\<Rightarrow> 'a set" where
-    "gyroline a b = {x. colinear x a b}"
-
-(*
-lemma T6_20_1:
-   assumes "colinear p1 a b" "colinear p2 a b"
-   shows "\<forall>x. (colinear x a b\<longrightarrow> colinear x p1 p2)"
-proof-
-  fix x
-  show ?thesis 
-  proof-
-    obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
-      using assms(1) colinear_def by blast
-    moreover  obtain "t2" where "p2 =  a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
-      using assms(2) colinear_def by blast
-    moreover have "\<ominus> p1 \<oplus> p2 = (-t1 + t2)  \<otimes> (\<ominus> a \<oplus> b) "
-    proof-
-      have "\<ominus> p1 =  \<ominus> a \<oplus> (-t1) \<otimes> (\<ominus> a \<oplus> b)"
-        by (simp add: calculation(1) local.gyroautomorphic_inverse local.gyrominus_def scale_minus)
-      moreover have "\<ominus> p1 \<oplus> p2 = ( \<ominus> a \<oplus> ((-t1) \<otimes> (\<ominus> a \<oplus> b))) \<oplus> (a \<oplus> (t2 \<otimes> (\<ominus> a \<oplus> b)))"
-        using \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation by presburger
-      moreover have "\<ominus> p1 \<oplus> p2 =  \<ominus> a \<oplus> ((-t1) \<otimes> (\<ominus> a \<oplus> b))  \<oplus> a \<oplus> (t2 \<otimes> (\<ominus> a \<oplus> b))"
-        sorry
-    qed
-  qed
-  qed
- *)
-
 lemma colinear_sym1:
   assumes "colinear a b c"
   shows "colinear b a c"
@@ -371,19 +348,12 @@ lemma colinear_sym2:
   by (metis T6_20 assms colinear_aab colinear_bab)
 
 lemma colinear_transitive:
-  assumes "colinear a b c" "colinear d b c"
- "b\<noteq>c"
-shows "colinear a d b" 
+  assumes "colinear a b c" "colinear d b c" "b \<noteq> c"
+  shows "colinear a d b" 
   by (metis T6_20 assms(1) assms(2) assms(3) colinear_bab colinear_sym1 colinear_sym2)
-
-
-(*
-fun same_gyrolines::"'a\<times>'a\<Rightarrow>'a\<times>'a\<Rightarrow>bool" where 
-  "same_gyrolines (a,b) (p1,p2) \<longleftrightarrow> (if (a=b)\<or>(p1=p2) then False else (\<exists>x::'a. (\<exists>y. (x\<noteq>y) \<and> colinear x a b
-    \<and> colinear y a b \<and> colinear x p1 p2 \<and> colinear y p1 p2)))"
-*)
-
     
+definition gyroline :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "gyroline a b = {x. colinear x a b}"
 
 end
   
