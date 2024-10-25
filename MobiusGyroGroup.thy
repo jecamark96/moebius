@@ -1,5 +1,5 @@
 theory MobiusGyroGroup
-  imports Complex_Main GyroGroup GyroVectorSpace HOL.Real_Vector_Spaces
+  imports Complex_Main GyroGroup GyroVectorSpace HOL.Real_Vector_Spaces GammaFactor
       HOL.Transcendental
 begin
 
@@ -464,70 +464,6 @@ definition m_norm' :: "complex \<Rightarrow> real" where
 lift_definition m_norm :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>\<^sub>m" [100] 100) is m_norm'
   done
 
-definition gamma_factor::"complex \<Rightarrow> real" where
-  "gamma_factor u = 
-     (if (norm u)\<^sup>2 < 1 then 
-         (1 / sqrt(1 - (norm u)\<^sup>2))
-      else
-         0)"
-
-lemma gamma_ok:
-  assumes "(norm u)^2 < 1"
-  shows "1 / sqrt(1 - (norm u)\<^sup>2) \<noteq> 0"
-  by (metis assms eq_iff_diff_eq_0 order_less_irrefl real_sqrt_eq_zero_cancel_iff zero_eq_1_divide_iff)
-
-lemma gamma_factor_increasing:
-  fixes t1 t2 ::real
-  assumes "0 \<le> t2" "t2 < t1" "t1 < 1"
-  shows "gamma_factor t2 < gamma_factor t1" 
-proof-
-  have d: "cmod t1 = abs t1" "cmod t2 = abs t2"
-    using norm_of_real 
-    by blast+
-  have "(abs t1)*(abs t1) > (abs t2)*(abs t2)"
-    by (simp add: assms mult_strict_mono')
-  then have "1 - ((abs t1)*(abs t1)) < 1- ((abs t2)*(abs t2))"
-    by auto
-  then have "sqrt(1 - (abs t1)*(abs t1)) < sqrt(1- (abs t2)*(abs t2))"
-    using real_sqrt_less_iff 
-    by blast
-  then have *:"1 / sqrt(1 - (abs t1)*(abs t1)) >  1 / sqrt(1 - (abs t2)*(abs t2))"
-    using assms
-    by (smt (z3) frac_less2 mult_less_cancel_right2 real_sqrt_gt_zero)
-  have "cmod t1 < 1" "cmod t2 < 1"
-    using assms 
-    by force+
-  then have "(cmod t1)^2 < 1" "(cmod t2)^2 < 1"
-    by (simp add: abs_square_less_1)+
-  then have "gamma_factor t1 = 1/(sqrt(1 - (abs t1)^2))" "gamma_factor t2 = 1/(sqrt(1 - (abs t2)^2))"
-    using d gamma_factor_def
-    by auto
-  then show ?thesis
-    using * d 
-    by (metis power2_eq_square)
-qed
-
-lemma gamma_factor_increase_reverse:
-  fixes t1 t2 :: real
-  assumes "t1 \<ge> 0" "t1 < 1" "t2 \<ge> 0" "t2 < 1"
-  assumes "gamma_factor t1 > gamma_factor t2"
-  shows "t1 > t2"
-  using assms
-  by (smt (verit, best) gamma_factor_increasing)
-
-lemma gamma_factor_positive:
-  assumes "cmod x < 1"
-  shows "gamma_factor x > 0"
-  using assms
-  unfolding gamma_factor_def
-  by (smt (verit, del_insts) divide_pos_pos norm_ge_zero power2_eq_square power2_nonneg_ge_1_iff real_sqrt_gt_0_iff)
-  
-lemma gamma_factor_u_normu:
-  fixes u::real
-  assumes "0 \<le> u" "u \<le> 1"
-  shows "gamma_factor u = gamma_factor (cmod u)"
-  using gamma_factor_def
-  by auto
 
 interpretation Moebius_gyrodom': gyrodom' where
   to_dom = to_complex and
@@ -916,16 +852,16 @@ proof-
 qed
 
 lemma gamma_factor_eq1:
-  shows "gamma_factor (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
-         gamma_factor (to_complex a) *  
-         gamma_factor (to_complex b) * 
+  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
+         \<gamma> (to_complex a) *  
+         \<gamma> (to_complex b) * 
          cmod (1 + cnj (to_complex a) * (to_complex b))"
 proof-
   let ?a = "to_complex a" and ?b = "to_complex b"
-  have "norm (\<llangle> a \<oplus>\<^sub>m b \<rrangle>\<^sub>m)^2 < 1"
+  have "norm (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) < 1"
     using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_square_less_1
     by fastforce
-  then have *: "gamma_factor (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
+  then have *: "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
                 1 / sqrt(1 - cmod (?a+?b) / cmod (1 + cnj ?a *?b) * cmod (?a+?b) / cmod (1 + cnj ?a *?b))"
     using Moebius_gyrodom'.gyronorm_def gamma_factor_def m_oplus'_def m_oplus.rep_eq norm_divide norm_eq_zero norm_le_zero_iff norm_of_real real_norm_def 
     by (smt (verit, del_insts) power2_eq_square times_divide_eq_right)
@@ -950,13 +886,13 @@ proof-
     using gamma_factor_eq1_lemma1
     by presburger
   also have "\<dots> =
-         gamma_factor (to_complex a) *  
-         gamma_factor (to_complex b) * 
+         \<gamma> (to_complex a) *  
+         \<gamma> (to_complex b) * 
          cmod (1 + cnj (to_complex a) * (to_complex b))"
   proof-
-    have "(cmod (to_complex a))\<^sup>2 < 1" "(cmod (to_complex b))\<^sup>2 < 1"
+    have "cmod (to_complex a) < 1" "cmod (to_complex b) < 1"
       using Rep_PoincareDisc
-      by (auto simp add: power_less_one_iff)
+      by auto
     then show ?thesis
       unfolding gamma_factor_def
       by (simp add: power2_eq_square real_sqrt_mult)
@@ -985,10 +921,10 @@ proof-
 qed
 
 lemma gamma_factor_ineq1:
-  shows "gamma_factor (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) \<le> gamma_factor (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m))))"
+  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) \<le> \<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m))))"
 proof-
-  have "gamma_factor (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m)))) =
-        gamma_factor (\<llangle>a\<rrangle>\<^sub>m) * gamma_factor (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m * \<llangle>b\<rrangle>\<^sub>m)"
+  have "\<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m)))) =
+        \<gamma> (\<llangle>a\<rrangle>\<^sub>m) * \<gamma> (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m * \<llangle>b\<rrangle>\<^sub>m)"
   proof-
     let ?expr1 =  "((\<llangle>a\<rrangle>\<^sub>m) + (\<llangle>b\<rrangle>\<^sub>m)) / (1 + (\<llangle>a\<rrangle>\<^sub>m)*(\<llangle>b\<rrangle>\<^sub>m))"
     let ?expr2 = "to_complex (of_complex (\<llangle>a\<rrangle>\<^sub>m) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>\<^sub>m))"
@@ -996,24 +932,24 @@ proof-
       using Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.to_dom Rep_PoincareDisc m_oplus'_def m_oplus.rep_eq
       by auto
 
-    have **: "norm (\<llangle>a\<rrangle>\<^sub>m)^2 < 1" "norm (\<llangle>b\<rrangle>\<^sub>m)^2 < 1"
+    have **: "norm (\<llangle>a\<rrangle>\<^sub>m) < 1" "norm (\<llangle>b\<rrangle>\<^sub>m) < 1"
       using Rep_PoincareDisc abs_square_less_1 m_norm'_def m_norm.rep_eq 
       by fastforce+
-    then have ***: "gamma_factor (\<llangle>a\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>a\<rrangle>\<^sub>m) * (\<llangle>a\<rrangle>\<^sub>m))"
-                   "gamma_factor (\<llangle>b\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>b\<rrangle>\<^sub>m) * (\<llangle>b\<rrangle>\<^sub>m))"
+    then have ***: "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>a\<rrangle>\<^sub>m) * (\<llangle>a\<rrangle>\<^sub>m))"
+                   "\<gamma> (\<llangle>b\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>b\<rrangle>\<^sub>m) * (\<llangle>b\<rrangle>\<^sub>m))"
       unfolding gamma_factor_def
       by (auto simp add: power2_eq_square) 
 
-    have "gamma_factor ?expr1 = 1 / sqrt(1 - ((cmod (?expr1)) * cmod(?expr1)))"
+    have "\<gamma> ?expr1 = 1 / sqrt(1 - ((cmod (?expr1)) * cmod(?expr1)))"
       using * **
-      by (metis Rep_PoincareDisc gamma_factor_def mem_Collect_eq norm_ge_zero power2_eq_square power_less_one_iff)
+      by (metis Rep_PoincareDisc gamma_factor_def mem_Collect_eq power2_eq_square)
     moreover
     have "cmod ?expr1 = ?expr1"
       by (smt (verit, ccfv_threshold) Moebius_gyrodom'.gyronorm_def mult_less_0_iff norm_divide norm_not_less_zero norm_of_real of_real_1 of_real_add of_real_divide of_real_mult)
     ultimately
-    have "gamma_factor ?expr1 = 1 / sqrt (1 - (Re ?expr1 * Re ?expr1))"
+    have "\<gamma> ?expr1 = 1 / sqrt (1 - (Re ?expr1 * Re ?expr1))"
        by (metis Re_complex_of_real)
-    then have "gamma_factor ?expr1 = (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) / (sqrt (1-\<llangle>a\<rrangle>\<^sub>m*\<llangle>a\<rrangle>\<^sub>m) * sqrt (1-\<llangle>b\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m))"
+    then have "\<gamma> ?expr1 = (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) / (sqrt (1-\<llangle>a\<rrangle>\<^sub>m*\<llangle>a\<rrangle>\<^sub>m) * sqrt (1-\<llangle>b\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m))"
        using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc gamma_factor_ineq1_lemma
        using \<open>cmod ?expr1 = ?expr1\<close> 
        by force
@@ -1025,11 +961,11 @@ proof-
 
   moreover
 
-  have "gamma_factor (\<llangle>a\<rrangle>\<^sub>m) * gamma_factor (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) \<ge> 
-        gamma_factor (to_complex a) * gamma_factor (to_complex b) * cmod (1  + cnj (to_complex a) * (to_complex b))"
+  have "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) * \<gamma> (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) \<ge> 
+        \<gamma> (to_complex a) * \<gamma> (to_complex b) * cmod (1  + cnj (to_complex a) * (to_complex b))"
   proof-
-    have *: "gamma_factor (\<llangle>a\<rrangle>\<^sub>m) = gamma_factor (to_complex a)"
-            "gamma_factor (\<llangle>b\<rrangle>\<^sub>m) = gamma_factor (to_complex b)"
+    have *: "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) = \<gamma> (to_complex a)"
+            "\<gamma> (\<llangle>b\<rrangle>\<^sub>m) = \<gamma> (to_complex b)"
        by (auto simp add: Moebius_gyrodom'.gyronorm_def gamma_factor_def)
      
      have "cmod (1 + cnj (to_complex a) * (to_complex b)) \<le> 
@@ -1047,7 +983,8 @@ proof-
    qed
 
    ultimately show ?thesis 
-     using gamma_factor_eq1 by presburger
+     using gamma_factor_eq1
+     by presburger
 qed
 
 lemma moebius_triangle:
