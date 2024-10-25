@@ -1,5 +1,5 @@
 theory GammaFactor
-  imports Complex_Main
+  imports Complex_Main MoreComplex
 begin
 
 definition gamma_factor :: "complex \<Rightarrow> real" ("\<gamma>") where
@@ -70,6 +70,73 @@ lemma gamma_factor_positive:
   using assms
   unfolding gamma_factor_def
   by (smt (verit, del_insts) divide_pos_pos norm_ge_zero power2_eq_square power2_nonneg_ge_1_iff real_sqrt_gt_0_iff)
+
+
+lemma norm_square_gamma_factor: (* e_help1 *)
+  assumes "norm u < 1"
+  shows "(norm u)^2 = 1 - 1 / (\<gamma> u)^2"
+proof-
+  have "\<gamma> u = 1 / sqrt (1 - (norm u)^2)"
+    by (metis assms gamma_factor_def)
+  then have "(\<gamma> u)^2 = 1 / (1 - (norm u)^2)"
+    using assms
+    by (metis abs_power2 gamma_factor_positive less_eq_real_def norm_ge_zero norm_power power2_eq_imp_eq real_norm_def real_sqrt_abs real_sqrt_divide real_sqrt_eq_1_iff real_sqrt_eq_iff)
+  then show ?thesis 
+    by auto
+qed
+
+(* DO WE NEED THIS *)
+lemma gamma_expression_eq_one_1: (* e_help2 *)
+  assumes "norm u < 1" 
+  shows "1 / \<gamma> u + (\<gamma> u * (norm u)^2) / (1 + \<gamma> u) = 1"
+proof-
+  have "\<gamma> u \<noteq> 0" "1 + \<gamma> u \<noteq> 0"
+    using assms gamma_factor_positive 
+    by fastforce+
+
+  have "1 / \<gamma> u + \<gamma> u * (norm u)^2 / (1 + \<gamma> u) =
+        (1 + \<gamma> u + (\<gamma> u)^2 * (norm u)^2) / (\<gamma> u * (1 + \<gamma> u))"
+    using \<open>\<gamma> u \<noteq> 0\<close> \<open>1 + \<gamma> u \<noteq> 0\<close>
+    by (metis (no_types, lifting) add_divide_distrib nonzero_divide_mult_cancel_right nonzero_mult_divide_mult_cancel_left numeral_One power_add_numeral2 power_one_right semiring_norm(2))
+  also have "\<dots> = (1 + \<gamma> u + (\<gamma> u)^2 * (1 - 1 / ((\<gamma> u)^2))) / (\<gamma> u * (1 + \<gamma> u))"
+    by (simp add: assms norm_square_gamma_factor)
+  also have "\<dots> = (1 + \<gamma> u + (\<gamma> u)^2 - 1) / (\<gamma> u * (1 + \<gamma> u))"
+    by (simp add: Rings.ring_distribs(4))
+  also have "... = (\<gamma> u * (1 + \<gamma> u)) / (\<gamma> u * (1 + \<gamma> u))"
+    by (simp add: power2_eq_square ring_class.ring_distribs(1))
+  finally show ?thesis
+    using \<open>\<gamma> u \<noteq> 0\<close> \<open>1 + \<gamma> u \<noteq> 0\<close>
+    by (metis add.commute div_by_1 divide_divide_eq_right eq_divide_eq_1)
+qed
+
+lemma gamma_expression_eq_one_2: (* help3_e *)
+  assumes "norm u < 1"
+  shows "((\<gamma> u)^2 * (norm u)^2) / (1 + \<gamma> u)^2 + (2 * \<gamma> u) / (\<gamma> u * (1 + \<gamma> u)) = 1"
+proof-
+  have *: "\<gamma> u \<noteq> 0" "1 + \<gamma> u \<noteq> 0"
+    using assms gamma_factor_positive
+    by force+
+
+  have "((\<gamma> u)^2 * (norm u)^2) / (1 + \<gamma> u)^2 + (2 * \<gamma> u) / (\<gamma> u * (1 + \<gamma> u)) = 
+        ((\<gamma> u)^2 * (1 - 1 / (\<gamma> u)^2)) / (1 + \<gamma> u)^2 + (2 * \<gamma> u) / (\<gamma> u * (1 + \<gamma> u))"
+    using assms norm_square_gamma_factor
+    by presburger
+  also have "\<dots> = ((\<gamma> u)^2 - 1) / (1 + \<gamma> u)^2 + (2 * \<gamma> u) / (\<gamma> u * (1 + \<gamma> u))"
+    using \<open>\<gamma> u \<noteq> 0\<close>
+    by (simp add: right_diff_distrib)
+  also have "\<dots> = (\<gamma> u * ((\<gamma> u)^2 - 1)) / (\<gamma> u * (1 + \<gamma> u)^2) + (2 * \<gamma> u * (1 + \<gamma> u)) / (\<gamma> u * (1 + \<gamma> u)^2)"
+    using \<open>\<gamma> u \<noteq> 0\<close>
+    by (simp add: mult.commute power2_eq_square)
+  also have "\<dots> = (\<gamma> u * ((\<gamma> u)^2 - 1) + 2 * \<gamma> u * (1 + \<gamma> u)) / (\<gamma> u * (1 + \<gamma> u)^2)"
+    by argo
+  also have "\<dots> = ((\<gamma> u)^3 + \<gamma> u + 2 * (\<gamma> u)^2) / (\<gamma> u * (1 + \<gamma> u)^2)"
+    by (simp add: power2_eq_square power3_eq_cube right_diff_distrib ring_class.ring_distribs(1))
+  also have "\<dots> = (\<gamma> u * (1 + \<gamma> u) ^ 2) / (\<gamma> u * (1 + \<gamma> u)^2)"
+    by (simp add: field_simps power2_eq_square power3_eq_cube)
+  finally show ?thesis 
+    using *
+    by simp
+qed
 
 
 end

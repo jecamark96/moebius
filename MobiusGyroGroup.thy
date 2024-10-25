@@ -1,6 +1,6 @@
 theory MobiusGyroGroup
-  imports Complex_Main GyroGroup GyroVectorSpace HOL.Real_Vector_Spaces GammaFactor
-      HOL.Transcendental
+  imports Complex_Main HOL.Real_Vector_Spaces HOL.Transcendental
+          GyroGroup GyroVectorSpace GammaFactor 
 begin
 
 lemmas div_help = nonzero_divide_mult_cancel_left
@@ -57,44 +57,6 @@ lemma tanh_not_0:
 
 (* ------------------------------------------------------------------ *)
 
-lemma real_compex_cmod:
-  fixes r::real 
-  shows "cmod(r * z) = abs r * cmod z"
-  by (metis abs_mult norm_of_real)
-
-lemma cnj_closed_for_unit_disc:
-  assumes "cmod z1 < 1"
-  shows "cmod (cnj z1) <1"
-  by (simp add: assms)
-
-lemma mult_closed_for_unit_disc:
-  assumes "cmod z1 < 1" "cmod z2 < 1"
-  shows "cmod (z1*z2) < 1"
-  using assms(1) assms(2) norm_mult_less 
-  by fastforce
-
-lemma cnj_cmod:
-  shows "z1 * cnj z1 = (cmod z1)^2"
-  using complex_norm_square
-  by fastforce
-
-lemma cnj_cmod_1:
-  assumes "cmod z1 = 1"
-  shows "z1 * cnj z1 = 1"
-  by (metis assms complex_cnj_one complex_norm_square mult.right_neutral norm_one)
-
-lemma den_not_zero:
-  assumes "cmod a < 1" "cmod b < 1"
-  shows "1 + cnj a * b \<noteq> 0"
-  using assms
-  by (smt add.inverse_unique complex_mod_cnj i_squared norm_ii norm_mult norm_mult_less)
-
-lemma  mobius_gyroauto_help:
-  assumes "cmod u < 1" "cmod v < 1"
-  shows "cmod ((1 + u*cnj v) / (1 + v*cnj u)) = 1"
-  by (smt (verit, ccfv_threshold) assms(1) assms(2) complex_cnj_add complex_cnj_cnj complex_cnj_mult complex_cnj_one complex_mod_cnj den_not_zero divide_self_if mult.commute norm_divide norm_one)
-
-abbreviation "cor \<equiv> complex_of_real"
 
 typedef PoincareDisc = "{z::complex. cmod z < 1}"
   by (rule_tac x=0 in exI, auto)
@@ -109,7 +71,7 @@ abbreviation of_complex :: "complex \<Rightarrow> PoincareDisc" where
 definition m_inner' :: "complex \<Rightarrow> complex \<Rightarrow> real" where
   "m_inner' z1 z2 = Re z1 * Re z2 + Im z1 * Im z2"
 
-lemma m_inner'_def': 
+lemma m_inner'_def1: 
   shows "m_inner' z1 z2 = (z1 * cnj z2 + z2 * cnj z1) / 2"
 proof-
   obtain "a" "b" where ab: "Re z1 = a \<and> Im z1 = b"
@@ -127,11 +89,15 @@ proof-
     by presburger
 qed
 
-lemma m_inner'_def'':
+lemma m_inner'_def2:
   shows "m_inner' z1 z2 = Re (cnj z1 * z2)"
   by (simp add: m_inner'_def)
 
-lift_definition m_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>\<^sub>m" 100) is m_inner'
+lemma m_inner'_def3:
+  shows "m_inner' z1 z2 = inner z1 z2"
+  by (simp add: inner_complex_def m_inner'_def)
+
+lift_definition m_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>\<^sub>m" 100) is inner
   done
 
 definition m_oplus' :: "complex \<Rightarrow> complex \<Rightarrow> complex"  where
@@ -506,7 +472,8 @@ lemma mobius_gyroauto:
   shows "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = a \<cdot>\<^sub>m b"
 proof-
   have "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = Re((cnj (to_complex (m_gyr u v a))) * (to_complex (m_gyr u v b)))"
-    using m_inner.rep_eq m_inner'_def'' by presburger
+    using m_inner.rep_eq
+    by (simp add: inner_complex_def)
   moreover have "m_gyr u v a = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
     (to_complex a))"
     by (metis Moebius_gyrodom'.of_dom m_gyr'_def m_gyr.rep_eq)
@@ -531,7 +498,7 @@ proof-
   moreover have "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = Re((cnj (to_complex a))*(to_complex b))"
     using calculation(1) calculation(5) m_gyr'_def m_gyr.rep_eq by force
   moreover have "a \<cdot>\<^sub>m b = Re((cnj (to_complex a))*(to_complex b))"
-    by (simp add: m_inner.rep_eq m_inner'_def'')
+    by (simp add: inner_complex_def m_inner.rep_eq)
   ultimately show ?thesis
     by presburger
 qed
@@ -1191,7 +1158,6 @@ qed
 
 (* ---------------------------------------------------------------------------- *)
 
-  
 definition m_gyr_general :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" where
   "m_gyr_general u v w = \<ominus>\<^sub>m(u\<oplus>\<^sub>mv) \<oplus>\<^sub>m (u \<oplus>\<^sub>m(v \<oplus>\<^sub>m w))"
 
@@ -1200,12 +1166,8 @@ lemma m_gyr_general_m_gyr:
   by (simp add: Moebius_gyrogroup.gyr_def m_gyr_general_def)
 
 definition m_plus_full :: "complex \<Rightarrow> complex \<Rightarrow> complex" where 
-  "m_plus_full u v = ((1+2*inner u v + (norm v)^2) *\<^sub>R u + (1 - (norm u)^2) *\<^sub>R v) /
-                      (1+2*inner u v + (norm u)^2 * (norm v)^2)"
-
-lemma two_inner_cnj:
-  shows "2 * inner u v = cnj u * v + cnj v * u"
-  by (smt (verit) cnj.simps(1) cnj.simps(2) cnj_add_mult_eq_Re inner_complex_def mult.commute mult_minus_left times_complex.simps(1))
+  "m_plus_full u v = ((1 + 2*inner u v + (norm v)^2) *\<^sub>R u + (1 - (norm u)^2) *\<^sub>R v) /
+                      (1 + 2*inner u v + (norm u)^2 * (norm v)^2)"
 
 lemma m_plus_full_m_plus:
   shows "u \<oplus>\<^sub>m v = of_complex (m_plus_full (to_complex u) (to_complex v))"
@@ -1268,5 +1230,107 @@ proof-
     using m_oplus_def m_oplus'_def
     by (metis (no_types, lifting) Rep_PoincareDisc Rep_PoincareDisc_inverse den_not_zero divide_divide_eq_left' m_oplus.rep_eq m_plus_full_def mem_Collect_eq nonzero_mult_div_cancel_left scaleR_conv_of_real)
 qed
+
+lemma times2_m: "2 \<otimes>\<^sub>m u = u \<oplus>\<^sub>m u"
+  using Moebious_gyrovector_space.times2 gyroplus_PoincareDisc_def
+  by simp
+(*
+proof transfer
+  fix u
+  assume "cmod u < 1"
+  show "m_otimes' 2 u = m_oplus' u u"
+  proof (cases "u = 0")
+    case True
+    then show ?thesis
+      unfolding m_otimes'_def m_otimes'_k_def m_oplus'_def
+      by auto
+  next
+    case False
+    have "(1 + (cmod u))\<^sup>2 - (1 - (cmod u))\<^sup>2 = 4 * cmod u"
+      by (simp add: power2_eq_square field_simps)
+    moreover
+    have "(1 + (cmod u))\<^sup>2 + (1 - (cmod u))\<^sup>2 = 2 * (1 + (cmod u)\<^sup>2)"
+      by (simp add: power2_eq_square field_simps)
+    ultimately
+    have "m_otimes' 2 u = 4 * u / (2 * (1 + (cmod u)\<^sup>2))"
+      using False \<open>cmod u < 1\<close>
+      unfolding m_otimes'_def m_otimes'_k_def
+      by auto
+    also have "\<dots> = 2 * (2 * u) / (2 * (1 + (cmod u)\<^sup>2))"
+      by (simp add: field_simps)
+    also have "\<dots> = 2 * u / (1 + (cmod u)\<^sup>2)"
+      by (smt (verit, ccfv_threshold) divide_divide_eq_right mult.commute mult_2 nonzero_mult_div_cancel_left of_real_add of_real_diff of_real_divide of_real_mult of_real_numeral of_real_power times_divide_eq_left times_divide_eq_right zero_neq_numeral)
+    finally show ?thesis
+      using False
+      unfolding m_otimes'_def m_otimes'_k_def m_oplus'_def
+      using complex_norm_square 
+      by fastforce
+  qed
+qed
+*)
+
+
+lift_definition m_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>m") is gamma_factor
+  done
+
+lift_definition m_half :: "PoincareDisc \<Rightarrow> PoincareDisc" is "\<lambda> (v::complex). (\<gamma> v / (1 + \<gamma> v)) * v"
+proof-
+  fix v
+  assume "cmod v < 1"
+  let ?k = "\<gamma> v / (1 + \<gamma> v)"
+  have "abs ?k < 1"
+    using \<open>cmod v < 1\<close> gamma_factor_positive by fastforce
+  then show "cmod (?k * v) < 1"
+    using \<open>cmod v < 1\<close>
+    by (metis mult_closed_for_unit_disc norm_of_real)
+qed
+
+lemma two_times_half:
+  shows "2 \<otimes>\<^sub>m (m_half v) = v"
+proof-
+  have "2 \<otimes>\<^sub>m (m_half v) = m_half v \<oplus>\<^sub>m m_half v"
+    using times2_m
+    by simp
+  also have "\<dots> = v"
+  proof transfer
+    fix v :: complex 
+    assume assms: "cmod v < 1"
+    have *: "\<gamma> v \<noteq> 0" "1 + \<gamma> v \<noteq> 0"
+      using assms gamma_factor_positive 
+      by fastforce+
+    let ?k = "\<gamma> v / (1 + \<gamma> v)"
+    have "1 + cnj (?k * v) * (?k * v) = 1 + ?k^2 * (cmod v)\<^sup>2"
+      by (simp add: cnj_cmod mult.commute power2_eq_square)
+    also have "\<dots> = 1 + (\<gamma> v)\<^sup>2 / (1 + \<gamma> v)\<^sup>2 * (1 - 1 / (\<gamma> v)\<^sup>2)"
+      using norm_square_gamma_factor[OF assms]
+      by (simp add: power_divide)
+    also have "\<dots> = 1 + ((\<gamma> v)\<^sup>2 * ((\<gamma> v)\<^sup>2 - 1)) / ((\<gamma> v)\<^sup>2 * (1 + \<gamma> v)\<^sup>2)"
+      using *
+      by (simp add: field_simps)
+    also have "\<dots> = 1 + ((\<gamma> v)\<^sup>2 - 1) / (1 + \<gamma> v)\<^sup>2"
+      using *
+      by simp
+    also have "\<dots> = 1 + ((\<gamma> v - 1) * (\<gamma> v + 1)) / ((\<gamma> v + 1) * (\<gamma> v + 1))"
+      by (simp add: power2_eq_square field_simps)
+    also have "\<dots> = 1 + (\<gamma> v - 1) / (\<gamma> v + 1)"
+      using *
+      by simp
+    also have "\<dots> = 2 * ?k"
+      using *
+      by (simp add: field_simps)
+    finally show "m_oplus' (cor (\<gamma> v / (1 + \<gamma> v)) * v) (cor (\<gamma> v / (1 + \<gamma> v)) * v) = v"
+      unfolding m_oplus'_def
+      using *
+      by auto
+  qed
+  finally show ?thesis
+    .
+qed
+
+lemma m_half:
+  shows "m_half v = (1/2) \<otimes>\<^sub>m v"
+  by (metis Moebious_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double two_times_half)
+
+
 
 end
