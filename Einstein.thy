@@ -268,7 +268,7 @@ lift_definition e_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow
   done
 
 lemma e_inner_m_inner:
-  shows "m_inner z1 z2 = e_inner z1 z2"
+  shows "z1 \<cdot>\<^sub>E z2 = z1 \<cdot>\<^sub>m z2"
   by transfer simp
 
 lift_definition e_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>E") is gamma_factor
@@ -663,5 +663,192 @@ proof
   show "a \<oplus>\<^sub>E b = e_gyr a b (b \<oplus>\<^sub>E a)"
     using e_gyro_commute by auto
 qed
+
+lemma half_inner_left: 
+  "((1/2) \<otimes> a) \<cdot>\<^sub>E b = (\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a)) * (a \<cdot>\<^sub>E b)"
+  unfolding half[symmetric]
+  by transfer (simp add: half'_def)
+
+lemma half_inner_right:
+  "a \<cdot>\<^sub>E ((1/2) \<otimes> b) = (\<gamma>\<^sub>E b / (1 + \<gamma>\<^sub>E b)) * (a \<cdot>\<^sub>E b)"
+  by (metis e_inner.rep_eq half_inner_left inner_commute)
+
+lemma half_inner: 
+  "((1/2) \<otimes> a) \<cdot>\<^sub>E ((1/2) \<otimes> b) = (\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a)) * (\<gamma>\<^sub>E b / (1 + \<gamma>\<^sub>E b)) * (a \<cdot>\<^sub>E b)"
+  using half_inner_left half_inner_right
+  by auto
+
+lemma double_inner_left: 
+  "(2 \<otimes> a) \<cdot>\<^sub>E b = (2*(\<gamma>\<^sub>E a)\<^sup>2 / (2*(\<gamma>\<^sub>E a)\<^sup>2 - 1)) * (a \<cdot>\<^sub>E b)"
+  unfolding double[symmetric]
+  by transfer (simp add: double'_def)
+
+lemma double_inner_right: 
+  "a \<cdot>\<^sub>E (2 \<otimes> b) = (2*(\<gamma>\<^sub>E b)\<^sup>2 / (2*(\<gamma>\<^sub>E b)\<^sup>2 - 1)) * (a \<cdot>\<^sub>E b)"
+  by (metis e_inner.rep_eq double_inner_left inner_commute)
+
+lemma double_inner: 
+  "(2 \<otimes> a) \<cdot>\<^sub>E (2 \<otimes> b) = (2*(\<gamma>\<^sub>E a)\<^sup>2 / (2*(\<gamma>\<^sub>E a)\<^sup>2 - 1)) * (2*(\<gamma>\<^sub>E b)\<^sup>2 / (2*(\<gamma>\<^sub>E b)\<^sup>2 - 1)) * (a \<cdot>\<^sub>E b)"
+  using double_inner_left double_inner_right
+  by auto
+
+lemma gamma_factorE_positive:
+  shows "\<gamma>\<^sub>E a > 0"
+  by transfer (simp add: gamma_factor_positive)
+
+lemma double_norm_square:
+  shows "2*(\<gamma>\<^sub>E u)\<^sup>2 / (2*(\<gamma>\<^sub>E u)\<^sup>2 - 1) = 2 / (1 + (\<llangle>u\<rrangle>\<^sub>m)\<^sup>2)"
+  by transfer (simp add: double'_cmod) 
+
+lemma norm_square_gamma_factorE:
+  shows "(\<llangle>u\<rrangle>\<^sub>m)\<^sup>2 = 1 - 1 / (\<gamma>\<^sub>E u)\<^sup>2"
+  by transfer (simp add: norm_square_gamma_factor)
+
+lemma square_norm_inner:
+  shows "(\<llangle>u\<rrangle>\<^sub>m)\<^sup>2 = u \<cdot>\<^sub>m u"
+  by transfer (simp add: dot_square_norm)
+
+lemma square_norm_half:
+  shows "(\<llangle>(1/2) \<otimes> a\<rrangle>\<^sub>m)\<^sup>2 = (\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))\<^sup>2 * (\<llangle>a\<rrangle>\<^sub>m)\<^sup>2"
+  by (metis e_inner_def half_inner m_inner_def power2_eq_square square_norm_inner)
+
+lemma double_mgyr_half:
+  shows "let m = m_gyr ((1/2) \<otimes> u) ((1/2) \<otimes> v) ((1/2) \<otimes> a)
+          in 2*(\<gamma>\<^sub>E m)\<^sup>2 / (2*(\<gamma>\<^sub>E m)\<^sup>2 - 1) = (1 + \<gamma>\<^sub>E a) / \<gamma>\<^sub>E a"
+proof-
+  define m where "m = m_gyr ((1/2) \<otimes> u) ((1/2) \<otimes> v) ((1/2) \<otimes> a)"
+  have "\<llangle>m\<rrangle>\<^sub>m = \<llangle>(1/2) \<otimes> a\<rrangle>\<^sub>m"
+    unfolding m_def moebius_gyroauto_norm
+    by simp
+
+  have "2*(\<gamma>\<^sub>E m)\<^sup>2 / (2*(\<gamma>\<^sub>E m)\<^sup>2 - 1) = 2 / (1 + (\<llangle>m\<rrangle>\<^sub>m)\<^sup>2)"
+    by (simp add: double_norm_square)
+  also have "\<dots> = 2 / (1 + (\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))\<^sup>2 * (\<llangle>a\<rrangle>\<^sub>m)\<^sup>2)"
+    by (simp add: \<open>\<llangle>m\<rrangle>\<^sub>m = \<llangle>(1 / 2) \<otimes> a\<rrangle>\<^sub>m\<close> square_norm_half)
+  also have "\<dots> = 2 / (1 + (\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))\<^sup>2 * (1 - 1 / (\<gamma>\<^sub>E a)\<^sup>2))"
+    using norm_square_gamma_factorE
+    by auto
+  also have "\<dots> = (1 + \<gamma>\<^sub>E a) / \<gamma>\<^sub>E a" (is "?lhs = ?rhs")
+  proof-
+    have *: "(\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))\<^sup>2 = (\<gamma>\<^sub>E a)\<^sup>2 / (1 + \<gamma>\<^sub>E a)\<^sup>2"
+      by (simp add: power_divide)
+    moreover
+    have **: "1 - 1 / (\<gamma>\<^sub>E a)\<^sup>2 = ((\<gamma>\<^sub>E a)\<^sup>2 - 1) / (\<gamma>\<^sub>E a)\<^sup>2"
+      using gamma_factorE_positive[of a]
+      by (metis diff_divide_distrib less_numeral_extra(3) right_inverse_eq zero_less_power)
+    ultimately
+    have "(\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))\<^sup>2 * (1 - 1 / (\<gamma>\<^sub>E a)\<^sup>2) = 
+          ((\<gamma>\<^sub>E a)\<^sup>2 / (1 + \<gamma>\<^sub>E a)\<^sup>2) * (((\<gamma>\<^sub>E a)\<^sup>2 - 1) / (\<gamma>\<^sub>E a)\<^sup>2)"
+      by simp
+    also have "\<dots> = ((\<gamma>\<^sub>E a)\<^sup>2 - 1) / (1 + \<gamma>\<^sub>E a)\<^sup>2"
+      using gamma_factorE_positive[of a]
+      by simp
+    also have "\<dots> = (\<gamma>\<^sub>E a - 1) / (1 + \<gamma>\<^sub>E a)"
+      using gamma_factorE_positive[of a]
+      by (simp add: add.commute power2_eq_square square_diff_one_factored)
+    finally
+    have "?lhs = 2 / (1 + (\<gamma>\<^sub>E a - 1) / (1 + \<gamma>\<^sub>E a))"
+      by simp
+    also have "\<dots> = 2 / (((1 + \<gamma>\<^sub>E a) + (\<gamma>\<^sub>E a - 1)) / (1 + \<gamma>\<^sub>E a))"
+      using gamma_factorE_positive[of a]
+      by (metis add_divide_distrib add_less_same_cancel1 div_0 div_self less_divide_eq_1_neg less_numeral_extra(1) not_one_less_zero)
+    also have "\<dots> = 2 / (2 * \<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))"
+      by simp
+    also have "\<dots> = ?rhs"
+      using gamma_factorE_positive[of a]
+      by (metis divide_divide_eq_right mult_divide_mult_cancel_left_if zero_neq_numeral)
+    finally show ?thesis
+      .
+  qed
+  finally show ?thesis
+    unfolding m_def Let_def
+    by simp
+qed
+
+lemma einstein_gyroauto:
+  shows "e_gyr u v a \<cdot>\<^sub>E e_gyr u v b = a \<cdot>\<^sub>E b"
+proof-
+  let ?u = "(1/2) \<otimes> u" and ?v = "(1/2) \<otimes> v" and ?a = "(1/2) \<otimes> a" and ?b = "(1/2) \<otimes> b"
+  let ?ma = "m_gyr ?u ?v ?a" and ?mb = "m_gyr ?u ?v ?b"
+  let ?A = "2*(\<gamma>\<^sub>E ?ma)\<^sup>2 / (2*(\<gamma>\<^sub>E ?ma)\<^sup>2 - 1)" and ?B = "2*(\<gamma>\<^sub>E ?mb)\<^sup>2 / (2*(\<gamma>\<^sub>E ?mb)\<^sup>2 - 1)"
+  let ?A' = "(\<gamma>\<^sub>E a / (1 + \<gamma>\<^sub>E a))" and ?B' = "(\<gamma>\<^sub>E b / (1 + \<gamma>\<^sub>E b))"
+
+  have "e_gyr u v a \<cdot>\<^sub>E e_gyr u v b = 2 \<otimes> ?ma \<cdot>\<^sub>E 2 \<otimes> ?mb"
+    unfolding e_gyr_m_gyr_two
+    by simp
+  also have "\<dots> = ?A * ?B * (?ma \<cdot>\<^sub>E ?mb)"
+    by (rule double_inner)
+  also have "\<dots> = ?A * ?B * (?a \<cdot>\<^sub>m ?b)"
+    using e_inner_m_inner moebius_gyroauto 
+    by presburger
+  also have "\<dots> = ?A * ?B * ?A' * ?B' * (a \<cdot>\<^sub>E b)"
+    using half_inner
+    by (simp add: e_inner_def m_inner_def)
+  also have "\<dots> = a \<cdot>\<^sub>E b"
+  proof-
+    have "\<gamma>\<^sub>E a \<noteq> 0" "1 + \<gamma>\<^sub>E a \<noteq> 0"
+      using gamma_factor_positive 
+      by (transfer, fastforce)+
+    then have "?A * ?A' = 1"
+      using double_mgyr_half[of u v a] 
+      unfolding Let_def
+      by simp
+
+    moreover
+
+    have "\<gamma>\<^sub>E b \<noteq> 0" "1 + \<gamma>\<^sub>E b \<noteq> 0"
+      using gamma_factor_positive 
+      by (transfer, fastforce)+
+    then have "?B * ?B' = 1"
+      using double_mgyr_half[of u v b] 
+      unfolding Let_def
+      by simp
+
+    ultimately
+    show ?thesis
+      by (smt (verit, best) ab_semigroup_mult_class.mult_ac(1) mult.left_commute mult_cancel_right1)
+  qed
+  finally
+  show ?thesis
+    .
+qed
+
+lemma e_otimes_distrib:
+  shows "(r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus>\<^sub>E r2 \<otimes> a" 
+proof-
+  have "r1 \<otimes> a \<oplus>\<^sub>E r2 \<otimes> a =  2 \<otimes> ((1 / 2) \<otimes> (r1 \<otimes> a) \<oplus>\<^sub>m (1 / 2) \<otimes> (r2 \<otimes> a))"
+    unfolding iso_ei_mo
+    by simp
+  also have "\<dots> = 2 \<otimes> ((1/2) \<otimes> ((r1 \<otimes> a) \<oplus>\<^sub>m (r2 \<otimes> a)))"
+    using Moebious_gyrovector_space.monodistributive gyroplus_PoincareDisc_def 
+    by auto
+  also have "\<dots> = 2 \<otimes> ((1/2) \<otimes> ((r1 + r2) \<otimes> a))"
+    using otimes_distrib 
+    by auto
+  finally show ?thesis
+    using half two_times_half 
+    by presburger
+qed
+
+lemma einstein_triangle:
+  shows "(\<llangle>a \<oplus>\<^sub>E b\<rrangle>\<^sub>m) \<le> cmod (to_complex (of_complex (\<llangle>a\<rrangle>\<^sub>m) \<oplus>\<^sub>E of_complex (\<llangle>b\<rrangle>\<^sub>m)))"
+  sorry
+
+lemma e_gyr_gyrospace2:
+  shows "e_gyr u v (r \<otimes> a) = r \<otimes> (e_gyr u v a)"
+  by (metis e_gyr_m_gyr half m_gyr_gyrospace2 two_times_half)
+
+lemma e_gyr_gyrospace:
+  shows "e_gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
+proof-
+  have "\<forall> z. e_gyr (r1 \<otimes> v) (r2 \<otimes> v) z = z"
+    unfolding e_gyr_m_gyr_two
+    using m_gyr_gyrospace[of "(1/2)*r1" v "(1/2)*r2"]
+    by (metis Moebious_gyrovector_space.scale_1 eq_id_iff nonzero_mult_div_cancel_left otimes_assoc times_divide_eq_right zero_neq_numeral)
+  then show ?thesis
+    by auto
+qed
+
+
 
 end

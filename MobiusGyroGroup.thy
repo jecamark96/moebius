@@ -1214,4 +1214,107 @@ lemma half':
   using assms half half.rep_eq[of "of_complex u"] otimes.rep_eq
   by (simp add: Moebius_gyrodom'.to_dom)
 
+
+definition double' :: "complex \<Rightarrow> complex" where
+  "double' v = (2 * (\<gamma> v)\<^sup>2 / (2 * (\<gamma> v)\<^sup>2 - 1)) *\<^sub>R v"
+
+lemma double'_cmod:
+  assumes "cmod v < 1"
+  shows "2 * (\<gamma> v)\<^sup>2 / (2 * (\<gamma> v)\<^sup>2 - 1) = 2 / (1 + (cmod v)\<^sup>2)" (is "?lhs = ?rhs")
+proof-
+  have **: "1 - (cmod v)\<^sup>2 > 0"
+    using assms
+    by (simp add: power_less_one_iff)
+
+  have "?lhs = 2 * (1 / (1 - (cmod v)\<^sup>2)) / (2 * (1 / (1 - (cmod v)\<^sup>2)) - 1)"
+    using gamma_factor_square_norm[OF assms]
+    by simp
+  also have "\<dots> = 2 / (1 + (cmod v)\<^sup>2)"
+  proof-
+    have "2 * (1 / (1 - (cmod v)\<^sup>2)) = 2 / (1 - (cmod v)\<^sup>2)"
+      by simp
+    moreover
+    have "2 * (1 / (1 - (cmod v)\<^sup>2)) - 1 = 2 / (1 - (cmod v)\<^sup>2) -  (1 - (cmod v)\<^sup>2) / (1 - (cmod v)\<^sup>2)"
+      using **
+      by simp
+    then have "2 * (1 / (1 - (cmod v)\<^sup>2)) - 1 = (1 + (cmod v)\<^sup>2) / (1 - (cmod v)\<^sup>2)"
+      using **
+      by (simp add: field_simps)
+    ultimately
+    show ?thesis
+      using **
+      by (smt (verit, del_insts) divide_divide_eq_left nonzero_mult_div_cancel_left power2_eq_square times_divide_eq_right)
+  qed
+  finally show ?thesis
+    .
+qed
+
+lemma cmod_double':
+  assumes "cmod v < 1"
+  shows "cmod (double' v) = 2*cmod v / (1 + (cmod v)\<^sup>2)"
+proof-
+  have "cmod (double' v) = 
+        abs(2 * (\<gamma> v)\<^sup>2 / (2 * (\<gamma> v)\<^sup>2 - 1)) * cmod v"
+    unfolding double'_def
+    by simp
+  also have "\<dots> = abs (2 / (1 + (cmod v)\<^sup>2)) * cmod v"
+    using assms double'_cmod 
+    by presburger
+  also have "\<dots> = 2*cmod v / (1 + (cmod v)\<^sup>2)"
+  proof-
+    have "2 / (1 + (cmod v)\<^sup>2) > 0"
+      by (metis half_gt_zero_iff power_one sum_power2_gt_zero_iff zero_less_divide_iff zero_neq_one)
+    then show ?thesis
+      by simp
+  qed
+  finally show ?thesis
+    .
+qed
+
+lift_definition double :: "PoincareDisc \<Rightarrow> PoincareDisc" is double'
+proof-
+  fix v
+  assume *: "cmod v < 1"
+
+  have "cmod (double' v) = 2 * cmod v / (1 + (cmod v)\<^sup>2)"
+    using * cmod_double'
+    by simp
+  also have "\<dots> < 1"
+  proof-
+    have "(1 - cmod v)\<^sup>2 > 0"
+      using *
+      by simp
+    then have "1 - 2* cmod v + (cmod v)\<^sup>2 > 0"
+      by (simp add: field_simps power2_eq_square)
+    then have "2*cmod v < 1 + (cmod v)\<^sup>2"
+      by simp
+    moreover
+    have "1 + (cmod v)\<^sup>2 > 0"
+      by (smt (verit) not_sum_power2_lt_zero)
+    ultimately
+    show ?thesis
+      using divide_less_eq_1 by blast
+  qed
+  finally
+  show "cmod (double' v) < 1"
+    by simp
+qed
+
+lemma double'_otimes'_2:
+  assumes "cmod v < 1"
+  shows "double' v = otimes' 2 v"
+proof-
+  have "v * 2 / (1 + cor (cmod v) * cor (cmod v)) =
+        v * 4 / (2 + 2 * (cor (cmod v) * cor (cmod v)))"
+    by (metis (no_types, lifting) mult.left_commute nonzero_mult_divide_mult_cancel_left numeral_Bit0_eq_double numeral_One ring_class.ring_distribs(1) zero_neq_numeral)
+  then show ?thesis
+    using assms
+    unfolding double'_def otimes'_def otimes'_k_def double'_cmod[OF assms] scaleR_conv_of_real
+    by (auto simp add: field_simps power2_eq_square)
+qed
+
+lemma double: 
+  shows "double u = 2 \<otimes> u"
+  by transfer (simp add: double'_otimes'_2)
+
 end

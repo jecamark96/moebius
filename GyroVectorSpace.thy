@@ -356,5 +356,12 @@ definition gyroline :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set" where
   "gyroline a b = {x. colinear x a b}"
 
 end
-  
+
+locale A = 
+  fixes a :: int
+
+locale B = A + 
+  fixes b :: int
+
+
 end

@@ -91,6 +91,10 @@ lemma norm_square_gamma_factor':
   using norm_square_gamma_factor[OF assms]
   by (metis assms diff_divide_distrib div_self gamma_factor_positive norm_not_less_zero norm_zero power_not_zero)
 
+lemma gamma_factor_square_norm:
+  assumes "cmod u < 1"
+  shows "(\<gamma> u)\<^sup>2 = 1 / (1 - (cmod u)\<^sup>2)"
+  by (smt (verit) assms gamma_factor_def gamma_factor_positive real_sqrt_divide real_sqrt_eq_iff real_sqrt_one real_sqrt_unique)
 
 lemma gamma_expression_eq_one_1:
   assumes "norm u < 1" 
