@@ -88,4 +88,20 @@ proof-
     by (simp add: artanh_def)
 qed
 
+lemma tanh_artanh_nonneg:
+  fixes x r :: real
+  assumes "r \<ge> 0" "x \<ge> 0" "x < 1"
+  shows "tanh (r * artanh x) \<ge> 0"
+  using assms
+  by (simp add: artanh_nonneg)
+
+lemma tanh_artanh_mono:
+  fixes x y :: real
+  assumes "0 \<le> x" "x < 1" "0 \<le> y" "y < 1"
+  assumes "x \<le> y"
+  shows "tanh (2 * artanh x) \<le> tanh (2 * artanh y)"
+  using assms
+  using artanh_monotone
+  by auto
+
 end

@@ -337,19 +337,31 @@ end
 
 (* --------------------------------------------------------- *)
 
-lift_definition m_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>\<^sub>m" 100) is inner
+lift_definition inner_p :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>" 100) is inner
   done
 
-lift_definition m_norm :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>\<^sub>m" [100] 100) is norm
+lift_definition norm_p :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>" [100] 100) is norm
   done
+
+lemma norm_lt_one:
+  shows "\<llangle>u\<rrangle> < 1"
+  by transfer simp
+
+lemma norm_geq_zero:
+  shows "\<llangle>u\<rrangle> \<ge> 0"
+  by transfer simp
+
+lemma square_norm_inner:
+  shows "(\<llangle>u\<rrangle>)\<^sup>2 = u \<cdot> u"
+  by transfer (simp add: dot_square_norm)
 
 interpretation Moebius_gyrodom': gyrodom' where
   to_dom = to_complex and
   of_dom = of_complex and
   in_dom = "\<lambda> z. cmod z < 1" 
 rewrites
-  "Moebius_gyrodom'.gyroinner = m_inner" and
-  "Moebius_gyrodom'.gyronorm = m_norm"
+  "Moebius_gyrodom'.gyroinner = inner_p" and
+  "Moebius_gyrodom'.gyronorm = norm_p"
 proof-
   show *: "gyrodom' to_complex of_complex (\<lambda>z. cmod z < 1)"
   proof
@@ -366,14 +378,14 @@ proof-
       by (simp add: gyrozero_PoincareDisc_def m_ozero'_def m_ozero.rep_eq)
   qed
 
-  show "gyrodom'.gyroinner to_complex = (\<cdot>\<^sub>m)"
+  show "gyrodom'.gyroinner to_complex = (\<cdot>)"
     apply rule
     apply rule
     unfolding gyrodom'.gyroinner_def[OF *]
     apply transfer
     by (simp add: inner_complex_def)
 
-  show "gyrodom'.gyronorm to_complex = m_norm"
+  show "gyrodom'.gyronorm to_complex = norm_p"
     apply rule
     unfolding gyrodom'.gyronorm_def[OF *]
     apply transfer
@@ -383,10 +395,10 @@ qed
 (* --------------------------------------------------------- *)
 
 lemma moebius_gyroauto:
-  shows "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = a \<cdot>\<^sub>m b"
+  shows "m_gyr u v a \<cdot> m_gyr u v b = a \<cdot> b"
 proof-
-  have "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = Re((cnj (to_complex (m_gyr u v a))) * (to_complex (m_gyr u v b)))"
-    using m_inner.rep_eq
+  have "m_gyr u v a \<cdot> m_gyr u v b = Re((cnj (to_complex (m_gyr u v a))) * (to_complex (m_gyr u v b)))"
+    using inner_p.rep_eq
     by (simp add: inner_complex_def)
   moreover have "m_gyr u v a = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
     (to_complex a))"
@@ -409,10 +421,10 @@ proof-
     ultimately show ?thesis using cnj_cmod_1
       by (metis mult.commute)
   qed
-  moreover have "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = Re((cnj (to_complex a))*(to_complex b))"
+  moreover have "m_gyr u v a \<cdot> m_gyr u v b = Re((cnj (to_complex a))*(to_complex b))"
     using calculation(1) calculation(5) m_gyr'_def m_gyr.rep_eq by force
-  moreover have "a \<cdot>\<^sub>m b = Re((cnj (to_complex a))*(to_complex b))"
-    by (simp add: inner_complex_def m_inner.rep_eq)
+  moreover have "a \<cdot> b = Re((cnj (to_complex a))*(to_complex b))"
+    by (simp add: inner_complex_def inner_p.rep_eq)
   ultimately show ?thesis
     by presburger
 qed
@@ -420,7 +432,7 @@ qed
 interpretation Moebius_gyrodom: gyrodom to_complex of_complex "\<lambda> z. cmod z < 1"
 proof
   fix u v a b
-  have "gyr u v a \<cdot>\<^sub>m gyr u v b = a \<cdot>\<^sub>m b"
+  have "gyr u v a \<cdot> gyr u v b = a \<cdot> b"
     by (simp add: gyr_PoincareDisc_def moebius_gyroauto)
   then show "gyrodom'.gyroinner to_complex (gyr u v a) (gyr u v b) =
              gyrodom'.gyroinner to_complex a b"  
@@ -640,16 +652,16 @@ qed
 lemma otimes_scale_prop:
   fixes r :: real
   assumes "r \<noteq> 0"
-  shows "to_complex (\<bar>r\<bar> \<otimes> a) / \<llangle>r \<otimes> a\<rrangle>\<^sub>m  = to_complex a / \<llangle>a\<rrangle>\<^sub>m"
+  shows "to_complex (\<bar>r\<bar> \<otimes> a) / \<llangle>r \<otimes> a\<rrangle>  = to_complex a / \<llangle>a\<rrangle>"
 proof-
   let ?f = "\<lambda> r a. tanh (r * artanh (cmod (to_complex a)))"
 
-  have *: "to_complex (\<bar>r\<bar> \<otimes> a) = ?f \<bar>r\<bar> a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m)"
+  have *: "to_complex (\<bar>r\<bar> \<otimes> a) = ?f \<bar>r\<bar> a * (to_complex a / \<llangle>a\<rrangle>)"
     using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc otimes'_def otimes'_k_tanh otimes.rep_eq
     by force
-  then have "\<llangle>r \<otimes> a\<rrangle>\<^sub>m = cmod (?f r a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m))"
+  then have "\<llangle>r \<otimes> a\<rrangle> = cmod (?f r a * (to_complex a / \<llangle>a\<rrangle>))"
     by (metis (no_types, lifting) Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_def otimes'_k_tanh otimes.rep_eq mem_Collect_eq norm_mult norm_of_real)
-  then have "\<llangle>r \<otimes> a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)"
+  then have "\<llangle>r \<otimes> a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar> * cmod (to_complex a)"
     by (metis (no_types, opaque_lifting) norm_mult norm_of_real of_real_divide times_divide_eq_left times_divide_eq_right)
 
   have "?f \<bar>r\<bar> a = tanh(\<bar>r\<bar> * \<bar>artanh (cmod (to_complex a))\<bar>)"
@@ -657,9 +669,9 @@ proof-
   then have "?f \<bar>r\<bar> a = \<bar>?f r a\<bar>"
     by (metis abs_mult tanh_real_abs)
 
-  have "\<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> = ?f \<bar>r\<bar> a / \<llangle>a\<rrangle>\<^sub>m"
+  have "\<bar>?f r a / \<llangle>a\<rrangle>\<bar> = ?f \<bar>r\<bar> a / \<llangle>a\<rrangle>"
     by (metis Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
-  then have **:"?f \<bar>r\<bar> a / \<llangle>a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar>"
+  then have **:"?f \<bar>r\<bar> a / \<llangle>a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar>"
     by simp
 
   show ?thesis
@@ -670,12 +682,12 @@ proof-
       by (simp add: otimes'_def otimes.rep_eq)
   next
     case False
-    then have "\<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> \<noteq>0"
+    then have "\<bar>?f r a / \<llangle>a\<rrangle>\<bar> \<noteq>0"
       using assms
       by (metis artanh_0 Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_norm_cancel artanh_not_0 artanh_tanh_real divide_eq_0_iff linorder_not_less mem_Collect_eq mult_eq_0_iff norm_eq_zero not_less_iff_gr_or_eq zero_less_abs_iff)
     then show ?thesis
       using * ** Moebius_gyrodom'.gyronorm_def 
-            \<open>\<llangle>r \<otimes> a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)\<close> 
+            \<open>\<llangle>r \<otimes> a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar> * cmod (to_complex a)\<close> 
       by fastforce
   qed
 qed
@@ -731,16 +743,16 @@ proof-
 qed
 
 lemma gamma_factor_eq1:
-  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
+  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) = 
          \<gamma> (to_complex a) *  
          \<gamma> (to_complex b) * 
          cmod (1 + cnj (to_complex a) * (to_complex b))"
 proof-
   let ?a = "to_complex a" and ?b = "to_complex b"
-  have "norm (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) < 1"
+  have "norm (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) < 1"
     using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_square_less_1
     by fastforce
-  then have *: "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) = 
+  then have *: "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) = 
                 1 / sqrt(1 - cmod (?a+?b) / cmod (1 + cnj ?a *?b) * cmod (?a+?b) / cmod (1 + cnj ?a *?b))"
     using Moebius_gyrodom'.gyronorm_def gamma_factor_def m_oplus'_def m_oplus.rep_eq norm_divide norm_eq_zero norm_le_zero_iff norm_of_real real_norm_def 
     by (smt (verit, del_insts) power2_eq_square times_divide_eq_right)
@@ -800,22 +812,22 @@ proof-
 qed
 
 lemma gamma_factor_ineq1:
-  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) \<le> \<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m))))"
+  shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) \<le> \<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>))))"
 proof-
-  have "\<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>\<^sub>m)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>\<^sub>m)))) =
-        \<gamma> (\<llangle>a\<rrangle>\<^sub>m) * \<gamma> (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m * \<llangle>b\<rrangle>\<^sub>m)"
+  have "\<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>)))) =
+        \<gamma> (\<llangle>a\<rrangle>) * \<gamma> (\<llangle>b\<rrangle>) * (1 + \<llangle>a\<rrangle> * \<llangle>b\<rrangle>)"
   proof-
-    let ?expr1 =  "((\<llangle>a\<rrangle>\<^sub>m) + (\<llangle>b\<rrangle>\<^sub>m)) / (1 + (\<llangle>a\<rrangle>\<^sub>m)*(\<llangle>b\<rrangle>\<^sub>m))"
-    let ?expr2 = "to_complex (of_complex (\<llangle>a\<rrangle>\<^sub>m) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>\<^sub>m))"
+    let ?expr1 =  "((\<llangle>a\<rrangle>) + (\<llangle>b\<rrangle>)) / (1 + (\<llangle>a\<rrangle>)*(\<llangle>b\<rrangle>))"
+    let ?expr2 = "to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>))"
     have *: "?expr1 = ?expr2"
       using Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.to_dom Rep_PoincareDisc m_oplus'_def m_oplus.rep_eq
       by auto
 
-    have **: "norm (\<llangle>a\<rrangle>\<^sub>m) < 1" "norm (\<llangle>b\<rrangle>\<^sub>m) < 1"
-      using Rep_PoincareDisc abs_square_less_1 m_norm.rep_eq 
+    have **: "norm (\<llangle>a\<rrangle>) < 1" "norm (\<llangle>b\<rrangle>) < 1"
+      using Rep_PoincareDisc abs_square_less_1 norm_p.rep_eq 
       by fastforce+
-    then have ***: "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>a\<rrangle>\<^sub>m) * (\<llangle>a\<rrangle>\<^sub>m))"
-                   "\<gamma> (\<llangle>b\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>b\<rrangle>\<^sub>m) * (\<llangle>b\<rrangle>\<^sub>m))"
+    then have ***: "\<gamma> (\<llangle>a\<rrangle>) = 1 / sqrt(1 - (\<llangle>a\<rrangle>) * (\<llangle>a\<rrangle>))"
+                   "\<gamma> (\<llangle>b\<rrangle>) = 1 / sqrt(1 - (\<llangle>b\<rrangle>) * (\<llangle>b\<rrangle>))"
       unfolding gamma_factor_def
       by (auto simp add: power2_eq_square) 
 
@@ -828,7 +840,7 @@ proof-
     ultimately
     have "\<gamma> ?expr1 = 1 / sqrt (1 - (Re ?expr1 * Re ?expr1))"
        by (metis Re_complex_of_real)
-    then have "\<gamma> ?expr1 = (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) / (sqrt (1-\<llangle>a\<rrangle>\<^sub>m*\<llangle>a\<rrangle>\<^sub>m) * sqrt (1-\<llangle>b\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m))"
+    then have "\<gamma> ?expr1 = (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) / (sqrt (1-\<llangle>a\<rrangle>*\<llangle>a\<rrangle>) * sqrt (1-\<llangle>b\<rrangle>*\<llangle>b\<rrangle>))"
        using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc gamma_factor_ineq1_lemma
        using \<open>cmod ?expr1 = ?expr1\<close> 
        by force
@@ -840,11 +852,11 @@ proof-
 
   moreover
 
-  have "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) * \<gamma> (\<llangle>b\<rrangle>\<^sub>m) * (1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m) \<ge> 
+  have "\<gamma> (\<llangle>a\<rrangle>) * \<gamma> (\<llangle>b\<rrangle>) * (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) \<ge> 
         \<gamma> (to_complex a) * \<gamma> (to_complex b) * cmod (1  + cnj (to_complex a) * (to_complex b))"
   proof-
-    have *: "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) = \<gamma> (to_complex a)"
-            "\<gamma> (\<llangle>b\<rrangle>\<^sub>m) = \<gamma> (to_complex b)"
+    have *: "\<gamma> (\<llangle>a\<rrangle>) = \<gamma> (to_complex a)"
+            "\<gamma> (\<llangle>b\<rrangle>) = \<gamma> (to_complex b)"
        by (auto simp add: Moebius_gyrodom'.gyronorm_def gamma_factor_def)
      
      have "cmod (1 + cnj (to_complex a) * (to_complex b)) \<le> 
@@ -853,7 +865,7 @@ proof-
        by blast
      also have "\<dots> = 1 + cmod (to_complex a) * cmod (to_complex b)"
        by (simp add: norm_mult)
-     also have "\<dots> = 1 + \<llangle>a\<rrangle>\<^sub>m*\<llangle>b\<rrangle>\<^sub>m"
+     also have "\<dots> = 1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>"
        using Moebius_gyrodom'.gyronorm_def
        by force
      finally show ?thesis
@@ -867,20 +879,20 @@ proof-
 qed
 
 lemma moebius_triangle:
-  shows "(\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m) \<le> cmod (to_complex (of_complex (\<llangle>a\<rrangle>\<^sub>m) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>\<^sub>m)))"
+  shows "\<llangle>a \<oplus>\<^sub>m b\<rrangle> \<le> \<llangle>of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)\<rrangle>"
 proof (cases "to_complex a = - to_complex b")
   case True
   then show ?thesis
    by (simp add: Moebius_gyrodom'.gyronorm_def m_oplus'_def m_oplus.rep_eq)
 next
   case False
-  let ?e1 = "(\<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m)"
-  let ?e2 = "cmod (to_complex (of_complex (\<llangle>a\<rrangle>\<^sub>m) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>\<^sub>m)))"
+  let ?e1 = "(\<llangle>a \<oplus>\<^sub>m b\<rrangle>)"
+  let ?e2 = "cmod (to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)))"
   have "?e1 > 0"
     by (smt (verit, best) Moebius_gyrodom'.gyronorm_def \<open>to_complex a \<noteq> - to_complex b\<close> ab_left_minus add_right_cancel divide_eq_0_iff gamma_factor_eq1 gamma_factor_positive m_oplus'_def m_oplus.rep_eq norm_eq_zero norm_le_zero_iff of_real_0 zero_less_mult_iff)
   moreover
   have "?e2 > 0"
-    by (metis Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc \<open>0 < \<llangle>a \<oplus>\<^sub>m b\<rrangle>\<^sub>m\<close> dual_order.refl gamma_factor_increasing gamma_factor_ineq1 linorder_not_le mem_Collect_eq of_real_0 zero_less_norm_iff)
+    by (metis Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc \<open>0 < \<llangle>a \<oplus>\<^sub>m b\<rrangle>\<close> dual_order.refl gamma_factor_increasing gamma_factor_ineq1 linorder_not_le mem_Collect_eq of_real_0 zero_less_norm_iff)
   moreover
   have "?e1 < 1" "?e2 < 1"
     using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc 
@@ -888,16 +900,16 @@ next
   ultimately 
   show ?thesis
     using gamma_factor_increase_reverse[of ?e1 ?e2]
-    by (smt (verit, del_insts) gamma_factor_def gamma_factor_increasing gamma_factor_ineq1 norm_of_real)
+    by (smt (verit, best) gamma_factor_def gamma_factor_increasing gamma_factor_ineq1 norm_p.rep_eq norm_of_real)
 qed
 
 lemma moebius_gyroauto_norm:
-  shows "\<llangle>m_gyr a b v\<rrangle>\<^sub>m = \<llangle>v\<rrangle>\<^sub>m"
+  shows "\<llangle>m_gyr a b v\<rrangle> = \<llangle>v\<rrangle>"
   using Moebius_gyrodom.norm_gyr gyr_PoincareDisc_def
   by auto
 
 lemma otimes_homogenity:
-  shows "\<llangle>(r \<otimes> a)\<rrangle>\<^sub>m = cmod (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)))"
+  shows "\<llangle>(r \<otimes> a)\<rrangle> = cmod (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)))"
 proof (cases "a = 0\<^sub>m")
   case True
   then show ?thesis
@@ -905,32 +917,33 @@ proof (cases "a = 0\<^sub>m")
     by force
 next
   case False
-  have "\<llangle>(r \<otimes> a)\<rrangle>\<^sub>m = \<bar>tanh (r * artanh (\<llangle>a\<rrangle>\<^sub>m))\<bar>"
+  have "\<llangle>(r \<otimes> a)\<rrangle> = \<bar>tanh (r * artanh (\<llangle>a\<rrangle>))\<bar>"
     using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_k_tanh otimes.rep_eq
     by force
   moreover
-  have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)) = tanh (\<bar>r\<bar> * artanh (\<llangle>a\<rrangle>\<^sub>m))"
+  have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)) = tanh (\<bar>r\<bar> * artanh (\<llangle>a\<rrangle>))"
   proof-
-    have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)) = 
-          otimes'_k \<bar>r\<bar> (\<llangle>a\<rrangle>\<^sub>m) * ((\<llangle>a\<rrangle>\<^sub>m) / cmod (\<llangle>a\<rrangle>\<^sub>m))" 
+    have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)) = 
+          otimes'_k \<bar>r\<bar> (\<llangle>a\<rrangle>) * ((\<llangle>a\<rrangle>) / cmod (\<llangle>a\<rrangle>))" 
       using otimes_def otimes'_def
       using Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.to_dom Rep_PoincareDisc otimes.rep_eq
       by force 
     moreover
     have "cmod (cmod (to_complex a)) = cmod (to_complex a)"
       by simp
-    then have "(\<llangle>a\<rrangle>\<^sub>m) / cmod (\<llangle>a\<rrangle>\<^sub>m) = 1"
+    then have "(\<llangle>a\<rrangle>) / cmod (\<llangle>a\<rrangle>) = 1"
       using \<open>a \<noteq> 0\<^sub>m\<close>
       by (metis Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.of_dom divide_self_if m_ozero'_def m_ozero_def norm_eq_zero)
     ultimately
-    have "to_complex (\<bar>r\<bar> \<otimes> ( of_complex (cor(\<llangle>a\<rrangle>\<^sub>m)))) = cor (otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>\<^sub>m)))"
+    have "to_complex (\<bar>r\<bar> \<otimes> ( of_complex (cor(\<llangle>a\<rrangle>)))) = cor (otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>)))"
       by auto
     then show ?thesis
       using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc otimes'_k_tanh
       by auto
   qed
   moreover 
-  have "\<bar>tanh(r * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>\<^sub>m\<bar> = tanh (\<bar>r\<bar> * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>\<^sub>m"
+  have "\<bar>tanh(r * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>\<bar> = 
+         tanh (\<bar>r\<bar> * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>"
     by (metis Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
   ultimately 
   show ?thesis
@@ -1007,8 +1020,6 @@ proof-
     by (metis Moebius_gyrodom'.of_dom m_gyr'_def m_gyr.rep_eq mult.commute)
 qed
 
-definition m_gyroplus_r :: "real \<Rightarrow> real \<Rightarrow> real" (infixl "\<oplus>\<^sub>m\<^sub>r" 100) where 
-  "r1 \<oplus>\<^sub>m\<^sub>r r2 = (r1 + r2) / (1 + r1*r2)"
 
 interpretation Moebious_gyrovector_space:
  gyrovector_space of_complex "\<lambda> z. cmod z < 1" to_complex otimes "of_complex \<circ> cor" "cmod \<circ> to_complex"
