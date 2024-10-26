@@ -72,7 +72,7 @@ lemma gamma_factor_positive:
   by (smt (verit, del_insts) divide_pos_pos norm_ge_zero power2_eq_square power2_nonneg_ge_1_iff real_sqrt_gt_0_iff)
 
 
-lemma norm_square_gamma_factor: (* e_help1 *)
+lemma norm_square_gamma_factor:
   assumes "norm u < 1"
   shows "(norm u)^2 = 1 - 1 / (\<gamma> u)^2"
 proof-
@@ -85,8 +85,14 @@ proof-
     by auto
 qed
 
-(* DO WE NEED THIS *)
-lemma gamma_expression_eq_one_1: (* e_help2 *)
+lemma norm_square_gamma_factor':
+  assumes "norm v <1"
+  shows "(norm v)^2 = ((\<gamma> v)^2 - 1) / (\<gamma> v)^2"
+  using norm_square_gamma_factor[OF assms]
+  by (metis assms diff_divide_distrib div_self gamma_factor_positive norm_not_less_zero norm_zero power_not_zero)
+
+
+lemma gamma_expression_eq_one_1:
   assumes "norm u < 1" 
   shows "1 / \<gamma> u + (\<gamma> u * (norm u)^2) / (1 + \<gamma> u) = 1"
 proof-
@@ -109,7 +115,7 @@ proof-
     by (metis add.commute div_by_1 divide_divide_eq_right eq_divide_eq_1)
 qed
 
-lemma gamma_expression_eq_one_2: (* help3_e *)
+lemma gamma_expression_eq_one_2:
   assumes "norm u < 1"
   shows "((\<gamma> u)^2 * (norm u)^2) / (1 + \<gamma> u)^2 + (2 * \<gamma> u) / (\<gamma> u * (1 + \<gamma> u)) = 1"
 proof-

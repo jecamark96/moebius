@@ -244,35 +244,25 @@ lift_definition e_oplus :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow
 
 (* ------------------------------------------------------------------------------------- *)
 
-
-lemma gamma_plus5:
-  shows "\<gamma> (Rep_PoincareDisc(u \<oplus>\<^sub>E v)) =
- (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))*
-      (1+inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))"
-proof-
-  have "norm (Rep_PoincareDisc u) < 1"
-    using Rep_PoincareDisc by auto
-  moreover have "norm (Rep_PoincareDisc v) < 1"
-    using Rep_PoincareDisc by auto
-  ultimately show ?thesis
-    by (simp add: e_inner'_def e_oplus.rep_eq gamma_plus4)
-qed
+lift_definition e_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>E") is gamma_factor
+  done
 
 
-lemma inner_0:
-  fixes a::complex
-  shows "inner 0 a = 0"
-  by simp
+lemma gamma_factor_oplus_e:
+  shows "\<gamma>\<^sub>E (u \<oplus>\<^sub>E v) = \<gamma>\<^sub>E u * \<gamma>\<^sub>E v * (1 + u \<cdot>\<^sub>E v)"
+  using gamma_factor_e_oplus' 
+  by transfer blast
 
 lemma m_left_id:
-  shows "0\<^sub>E \<oplus>\<^sub>E a = a"
-  using e_oplus_def e_oplus'_def inner_0
-  by (metis Moebius_gyrodom'.of_dom add.right_neutral add_0 diff_zero div_by_1 \<gamma>_def e_inner'_def e_oplus.rep_eq e_ozero'_def e_ozero.rep_eq mult_zero_right norm_zero power2_eq_square real_sqrt_one scaleR_one scaleR_zero_left zero_less_one)
+  shows "0\<^sub>E \<oplus>\<^sub>E u = u"
+  apply transfer
+  unfolding e_oplus'_def e_ozero'_def
+  by (simp add: gamma_factor_def)
   
 definition e_ominus' :: "complex \<Rightarrow> complex" where
   "e_ominus' v = - v"                                      
 
-lemma e_ominus'_in_ball:
+lemma e_ominus'_in_unit_disc:
   assumes "norm z < 1"
   shows "norm (e_ominus' z) < 1"
   using assms
@@ -280,852 +270,325 @@ lemma e_ominus'_in_ball:
   by simp
 
 lift_definition e_ominus :: "PoincareDisc \<Rightarrow> PoincareDisc" ("\<ominus>\<^sub>E") is e_ominus'
-  using e_ominus'_in_ball by blast
+  using e_ominus'_in_unit_disc by blast
 
 definition e_otimes' :: "real \<Rightarrow> complex \<Rightarrow> complex" where
   "e_otimes' r z = m_otimes' r z"
 
 lift_definition e_otimes :: "real \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" (infixl "\<otimes>\<^sub>E" 105) is e_otimes'
-  using cmod_m_otimes' cmod_m_otimes'_k e_otimes'_def by auto
+  using cmod_m_otimes' cmod_m_otimes'_k e_otimes'_def 
+  by auto
 
 
-lemma powr_sqrt_equal:
-  fixes x::real
-  assumes "x\<ge>0"
-  shows "x powr (1/2) = sqrt(x)" 
-  by (simp add: assms powr_half_sqrt)
+lemma e_half:
+  shows "(1/2) \<otimes>\<^sub>E u = m_half u"
+  by (metis Moebius_gyrodom'.of_dom e_otimes'_def e_otimes.rep_eq m_half m_otimes.rep_eq)
 
-
-lemma h1:
-  assumes "cmod z <1" "cmod z \<noteq>0"
-  shows "((1 + cmod z) powr (1/2) - (1 - cmod z) powr (1/2)) /
-                     ((1 + cmod z) powr (1/2) + (1 - cmod z) powr (1/2)) = 
-     (1- sqrt(1-(cmod z)^2))/(cmod z)"
+lemma norm_square_gamma_half:
+  assumes "norm v < 1"
+  shows "norm ((\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v)^2 = (\<gamma> v - 1) / (\<gamma> v + 1)"
 proof-
-  have "((1 + cmod z) powr (1/2) - (1 - cmod z) powr (1/2)) /
-                     ((1 + cmod z) powr (1/2) + (1 - cmod z) powr (1/2)) =
-    (sqrt(1 + cmod z)  - sqrt(1 - cmod z)) /
-                     (sqrt(1 + cmod z)  + sqrt(1 - cmod z))"
-    using assms powr_half_sqrt by auto
-  moreover have "(sqrt(1 + cmod z)  - sqrt(1 - cmod z)) /
-                     (sqrt(1 + cmod z)  + sqrt(1 - cmod z)) =
-  (sqrt(1 + cmod z)  - sqrt(1 - cmod z)) /
-                     (sqrt(1 + cmod z)  + sqrt(1 - cmod z)) * (sqrt(1 + cmod z)  - sqrt(1 - cmod z))/(sqrt(1 + cmod z)  - sqrt(1 - cmod z))"
-    by simp
-  moreover have "(sqrt(1 + cmod z)  - sqrt(1 - cmod z)) /
-                     (sqrt(1 + cmod z)  + sqrt(1 - cmod z))  = (sqrt(1 + cmod z)  - sqrt(1 - cmod z))^2 /
-                     (sqrt(1 + cmod z)^2  - sqrt(1 - cmod z)^2) "
-    by (smt (verit, del_insts) calculation(2) divide_divide_eq_left' mult.commute power2_eq_square real_sqrt_mult sqrt_def square_diff_square_factored times_divide_eq_right)
-  moreover have "(sqrt(1 + cmod z)  - sqrt(1 - cmod z)) /
-                     (sqrt(1 + cmod z)  + sqrt(1 - cmod z)) = 
-      (1+(cmod z) - 2*sqrt(1+cmod z)*sqrt(1-cmod z) + 1 - (cmod z))/(1+(cmod z)-1+(cmod z))"
-    by (smt (verit, ccfv_SIG) assms calculation(3) norm_not_less_zero power2_diff real_less_lsqrt real_sqrt_ge_zero sqrt_le_D)
-  moreover have " (1+(cmod z) - 2*sqrt(1+cmod z)*sqrt(1-cmod z) + 1 - (cmod z)) =
-            (2-  2*sqrt(1+cmod z)*sqrt(1-cmod z))"
-    by fastforce
-  moreover have "sqrt(1+cmod z) * sqrt (1-cmod z) = sqrt((1+cmod z)*(1-cmod z))"
-    using real_sqrt_mult by auto
-  moreover have "sqrt((1+cmod z)*(1-cmod z)) = sqrt(1-(cmod z)^2)"
-    by (metis mult_1 power2_eq_square square_diff_square_factored)
-  ultimately show ?thesis
-  proof -
-    have f1: "\<forall>r ra. ((1::real) + 1) * (r / (ra + ra)) = r / ra"
-      by simp
-    have f2: "\<forall>r ra. (r::real) + r - (1 + 1) * ra = (1 + 1) * (r - ra)"
-      by auto
-    have "\<forall>r ra. (r::real) + ra - r = ra"
-      by simp
-    then have "(sqrt (1 + cmod z) - sqrt (1 - cmod z)) / (sqrt (1 - cmod z) + sqrt (1 + cmod z)) = (1 - sqrt ((1 + cmod z) * (1 - cmod z))) / cmod z"
-      using f2 f1 by (metis (no_types) \<open>(sqrt (1 + cmod z) - sqrt (1 - cmod z)) / (sqrt (1 + cmod z) + sqrt (1 - cmod z)) = (1 + cmod z - 2 * sqrt (1 + cmod z) * sqrt (1 - cmod z) + 1 - cmod z) / (1 + cmod z - 1 + cmod z)\<close> \<open>1 + cmod z - 2 * sqrt (1 + cmod z) * sqrt (1 - cmod z) + 1 - cmod z = 2 - 2 * sqrt (1 + cmod z) * sqrt (1 - cmod z)\<close> \<open>sqrt (1 + cmod z) * sqrt (1 - cmod z) = sqrt ((1 + cmod z) * (1 - cmod z))\<close> add.commute mult.assoc one_add_one times_divide_eq_right)
-    then show ?thesis
-      by (metis \<open>((1 + cmod z) powr (1 / 2) - (1 - cmod z) powr (1 / 2)) / ((1 + cmod z) powr (1 / 2) + (1 - cmod z) powr (1 / 2)) = (sqrt (1 + cmod z) - sqrt (1 - cmod z)) / (sqrt (1 + cmod z) + sqrt (1 - cmod z))\<close> \<open>sqrt ((1 + cmod z) * (1 - cmod z)) = sqrt (1 - (cmod z)\<^sup>2)\<close> add.commute)
-  qed
-qed
-
-
-lemma half_times_gamma:
-  shows "((1/2)\<otimes>\<^sub>E a) = Abs_PoincareDisc (cor (\<gamma> (Rep_PoincareDisc a)) /
-        (1+(\<gamma> (Rep_PoincareDisc a))) * (Rep_PoincareDisc a)) "
-proof-
-  have "norm (Rep_PoincareDisc a) = 0 \<or> norm (Rep_PoincareDisc a)\<noteq>0"
-    by simp
-  moreover {
-    assume "norm (Rep_PoincareDisc a) = 0"
-    have "(\<gamma> (Rep_PoincareDisc a)) = 1"
-      by (simp add: \<open>cmod (Rep_PoincareDisc a) = 0\<close> \<gamma>_def)
-    moreover have " (cor (\<gamma> (Rep_PoincareDisc a)) /
-        (1+(\<gamma> (Rep_PoincareDisc a))) * (Rep_PoincareDisc a)) = 0"
-      using \<open>cmod (Rep_PoincareDisc a) = 0\<close> by auto
-    ultimately have ?thesis 
-      by (simp add: e_otimes'_def e_otimes_def m_otimes'_def)
-  }
-  moreover {
-    assume "norm (Rep_PoincareDisc a) \<noteq>0"
-    have "(Rep_PoincareDisc a)\<noteq>0"
-      using \<open>cmod (Rep_PoincareDisc a) \<noteq> 0\<close> by auto
-    moreover have "(1/2)\<otimes>\<^sub>m a = Abs_PoincareDisc(((1 + (cmod (Rep_PoincareDisc a))) powr (1/2) 
-- (1 - cmod (Rep_PoincareDisc a)) powr (1/2)) /
-                   ((1 + cmod (Rep_PoincareDisc a)) powr (1/2) + (1 - cmod (Rep_PoincareDisc a)) powr (1/2))
-          * ((Rep_PoincareDisc a)/(cmod (Rep_PoincareDisc a))))"
-      by (metis Moebius_gyrodom'.of_dom calculation m_otimes'_def m_otimes'_k_def m_otimes.rep_eq)
-    moreover have "(1/2)\<otimes>\<^sub>m a = Abs_PoincareDisc ((  (1- sqrt(1-(cmod (Rep_PoincareDisc a))^2))/(cmod (Rep_PoincareDisc a)))
-      * ((Rep_PoincareDisc a)/(cmod (Rep_PoincareDisc a))))"
-      using Rep_PoincareDisc \<open>cmod (Rep_PoincareDisc a) \<noteq> 0\<close> calculation(2) h1 by force
-    moreover have "(1/2)\<otimes>\<^sub>m a=Abs_PoincareDisc ((  (1- sqrt(1-(cmod (Rep_PoincareDisc a))^2))/((cmod (Rep_PoincareDisc a))^2))
-      * ((Rep_PoincareDisc a)))"
-      by (simp add: calculation(3) power2_eq_square)
-    ultimately have ?thesis 
-    proof-
-      have "cmod (Rep_PoincareDisc a) < 1"
-        using Rep_PoincareDisc by blast
-      moreover have "1/(sqrt(1-(cmod (Rep_PoincareDisc a))^2)) = \<gamma> (Rep_PoincareDisc a)"
-        using calculation \<gamma>_def e_help2 power2_eq_square by fastforce
-      moreover have " (1- sqrt(1-(cmod (Rep_PoincareDisc a))^2)) = 1-1/(\<gamma> (Rep_PoincareDisc a))"
-        by (metis \<open>1 / sqrt (1 - (cmod (Rep_PoincareDisc a))\<^sup>2) = \<gamma> (Rep_PoincareDisc a)\<close> div_by_1 divide_divide_eq_right mult_1)
-      moreover have "(cmod (Rep_PoincareDisc a))^2 = 1-1/(\<gamma> (Rep_PoincareDisc a))^2"
-        using calculation(1) e_help1 by blast
-      moreover have "(1-1/(\<gamma> (Rep_PoincareDisc a))) =
-          ((\<gamma> (Rep_PoincareDisc a)) - 1)/(\<gamma> (Rep_PoincareDisc a))"
-        by (metis calculation(1) calculation(2) diff_divide_distrib divide_self_if gamma_factor_def gamma_factor_positive_always order_less_irrefl power2_eq_square)
-      moreover have "1-1/(\<gamma> (Rep_PoincareDisc a))^2 = ((\<gamma> (Rep_PoincareDisc a))^2-1)/((\<gamma> (Rep_PoincareDisc a))^2) "
-        by (metis calculation(5) diff_divide_distrib divide_self_if power_not_zero)
-      moreover have " ((\<gamma> (Rep_PoincareDisc a))^2-1)/((\<gamma> (Rep_PoincareDisc a))^2) =
-         ((  ((\<gamma> (Rep_PoincareDisc a)) - 1))*(  ((\<gamma> (Rep_PoincareDisc a)) + 1)))/((\<gamma> (Rep_PoincareDisc a))^2) "
-        by (simp add: power2_eq_square square_diff_one_factored)
-      moreover have "(1-1/(\<gamma> (Rep_PoincareDisc a)))/(1-1/(\<gamma> (Rep_PoincareDisc a))^2) = 
-        (  ((\<gamma> (Rep_PoincareDisc a)) - 1)/(\<gamma> (Rep_PoincareDisc a)))/( ((  ((\<gamma> (Rep_PoincareDisc a)) - 1))*(  ((\<gamma> (Rep_PoincareDisc a)) + 1)))/((\<gamma> (Rep_PoincareDisc a))^2))"
-        using calculation(5) calculation(6) calculation(7) by presburger
-      moreover have "(1-1/(\<gamma> (Rep_PoincareDisc a)))/(1-1/(\<gamma> (Rep_PoincareDisc a))^2) =
-       (\<gamma> (Rep_PoincareDisc a)) /
-        (1+(\<gamma> (Rep_PoincareDisc a))) "
-        by (smt (verit) \<open>cmod (Rep_PoincareDisc a) \<noteq> 0\<close> add_divide_distrib calculation(2) calculation(4) calculation(8) diff_divide_distrib distrib_left div_self divide_cancel_right divide_divide_eq_left' divide_divide_eq_right divide_divide_times_eq divide_eq_0_iff left_diff_distrib mult.commute mult.left_commute mult_cancel_left2 mult_eq_0_iff nonzero_mult_div_cancel_left norm_one numerals(1) one_power2 power2_eq_square power_divide power_eq_0_iff power_one_over power_one_right real_sqrt_eq_zero_cancel_iff real_sqrt_zero right_diff_distrib' square_diff_one_factored times_divide_eq_left times_divide_eq_right)
-      ultimately show ?thesis 
-        by (metis Moebius_gyrodom'.of_dom \<open>(1 / 2) \<otimes>\<^sub>m a = Abs_PoincareDisc (cor ((1 - sqrt (1 - (cmod (Rep_PoincareDisc a))\<^sup>2)) / (cmod (Rep_PoincareDisc a))\<^sup>2) * Rep_PoincareDisc a)\<close> e_otimes'_def e_otimes.rep_eq m_otimes.rep_eq of_real_divide)
-    qed
-  }
-  ultimately show ?thesis by blast
-qed
-
-lemma iso_ei_mo_help1:
-  shows "(1/2)\<otimes>\<^sub>m u \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>m v = Abs_PoincareDisc (m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u))  
-          (Rep_PoincareDisc ((1/2) \<otimes>\<^sub>m v)))"
-  using m_plus_full_m_plus by blast
-
-lemma e_gamma_norm_connection:
-  assumes "norm v <1"
-  shows "(norm v)^2 = ((\<gamma> v)^2 - 1)/(\<gamma> v)^2"
-  by (smt (verit, ccfv_SIG) add_divide_distrib assms divide_self division_ring_divide_zero e_help1 norm_le_square norm_one one_power2)
-lemma iso_ei_mo_help2:
-  assumes "norm v <1"
-  shows "norm (((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R  v)^2 = ((\<gamma> v)-1)/((\<gamma> v)+1)"
-proof-
-  have "norm (((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R  v)^2 =((\<gamma> v)/(1+\<gamma> v))^2 *(norm v)^2"
+  have "norm ((\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v)^2 = ((\<gamma> v) / (1 + \<gamma> v))^2 *(norm v)^2"
     by (simp add: power2_eq_square)
-  moreover have "((\<gamma> v)/(1+\<gamma> v))^2 *(norm v)^2 = 
-      ((\<gamma> v)/(1+\<gamma> v))^2 *((\<gamma> v)^2 - 1)/(\<gamma> v)^2"
-    by (simp add: assms e_gamma_norm_connection)
-  moreover have " ((\<gamma> v)/(1+\<gamma> v))^2 =  ((\<gamma> v)^2/(1+\<gamma> v)^2)"
+  also have "\<dots> = (\<gamma> v / (1 + \<gamma> v))^2 *((\<gamma> v)^2 - 1) / (\<gamma> v)^2"
+    using assms
+    by (simp add: norm_square_gamma_factor')
+  also have "\<dots> = (\<gamma> v)^2 / (1 + \<gamma> v)^2 * ((\<gamma> v)^2 - 1) / (\<gamma> v)^2"
     by (simp add: power_divide)
-  moreover have "(\<gamma> v)^2 - 1 = ((\<gamma> v) - 1)* ((\<gamma> v) + 1)"
+  also have "\<dots> = ((\<gamma> v)^2 - 1) / (1 + \<gamma> v)^2"
+    using assms gamma_factor_positive 
+    by fastforce
+  also have "\<dots> = (\<gamma> v - 1) * (\<gamma> v + 1) / (1 + \<gamma> v)^2"
     by (simp add: power2_eq_square square_diff_one_factored)
-  moreover have " ((\<gamma> v)^2/(1+\<gamma> v)^2) * ((\<gamma> v) - 1)* ((\<gamma> v) + 1)/(\<gamma> v)^2 =
-            ((\<gamma> v)-1)/(1+\<gamma> v)"
-  proof-
-    have "\<gamma> v \<noteq>0"
-      using assms e_help2 by fastforce
-    moreover have "1+\<gamma> v \<noteq>0"
-      using assms help3_e by force
-    ultimately show ?thesis
-      by (simp add: add.commute power2_eq_square)
-  qed
-  ultimately show ?thesis 
-    by auto
+  also have "\<dots> = (\<gamma> v - 1) / (1 + \<gamma> v)"
+    by (simp add: add.commute power2_eq_square)
+  finally
+  show ?thesis
+    by simp
 qed
-
-lemma iso_ei_mo_help2_1:
-  assumes "norm v <1"
-  shows "norm (((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R  v)^2 = 
-  ((\<gamma> v)/(1+\<gamma> v))^2 * (norm v)^2 "
-  by (simp add: power2_eq_square)
 
 lemma  iso_ei_mo_help3:
   assumes "norm v < 1"
-  shows "1 + ((\<gamma> v)-1)/(1+\<gamma> v) = (2*\<gamma> v)/(1+\<gamma> v)"
+  shows "1 + (\<gamma> v - 1) / (1 + \<gamma> v) = 2 * \<gamma> v / (1 + \<gamma> v)"
 proof-
-  have "1+\<gamma> v\<noteq>0"
-    using assms e_help2 by fastforce
+  have "1 + \<gamma> v \<noteq> 0"
+    using assms gamma_factor_positive
+    by fastforce
   then show ?thesis 
     by (smt (verit, del_insts) diff_divide_distrib divide_self)
 qed
 
 lemma  iso_ei_mo_help4:
   assumes "norm v < 1"
-  shows "1 - ((\<gamma> v)-1)/(1+\<gamma> v) = 2/(1+\<gamma> v)"
+  shows "1 - (\<gamma> v - 1) / (1 + \<gamma> v) = 2 / (1 + \<gamma> v)"
 proof-
-  have "1+\<gamma> v\<noteq>0"
-    using assms e_help2 by fastforce
+  have "1 + \<gamma> v \<noteq> 0"
+    using assms gamma_factor_positive 
+    by fastforce
   then show ?thesis 
     by (smt (verit, del_insts) diff_divide_distrib divide_self)
 qed
 
 lemma  iso_ei_mo_help5:
   assumes "norm v < 1" "norm u <1"
-  shows "1+ (((\<gamma> v)-1)/(1+\<gamma> v))*  (((\<gamma> u)-1)/(1+\<gamma> u)) =
-      (2*(1+(\<gamma> u)*(\<gamma> v)))/((1+\<gamma> v)*(1+\<gamma> u))"
+  shows "1 + ((\<gamma> v - 1) / (1 + \<gamma> v)) * ((\<gamma> u - 1) / (1 + \<gamma> u)) =
+         2 * (1 + (\<gamma> u) * (\<gamma> v)) / ((1 + \<gamma> v) * (1 + \<gamma> u))" (is "?lhs = ?rhs")
 proof-
-  have "1+\<gamma> v\<noteq>0"
-    using assms e_help2 by fastforce
-  moreover have "1+\<gamma> u\<noteq>0"
-    using assms(2) iso_ei_mo_help3 by fastforce
-  moreover have "(1+\<gamma> v)*(1+\<gamma> u) = 1+ (\<gamma> v) +
-    (\<gamma> u) + (\<gamma> u)*(\<gamma> v)"
-    by (simp add: help1)
-  moreover have "((\<gamma> v)-1)*((\<gamma> u)-1) =
-        (\<gamma> u)*(\<gamma> v) - (\<gamma> u)
-    - (\<gamma> v) +1"
-    by (smt (verit) help1 mult.commute)
-  moreover have "1+ (((\<gamma> v)-1)/(1+\<gamma> v))*  (((\<gamma> u)-1)/(1+\<gamma> u)) = 
-    ((1+\<gamma> v)*(1+\<gamma> u)+((\<gamma> u)-1)*((\<gamma> v)-1))/((1+\<gamma> v)*(1+\<gamma> u))"
-    by (simp add: add_divide_distrib calculation(1) calculation(2))
-    ultimately show ?thesis 
-      by (simp add: mult.commute)
+  have *: "1 + \<gamma> v \<noteq> 0" "1 + \<gamma> u \<noteq> 0"
+    using assms gamma_factor_positive by fastforce+
+  have "(1 + \<gamma> v) * (1 + \<gamma> u) = 1 + (\<gamma> v) + (\<gamma> u) + (\<gamma> u)*(\<gamma> v)"
+    by (simp add: field_simps)
+  moreover 
+  have "(\<gamma> v - 1) * (\<gamma> u - 1) =  (\<gamma> u)*(\<gamma> v) - (\<gamma> u) - (\<gamma> v) +1"
+    by (simp add: field_simps)
+  moreover 
+  have "?lhs = ((1 + \<gamma> v) * (1 + \<gamma> u) + (\<gamma> u - 1) * (\<gamma> v - 1)) / ((1 + \<gamma> v) * (1 + \<gamma> u))"
+    using *
+    by (simp add: add_divide_distrib)
+  ultimately show ?thesis 
+    by (simp add: mult.commute)
 qed
 
 lemma  iso_ei_mo_help6:
-  assumes "norm u <1" "norm v <1"
-  shows "1 + (2*((\<gamma> u)/(1+\<gamma> u)) *
- ((\<gamma> v)/(1+\<gamma> v)))*inner u v + (norm ( ((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R v))^2=
-    (2*(\<gamma> v)/(1+\<gamma> v) + (2*(\<gamma> v)*(\<gamma> u)/((1+\<gamma> v)*(1+\<gamma> u))) * inner u v)"
-proof-
-  have "(norm ( ((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R v))^2 =  ((\<gamma> v)-1)/((\<gamma> v)+1)"
-    using assms(2) iso_ei_mo_help2 by presburger
-  moreover have "1+ ((\<gamma> v)-1)/((\<gamma> v)+1) = (2*(\<gamma> v)/(1+\<gamma> v))"
-    by (smt (verit, del_insts) assms(2) iso_ei_mo_help3)
-  ultimately show ?thesis 
-    by (simp add: mult.commute mult.left_commute)
-qed
+  assumes "norm u < 1" "norm v < 1"
+  shows "1 + 2 * (\<gamma> u / (1 + \<gamma> u)) * ((\<gamma> v) / (1 + \<gamma> v)) * inner u v + (norm ((\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v))^2 =
+         2 * (\<gamma> v) / (1 + \<gamma> v) + 2 * (\<gamma> v) * (\<gamma> u) / ((1 + \<gamma> v) * (1 + \<gamma> u)) * inner u v"
+  using norm_square_gamma_half[OF assms(2)] iso_ei_mo_help3[OF assms(2)]
+  by (simp add: add.commute mult.commute mult.left_commute)
 
 lemma  iso_ei_mo_help7:
-  assumes "norm u <1" 
-  shows "(1-(norm (((\<gamma> u)/(1+\<gamma> u)) *\<^sub>R u))^2) = 
-      2/(1+\<gamma> u)"
-  by (metis add.commute assms iso_ei_mo_help2 iso_ei_mo_help4)
+  assumes "norm u < 1" 
+  shows "1 - (norm ((\<gamma> u / (1 + \<gamma> u)) *\<^sub>R u))^2 = 2 / (1 + \<gamma> u)" (is "?lhs = ?rhs")
+  using norm_square_gamma_half[OF assms] iso_ei_mo_help4[OF assms]
+  by (simp add: add.commute)
 
 lemma  iso_ei_mo_help8:
-  assumes "norm u <1" "norm v <1"
-  shows " 1+ (norm (((\<gamma> u)/(1+\<gamma> u)) *\<^sub>R u))^2 *
-      (norm (((\<gamma> v)/(1+\<gamma> v)) *\<^sub>R v))^2 =
-     (2*(1+(\<gamma> u)*(\<gamma> v)))/((1+\<gamma> v)*(1+\<gamma> u)) "
-  by (smt (verit) assms(1) assms(2) iso_ei_mo_help2 iso_ei_mo_help5 mult.commute)
+  assumes "norm u < 1" "norm v < 1"
+  shows "1 + (norm ((\<gamma> u / (1 + \<gamma> u)) *\<^sub>R u))^2 * (norm ((\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v))^2 =
+         2 * (1 + (\<gamma> u)*(\<gamma> v)) / ((1 + \<gamma> v) * (1 + \<gamma> u))"
+  using assms
+  by (smt (verit) inner_commute inner_real_def iso_ei_mo_help5 norm_square_gamma_half)
 
 lemma  iso_ei_mo_help8_1:
-  assumes "norm u <1" "norm v <1"
-  shows " 1+ (((\<gamma> u)-1)/(1+\<gamma> u))  *
-       (((\<gamma> v)-1)/(1+\<gamma> v)) =
-     (2*(1+(\<gamma> u)*(\<gamma> v)))/((1+\<gamma> v)*(1+\<gamma> u)) "
+  assumes "norm u < 1" "norm v < 1"
+  shows "1 + ((\<gamma> u - 1) / (1 + \<gamma> u)) * ((\<gamma> v - 1) / (1 + \<gamma> v)) =
+         2 * (1 + (\<gamma> u) * (\<gamma> v)) / ((1 + \<gamma> u)*(1 + \<gamma> v))"
   by (metis assms(1) assms(2) iso_ei_mo_help5 mult.commute)
+
 lemma iso_ei_inner_help:
-  fixes a::real
-  fixes b::real
+  fixes a b :: real
   shows "inner (a*x) (b*y) = (a*b)* inner x y"
   by fastforce
 
 lemma iso_ei_inner_help2:
-  shows "(Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) = (cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u)"
-proof-
-  have "Rep_PoincareDisc (Abs_PoincareDisc ((cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u))) = (cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u)"
-    by (smt (verit, del_insts) Moebius_gyrodom'.to_dom divide_eq_0_iff divide_eq_1_iff \<gamma>_def less_1_mult less_divide_eq_1_pos mult_closed mult_eq_0_iff mult_pos_pos norm_divide norm_ge_zero norm_of_real of_real_0 one_power2 power2_eq_square real_sqrt_gt_0_iff real_sqrt_lt_1_iff)
-   show ?thesis 
-     using \<open>Rep_PoincareDisc (Abs_PoincareDisc (cor (\<gamma> (Rep_PoincareDisc u)) / cor (1 + \<gamma> (Rep_PoincareDisc u)) * Rep_PoincareDisc u)) = cor (\<gamma> (Rep_PoincareDisc u)) / cor (1 + \<gamma> (Rep_PoincareDisc u)) * Rep_PoincareDisc u\<close> e_otimes'_def e_otimes_def half_times_gamma m_otimes_def by presburger
-qed
-
+  shows "to_complex ((1 / 2) \<otimes>\<^sub>m u) = 
+         (\<gamma> (to_complex u)) / (1 + \<gamma> (to_complex u)) * to_complex u"
+  using m_half m_half.rep_eq m_half'_def
+  by (simp add: scaleR_conv_of_real)
+  
 lemma iso_ei_inner_mo_help3:
-  shows " (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 =
-  ((\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v)))^2 * (norm (Rep_PoincareDisc v))^2 "
-  proof-
-    have "(cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 = (norm ( (cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v)) *
-      Rep_PoincareDisc v)))^2 "
-      using iso_ei_inner_help2 by auto
-    moreover have "(norm ( (cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v)) *
-      Rep_PoincareDisc v)))^2 =  (norm(cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v))))^2 * (norm (Rep_PoincareDisc v))^2"
-      by (metis norm_mult power_mult_distrib)
-    moreover have "(norm(cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v))))^2 =  ((\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v)))^2 "
-      by (metis norm_of_real of_real_divide power2_abs)
-    ultimately show ?thesis 
-      by presburger
-  qed
+  assumes "cmod v < 1"
+  shows "(cmod (m_half' v))\<^sup>2 = (\<gamma> v / (1 + \<gamma> v))^2 * (norm v)^2"
+  unfolding m_half'_def 
+  using norm_square_gamma_half assms
+  by (smt (verit) divide_pos_pos gamma_factor_positive norm_scaleR power_mult_distrib)
+
 
 lemma iso_ei_inner_mo_help4:
-  shows "  inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-   (cor (\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     (cor (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)"
-  proof-
-    have "(1 / 2) \<otimes>\<^sub>E v =
-    Abs_PoincareDisc
-     (cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v)) *
-      Rep_PoincareDisc v)"
-      using half_times_gamma by auto
-      
-    moreover have "(1 / 2) \<otimes>\<^sub>E u =
-    Abs_PoincareDisc
-     (cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u)"
-      using half_times_gamma by blast
-    moreover have " inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-    inner ((cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v)) *
-      Rep_PoincareDisc v)) (  (cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u))"
-      by (simp add: inner_commute iso_ei_inner_help2)
-    moreover have " inner ((cor (\<gamma> (Rep_PoincareDisc v)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc v)) *
-      Rep_PoincareDisc v)) (  (cor (\<gamma> (Rep_PoincareDisc u)) /
-      cor (1 + \<gamma> (Rep_PoincareDisc u)) *
-      Rep_PoincareDisc u)) =    (cor (\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     (cor (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)"
-      by (metis (no_types, opaque_lifting) ab_semigroup_mult_class.mult_ac(1) inner_commute inner_mult_left of_real_divide of_real_mult)
-    ultimately show ?thesis 
-      by presburger
-qed
-
-lemma iso_ei_mo_inner_help5:
-  shows "inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-   ((\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     ( (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)"
-  by (metis iso_ei_inner_mo_help4 of_real_divide of_real_eq_iff of_real_mult)
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "inner (m_half' u) (m_half' v) = (\<gamma> u / (1 + \<gamma> u)) * (\<gamma> v / (1 + \<gamma> v)) * (inner u v)"
+  unfolding m_half'_def scaleR_conv_of_real
+  by (metis inner_mult_left inner_mult_right mult.assoc)
 
 
 lemma iso_ei_mo_inner_help6:
-  shows "(1 +
-      2 *
-      inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) +
-      (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u) = (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)"
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "(1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' v))\<^sup>2) *\<^sub>R (m_half' u) = 
+        (2 * \<gamma> v / (1 + \<gamma> v) + 2 * \<gamma> v * \<gamma> u / ((1 + \<gamma> v) * (1 + \<gamma> u)) * inner u v) * (\<gamma> u / (1 + \<gamma> u)) * u"
 proof-
-  have "inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-   ((\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     ( (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)"
-    using iso_ei_mo_inner_help5 by blast
-  moreover have " (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 =
-  ((\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v)))^2 * (norm (Rep_PoincareDisc v))^2 "
-    using iso_ei_inner_mo_help3 by blast
-  moreover have " ((\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v)))^2 * (norm (Rep_PoincareDisc v))^2 = ((\<gamma> (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v))
-    "
-
-  proof-
-    have "norm (Rep_PoincareDisc v) <1"
-      using Rep_PoincareDisc by auto
-    then show ?thesis using iso_ei_mo_help2_1 iso_ei_mo_help2
-      by force
-  qed
-      
-  moreover have "Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u) =  ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u) "
-    by (simp add: iso_ei_inner_help2)
-  moreover have "1 + ((\<gamma> (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v)) = (2*\<gamma>  (Rep_PoincareDisc v))/(1+\<gamma>  (Rep_PoincareDisc v))"
-    by (metis (no_types, opaque_lifting) ab_group_add_class.ab_diff_conv_add_uminus add.right_neutral cancel_comm_monoid_add_class.diff_cancel div_by_1 dot_square_norm \<gamma>_def iso_ei_mo_help3 mult_2 norm_eq_sqrt_inner real_sqrt_lt_1_iff uminus_add_conv_diff)
+  have *: "m_half' u = (\<gamma> u / (1 + \<gamma> u)) * u"
+    by (simp add: m_half'_def scaleR_conv_of_real)
   
-  moreover have "(1 +
-      2 *
-      inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) +
-      (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u) = (
-1+ 2* ((\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     ( (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) + ((\<gamma> (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v)) )
-  *(((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u))"
-    by (metis (mono_tags, opaque_lifting) calculation(2) calculation(3) calculation(4) iso_ei_mo_inner_help5 mult.assoc scaleR_conv_of_real)
-  ultimately show ?thesis
-    by (smt (verit, best) diff_divide_distrib distrib_left inner_commute inner_real_def mult.assoc of_real_mult)
+  have "1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' v))\<^sup>2 = 
+        1 + 2 * (\<gamma> u / (1 + \<gamma> u) * (\<gamma> v / (1 + \<gamma> v)) * inner u v) + (\<gamma> v / (1 + \<gamma> v))\<^sup>2 * (cmod v)\<^sup>2"
+    using iso_ei_inner_mo_help4 iso_ei_inner_mo_help3 assms
+    by simp
+  also have "\<dots> = (2 * \<gamma> v / (1 + \<gamma> v) + 2 * \<gamma> v * \<gamma> u / ((1 + \<gamma> v) * (1 + \<gamma> u)) * inner u v)"
+    using iso_ei_mo_help6[OF assms]
+    using assms(2) iso_ei_inner_mo_help3 m_half'_def by auto
+  finally
+  show ?thesis
+    using *
+    by (simp add: of_real_def)
 qed
 
 lemma iso_ei_mo_inner_help7_1:
-  shows "(cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 =
-((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u))
-    "
-proof-
-    have  " ((\<gamma> (Rep_PoincareDisc u)) /
-       (1 + \<gamma> (Rep_PoincareDisc u)))^2 * (norm (Rep_PoincareDisc u))^2 = ((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u))
-    "
-    proof-
-   have "norm (Rep_PoincareDisc u) <1"
-      using Rep_PoincareDisc by auto
-    then show ?thesis using iso_ei_mo_help2_1 iso_ei_mo_help2
-      by force
-  qed
-  moreover have "(cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 =  ((\<gamma> (Rep_PoincareDisc u)) /
-       (1 + \<gamma> (Rep_PoincareDisc u)))^2 * (norm (Rep_PoincareDisc u))^2"
-    using iso_ei_inner_mo_help3 by blast
-  moreover have "(cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 =
-((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u))
-    "
-    using calculation(1) calculation(2) by presburger
-  ultimately show ?thesis by blast
-qed
-
+  assumes "cmod u < 1"
+  shows "(cmod (m_half' u))\<^sup>2 = (\<gamma> u - 1) / (1 + \<gamma> u)"
+  using assms
+  using m_half'_def norm_square_gamma_half
+  by auto
 
 lemma iso_ei_mo_inner_help7:
-  shows "(1 - (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v) = 2*(\<gamma> (Rep_PoincareDisc v))/
-    ((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc v)"
-proof-
- have "(cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 =
-((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u))
-    "
-   using iso_ei_mo_inner_help7_1 by blast
-  moreover have "1 - ((\<gamma> (Rep_PoincareDisc u))-1)/
-(1+\<gamma> (Rep_PoincareDisc u)) = 2/(1+\<gamma> (Rep_PoincareDisc u))"
-  proof-
-    have "norm (Rep_PoincareDisc u)<1"
-      using Rep_PoincareDisc by blast
-    then show ?thesis 
-      using iso_ei_mo_help4 by auto
-  qed
-  moreover have "  Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v) =(\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))
-      *(Rep_PoincareDisc v)"
-    using iso_ei_inner_help2 by force
-  moreover have "(1 - (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v) =(1 - ((\<gamma> (Rep_PoincareDisc u))-1)/
-(1+\<gamma> (Rep_PoincareDisc u)))*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))
-      *(Rep_PoincareDisc v)) "
-    by (simp add: calculation(3) iso_ei_mo_inner_help7_1 scaleR_conv_of_real)
-  ultimately  show ?thesis 
-    by (simp add: of_real_def)
-qed 
+  fixes u v :: complex
+  assumes "cmod u < 1"
+  shows "(1 - (cmod (m_half' u))\<^sup>2) *\<^sub>R (m_half' v) = 
+         2 * (\<gamma> v) / ((1 + \<gamma> v) *(1 + \<gamma> u)) * v"
+  using iso_ei_mo_help4 iso_ei_mo_inner_help7_1 assms
+  by (simp add: m_half'_def mult.assoc scaleR_conv_of_real)
 
 lemma iso_ei_mo_inner_help8:
-  shows  "   1 +
-         2 *
-         inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u))
-          (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) +
-         (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 *
-         (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 =
-    2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))"
-proof-
-  have "inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-   ((\<gamma> (Rep_PoincareDisc u)) /
-      (1 + \<gamma> (Rep_PoincareDisc u))) * 
-     ( (\<gamma> (Rep_PoincareDisc v)) /
-       (1 + \<gamma> (Rep_PoincareDisc v))) *
-    inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)"
-    using iso_ei_mo_inner_help5 by presburger
-  moreover have "    (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 = ((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u))"
-    using iso_ei_mo_inner_help7_1 by blast
-  moreover have " (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 = ((\<gamma> (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v))"
-    using iso_ei_mo_inner_help7_1 by blast
-  moreover have "1 +  (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 *
-         (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2 = 1 +( ((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u)))*( ((\<gamma> (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v))) "
-    using calculation(2) calculation(3) by presburger
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' u))\<^sup>2 * (cmod (m_half' v))\<^sup>2 =
+         2 * (\<gamma> u) * (\<gamma> v) * inner u v / ((1 + \<gamma> u) * (1 + \<gamma> v)) + 2 * (1 + (\<gamma> u)*(\<gamma> v)) / ((1 + \<gamma> u) * (1 + \<gamma> v))"
+  using assms iso_ei_inner_mo_help4 iso_ei_mo_help8_1 iso_ei_mo_inner_help7_1
+  by fastforce
 
-  moreover have " 1+ (((\<gamma> (Rep_PoincareDisc u))-1)/(1+\<gamma>  (Rep_PoincareDisc u)))  *
-       (((\<gamma>  (Rep_PoincareDisc v))-1)/(1+\<gamma>  (Rep_PoincareDisc v))) =
-     (2*(1+(\<gamma>  (Rep_PoincareDisc u))*(\<gamma>  (Rep_PoincareDisc v))))/((1+\<gamma>  (Rep_PoincareDisc v))*(1+\<gamma>  (Rep_PoincareDisc u)))"
-  proof-
-    have "norm (Rep_PoincareDisc u) < 1"
-      using Rep_PoincareDisc by blast
-    moreover have "norm (Rep_PoincareDisc v) <1"
-      using Rep_PoincareDisc by auto
-    ultimately show ?thesis 
-      using iso_ei_mo_help8_1 by blast
-  qed
-  ultimately show ?thesis 
-    by (smt (verit, ccfv_threshold) distrib_left divide_divide_eq_left' mult.commute times_divide_eq_right)
-qed
 
 lemma iso_ei_mo_help9:
-  shows "m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m v))
- = ((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u) +  2*(\<gamma> (Rep_PoincareDisc v))/
-    ((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc v))/( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))"
-proof-
-  have " m_plus_full (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u))
-     (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) =
-    ((1 +
-      2 *
-      inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) +
-      (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u) +
-     (1 - (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2) *\<^sub>R
-     Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) /
-    cor (1 +
-         2 *
-         inner (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u))
-          (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)) +
-         (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m u)))\<^sup>2 *
-         (cmod (Rep_PoincareDisc ((1 / 2) \<otimes>\<^sub>m v)))\<^sup>2)"
-    by (meson m_plus_full_def)
-  then show ?thesis
-    using iso_ei_mo_inner_help8[of u v]
-          iso_ei_mo_inner_help7[of u v]
-          iso_ei_mo_inner_help6[of u v]
-    by presburger
-qed
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_oplus'_full (m_half' u) (m_half' v) = 
+         ((2*(\<gamma> v / (1 + \<gamma> v)) + (2*(\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 + \<gamma> u)) * inner u v)) *
+          (\<gamma> u / (1 + \<gamma> u)) * u + 2 * \<gamma> v / ((1 + \<gamma> v) * (1 + \<gamma> u)) * v) /
+          (2 * (\<gamma> u) * (\<gamma> v) * inner u v / ((1 + \<gamma> v) * (1 + \<gamma> u)) + 2 * (1 + (\<gamma> u) * (\<gamma> v)) / ((1 + \<gamma> v) * (1 + \<gamma> u)))" (is "?lhs = ?rhs")
+  using iso_ei_mo_inner_help8[OF assms]  iso_ei_mo_inner_help7[OF assms(1)] iso_ei_mo_inner_help6[OF assms]
+  unfolding m_oplus'_full_def
+  by (simp add: mult.commute)
 
 lemma iso_ei_mo_help10:
-  shows "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v) =  Abs_PoincareDisc(
-    (((( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-       )/( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) +1))*((
-     ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u)))))))"
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_half' (e_oplus' u v) = 
+         \<gamma> u * \<gamma> v / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u)) * inner u v * u)"
 proof-
-  have " (1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v)  = Abs_PoincareDisc (cor (\<gamma> (Rep_PoincareDisc  ( u \<oplus>\<^sub>E v) )) /
-        (1+(\<gamma> (Rep_PoincareDisc  ( u \<oplus>\<^sub>E v) ))) * (Rep_PoincareDisc  ( u \<oplus>\<^sub>E v) )) "
-    using half_times_gamma by force
-  moreover have "\<gamma> (Rep_PoincareDisc  ( u \<oplus>\<^sub>E v) ) =
-      (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) "
-  proof-
-    have "norm (Rep_PoincareDisc u) <1"
-      using Rep_PoincareDisc by auto
-    moreover have "norm (Rep_PoincareDisc v) <1"
-       using Rep_PoincareDisc by auto
-     ultimately show ?thesis 
-       using gamma_plus5 by auto
-   qed
-   moreover have " u \<oplus>\<^sub>E v = Abs_PoincareDisc ((1/(1+ inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)))
-    * ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u)))"
-     using e_oplus_def e_oplus'_def
-     by (metis (no_types, opaque_lifting) Moebius_gyrodom'.of_dom e_inner'_def e_oplus.rep_eq of_real_divide of_real_mult scaleR_conv_of_real)
-   moreover have "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v)  = Abs_PoincareDisc ((( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) )/( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) +1))*(((1/(1+ inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)))
-    * ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u)))))"
-     by (smt (verit, del_insts) calculation(2) e_inner'_def e_oplus'_def e_oplus.rep_eq half_times_gamma of_real_divide of_real_mult scaleR_conv_of_real)
-   moreover have "(1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v))\<noteq>0"
-     
-     by (metis Moebius_gyrodom'.to_dom add_cancel_left_right calculation(2) calculation(3) divide_eq_0_iff help3_e less_numeral_extra(1) mult_eq_0_iff norm_eq_zero of_real_eq_0_iff power_zero_numeral zero_neq_one)
-
-   moreover have "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v)  = Abs_PoincareDisc ((1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) * ((( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-       )/( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) +1))*(((1/(1+ inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)))
-    * ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u))))))"
-     by (simp add: ab_semigroup_mult_class.mult_ac(1) calculation(4))
-   moreover have "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v)  = Abs_PoincareDisc(((1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)))*((1/(1+ inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))))*
-    (((( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-       )/( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) +1))*((
-     ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u)))))))"
-     by (smt (verit, del_insts) calculation(6) mult.right_neutral mult_scaleR_right of_real_mult scaleR_conv_of_real)
-   moreover have "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v)  = Abs_PoincareDisc(
-    (((( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-       )/( (\<gamma> (Rep_PoincareDisc u)) * (\<gamma> (Rep_PoincareDisc v))
-      * (1+inner(Rep_PoincareDisc u) (Rep_PoincareDisc v)) +1))*((
-     ((Rep_PoincareDisc u) + cor(1/(\<gamma> (Rep_PoincareDisc u)))*(Rep_PoincareDisc v) +
-    (cor(\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (Rep_PoincareDisc u)))))))"
-     by (simp add: calculation(5) calculation(7))
-   ultimately show ?thesis 
-     by force
- qed
+  have "m_half' (e_oplus' u v) = 
+       \<gamma> u * \<gamma> v * (1 + inner u v) / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1) *
+       ((1 / (1 + inner u v)) * (u + (1 / \<gamma> u)*v + (\<gamma> u / (1 + \<gamma> u)) * inner u v * u))"
+    unfolding m_half'_def
+    unfolding gamma_factor_e_oplus'[OF assms] scaleR_conv_of_real
+    unfolding e_oplus'_def scaleR_conv_of_real
+    by simp
+  then show ?thesis
+    using assms
+    by (smt (verit, best) ab_semigroup_mult_class.mult_ac(1) gamma_e_oplus' gamma_e_oplus'_not_zero inner_mult_left' inner_real_def mult.commute mult_eq_0_iff nonzero_mult_divide_mult_cancel_right2 of_real_1 of_real_divide of_real_mult real_inner_1_right times_divide_times_eq)
+qed
 
 lemma iso_ei_mo_help11:
-  shows "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u) +  2*(\<gamma> (Rep_PoincareDisc v))/
-    ((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc v)) = 1/(((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u))))
-      * ( (2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * (Rep_PoincareDisc u))
-+2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) + 2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v))"
+  fixes u v :: complex
+  shows "((2 * (\<gamma> v / (1 + \<gamma> v)) + (2 * (\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 + \<gamma> u)) * inner u v)) * (\<gamma> u / (1 + \<gamma> u)) * u + 2 * \<gamma> v / ((1 + \<gamma> v) * (1 + \<gamma> u)) * v) =
+          1 / ((1 + \<gamma> v) * (1 + \<gamma> u)) * ((2 * \<gamma> v * \<gamma> u * u) + 2 * \<gamma> v * \<gamma> u * inner u v * \<gamma> u / (1+ \<gamma> u) * u + 2 * \<gamma> v * v)" (is "?lhs = ?rhs")
 proof-
-  have "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)) = 
-((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))))
-*( ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*
-((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) 
-*
- (((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u))*
-    (Rep_PoincareDisc u)))"
+  have "(2 * (\<gamma> v / (1+\<gamma> v)) + (2 * (\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 + \<gamma> u)) * inner u v)) * (\<gamma> u / (1 + \<gamma> u)) * u = 
+        (2 * (\<gamma> v / (1+\<gamma> v))) * (\<gamma> u / (1 + \<gamma> u)) * u + 2 * (\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 +\<gamma> u)) * inner u v * \<gamma> u / (1 +\<gamma> u) * u"
     by (simp add: mult.commute mult.left_commute ring_class.ring_distribs(1))
-  moreover have "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))))
-*( ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*
-((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) 
-*
- (((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u))*
-    (Rep_PoincareDisc u))) = (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))
-  *((2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-      *(Rep_PoincareDisc u)) + 
-  (2*(\<gamma> (Rep_PoincareDisc v)) *(\<gamma> (Rep_PoincareDisc u))
-  *
-  (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) *
-(((\<gamma> (Rep_PoincareDisc u)) )/(1+(\<gamma> (Rep_PoincareDisc u)) ))
-  *(Rep_PoincareDisc u))
-)
-"
-  proof-
-    have "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))))
-*( ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)) =(1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))
-  *(2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-      *(Rep_PoincareDisc u))"
-      by simp
-    moreover have "(2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*
-((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) 
-*
- (((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u))*
-    (Rep_PoincareDisc u))) =(1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))
-  *(2*(\<gamma> (Rep_PoincareDisc v)) *(\<gamma> (Rep_PoincareDisc u))
-  *
-  (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) *
-(((\<gamma> (Rep_PoincareDisc u)) )/(1+(\<gamma> (Rep_PoincareDisc u)) ))
-  *(Rep_PoincareDisc u)
-) "
-      by simp
-
-    moreover have "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))))
-*( ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u)) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*
-((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) 
-*
- (((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u))*
-    (Rep_PoincareDisc u))) = (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))
-  *(2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-      *(Rep_PoincareDisc u)) + (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))
-  *(2*(\<gamma> (Rep_PoincareDisc v)) *(\<gamma> (Rep_PoincareDisc u))
-  *
-  (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) *
-(((\<gamma> (Rep_PoincareDisc u)) )/(1+(\<gamma> (Rep_PoincareDisc u)) ))
-  *(Rep_PoincareDisc u)
-)" 
-      using calculation(1) calculation(2) by presburger
-    ultimately show ?thesis 
-      by (simp add: distrib_left)
-  qed
+  also have "\<dots> =  (1/((1+\<gamma> v)*(1+\<gamma> u))) *((2*(\<gamma> v)*(\<gamma> u) *u) +  (2*(\<gamma> v) *(\<gamma> u)*(inner u v)*(((\<gamma> u) )/(1+(\<gamma> u) ))*u))"
+    by (simp add: distrib_left mult.commute mult.left_commute)
   ultimately show ?thesis 
     by (simp add: distrib_left)
 qed
 
 
 lemma iso_ei_mo_help12:
-  shows "2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))) =
- ((1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))) *(( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))))"
-proof-
-  have " 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))) =
-  (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))*( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)))"
-    by force
-  moreover have "2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))) =
-   (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))*
-2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))) "
-    by simp
-  moreover have " (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))*
-2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))) =
-   (1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))*
-(2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))"
-    by simp
-  moreover have "2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))) =
- ((1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))) *(( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))))"
-    by (metis calculation(1) calculation(2) calculation(3) inner_real_def inner_right_distrib)
-    ultimately show ?thesis 
-      by linarith
-qed
+  fixes u v :: complex
+  shows "2 * \<gamma> u * \<gamma> v * inner u v / ((1 + \<gamma> v) * (1 + \<gamma> u)) + 2 * (1 + \<gamma> u * \<gamma> v)/ ((1 + \<gamma> v) * (1 + \<gamma> u)) =
+         1 / ((1 + \<gamma> v) * (1 + \<gamma> u)) * ((2 * \<gamma> u * \<gamma> v * inner u v) + (2 + 2 * \<gamma> u * \<gamma> v))"
+  by argo
 
 lemma iso_ei_mo_help13:
-  shows "m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m v)) = ( (2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * (Rep_PoincareDisc u))
-+2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) + 2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v))
-/((( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))))))"
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_oplus'_full (m_half' u) (m_half' v) = 
+         ((2 * \<gamma> v * \<gamma> u * u) + 2 * \<gamma> v * \<gamma> u * inner u v * \<gamma> u / (1 + \<gamma> u) * u + 2 * \<gamma> v * v) / ((2 * \<gamma> u * \<gamma> v * inner u v) + ((2 + 2 * \<gamma> u * \<gamma> v)))"
 proof-
-  have "m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m v))
- = ((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u) +  2*(\<gamma> (Rep_PoincareDisc v))/
-    ((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc v))/( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))"
-    using iso_ei_mo_help9 by blast
-  moreover have "((2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v))) +
- (2*((\<gamma> (Rep_PoincareDisc v))/(1+\<gamma> (Rep_PoincareDisc v)))*((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) *
-    ((\<gamma> (Rep_PoincareDisc u))/(1+\<gamma> (Rep_PoincareDisc u)))*
-    (Rep_PoincareDisc u) +  2*(\<gamma> (Rep_PoincareDisc v))/
-    ((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc v)) = 1/(((1+\<gamma> (Rep_PoincareDisc v)) *(1+\<gamma> (Rep_PoincareDisc u))))
-      * ( (2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * (Rep_PoincareDisc u))
-+2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) + 2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v))"
+  have "1 + \<gamma> u \<noteq>0" "1 + \<gamma> v \<noteq> 0"
+    using  gamma_factor_positive assms by force+
+  then have "1 / ((1 + \<gamma> u) * (1 + \<gamma> v)) \<noteq> 0"
+    by simp
+  moreover 
+  have "((2 * (\<gamma> v / (1 + \<gamma> v)) + 2 * (\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 + \<gamma> u)) * inner u v) * (\<gamma> u / (1 + \<gamma> u))) * u +
+    (2 * \<gamma> v / ((1 + \<gamma> v) * (1 + \<gamma> u))) * v =
+    (1 / ((1 + \<gamma> v) * (1 + \<gamma> u))) * ((2 * \<gamma> v * \<gamma> u) * u + cor (2 * \<gamma> v * \<gamma> u * inner u v * \<gamma> u / (1 + \<gamma> u)) * u + cor (2 * \<gamma> v) * v)"
     using iso_ei_mo_help11 by blast
-  moreover have "2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u)))
-  + 2*(1+ (\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))) =
- ((1/((1+\<gamma> (Rep_PoincareDisc v))*(1+\<gamma> (Rep_PoincareDisc u))))) *(( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))))"
-    using iso_ei_mo_help12 by presburger
-  moreover have "(1+\<gamma> (Rep_PoincareDisc u)) \<noteq>0"
-    by (metis Rep_PoincareDisc ab_group_add_class.ab_diff_conv_add_uminus add.right_neutral division_ring_divide_zero iso_ei_mo_help4 mem_Collect_eq neg_equal_zero zero_neq_one)
-  moreover have "(1+\<gamma> (Rep_PoincareDisc v))\<noteq>0"
-    by (metis (no_types, opaque_lifting) add_0_iff eq_divide_eq iso_ei_mo_inner_help5 iso_ei_mo_inner_help7_1 iso_ei_mo_inner_help8 mult_cancel_left1 mult_cancel_right1 zero_neq_one)
-  
-  moreover have "1/((1+\<gamma> (Rep_PoincareDisc u))*(1+\<gamma> (Rep_PoincareDisc v)))\<noteq>0"
-    by (simp add: calculation(4) calculation(5))
-  ultimately show ?thesis
+  moreover 
+  have "2 * \<gamma> u * \<gamma> v * inner u v / ((1 + \<gamma> v) * (1 + \<gamma> u)) + 2 * (1 + \<gamma> u * \<gamma> v) / ((1 + \<gamma> v) * (1 + \<gamma> u)) =
+    1 / ((1 + \<gamma> v) * (1 + \<gamma> u)) * (2 * \<gamma> u * \<gamma> v * inner u v + (2 + 2 * \<gamma> u * \<gamma> v))"
+    using iso_ei_mo_help12 
+    by presburger
+  ultimately 
+  show ?thesis
+    using iso_ei_mo_help9[OF assms]
     by (smt (verit, ccfv_threshold) divide_divide_eq_left' division_ring_divide_zero eq_divide_eq inner_commute inner_real_def mult_eq_0_iff mult_eq_0_iff nonzero_mult_divide_mult_cancel_left nonzero_mult_divide_mult_cancel_left numeral_One of_real_1 of_real_1 of_real_divide of_real_inner_1 of_real_mult one_divide_eq_0_iff real_inner_1_right times_divide_times_eq)
 qed
 
 lemma iso_ei_mo_help14:
-  shows "m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m v)) =
-    (((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/
-((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
- * (1+inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))+1))*((Rep_PoincareDisc u)
-  + (1/((\<gamma> (Rep_PoincareDisc u)))) *(Rep_PoincareDisc v)
-  + (((\<gamma> (Rep_PoincareDisc u)))/(1+(\<gamma> (Rep_PoincareDisc u))))*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))*
-(Rep_PoincareDisc u))"
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_oplus'_full (m_half' u) (m_half' v) =
+        (\<gamma> u * \<gamma> v / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1)) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u) * inner u v) * u)"
 proof-
-  have "(\<gamma> (Rep_PoincareDisc u))\<noteq>0"
-    by (metis Rep_PoincareDisc add_0 div_0 divide_divide_eq_right division_ring_divide_zero e_help2 mem_Collect_eq zero_neq_one)
-  moreover have "(\<gamma> (Rep_PoincareDisc v))\<noteq>0"
-    by (metis Rep_PoincareDisc add_0 div_0 divide_divide_eq_right division_ring_divide_zero e_help2 mem_Collect_eq zero_neq_one)
-  moreover have "m_plus_full (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m u)) (Rep_PoincareDisc ((1/2)\<otimes>\<^sub>m v)) = ( (2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * (Rep_PoincareDisc u))
-+2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) + 2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v))
-/((( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))))))"
-    using iso_ei_mo_help13 by blast
-  moreover have " ( (2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * (Rep_PoincareDisc u))
-+2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) + 2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v)) =
-  2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * 
-  ((Rep_PoincareDisc u)
-  + (1/((\<gamma> (Rep_PoincareDisc u)))) *(Rep_PoincareDisc v)
-  + (((\<gamma> (Rep_PoincareDisc u)))/(1+(\<gamma> (Rep_PoincareDisc u))))*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))*
-(Rep_PoincareDisc u))"
-  proof-
-    have "2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    * inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u) = 2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) *
-    (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) * (\<gamma> (Rep_PoincareDisc u))/(1+(\<gamma> (Rep_PoincareDisc u)))
-    * (Rep_PoincareDisc u))"
-      by simp
-    moreover have "2* (\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v) =
-    2*(\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v)
-      * ((\<gamma> (Rep_PoincareDisc u)))/((\<gamma> (Rep_PoincareDisc u)))"
-      by (simp add: \<open>\<gamma> (Rep_PoincareDisc u) \<noteq> 0\<close>)
-    moreover have "2* (\<gamma> (Rep_PoincareDisc v)) * (Rep_PoincareDisc v) = 2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u))
-    *(1/((\<gamma> (Rep_PoincareDisc u))))*(Rep_PoincareDisc v)"
-      using \<open>\<gamma> (Rep_PoincareDisc u) \<noteq> 0\<close> by auto
-    ultimately show ?thesis 
-      by (simp add: distrib_left is_num_normalize(1) mult.commute)      
-  qed
-  moreover have "((( 2*(\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
-*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))) + ((2+ (2*\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))))) =
-    2*((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))*
-  (1+inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))+1)"
+  have "\<gamma> u \<noteq> 0" "\<gamma> v \<noteq> 0"
+    using assms gamma_factor_positive 
+    by fastforce+
+  moreover
+  have "(2 * \<gamma> v * \<gamma> u) * u + (2 * \<gamma> v * \<gamma> u * inner u v * \<gamma> u / (1 + \<gamma> u)) * u + (2 * \<gamma> v) * v =
+        (2 * \<gamma> v * \<gamma> u) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u) * inner u v) * u)"
+    using \<open>\<gamma> u \<noteq> 0\<close> \<open>\<gamma> v \<noteq> 0\<close>
+    by (simp add: distrib_left is_num_normalize(1) mult.commute)      
+  moreover
+  have "2 * \<gamma> u * \<gamma> v * inner u v + (2 + 2 * \<gamma> u * \<gamma> v) = 2 * (\<gamma> u * \<gamma> v * (1 + inner u v) + 1)"
     by (simp add: ring_class.ring_distribs(1))
-  moreover have "( 2*(\<gamma> (Rep_PoincareDisc v))*(\<gamma> (Rep_PoincareDisc u)) * 
-  ((Rep_PoincareDisc u)
-  + (1/((\<gamma> (Rep_PoincareDisc u)))) *(Rep_PoincareDisc v)
-  + (((\<gamma> (Rep_PoincareDisc u)))/(1+(\<gamma> (Rep_PoincareDisc u))))*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))*
-(Rep_PoincareDisc u)))/( 2*((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))*
-  (1+inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))+1)) =  (((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v)))/
-((\<gamma> (Rep_PoincareDisc u))*(\<gamma> (Rep_PoincareDisc v))
- * (1+inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))+1))*((Rep_PoincareDisc u)
-  + (1/((\<gamma> (Rep_PoincareDisc u)))) *(Rep_PoincareDisc v)
-  + (((\<gamma> (Rep_PoincareDisc u)))/(1+(\<gamma> (Rep_PoincareDisc u))))*(inner (Rep_PoincareDisc u) (Rep_PoincareDisc v))*
-(Rep_PoincareDisc u))"
+  moreover 
+  have "(2 * \<gamma> v * \<gamma> u) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u) * inner u v) * u) /
+        (2 * (\<gamma> u * \<gamma> v * (1 + inner u v) + 1)) =
+        (\<gamma> u * \<gamma> v / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1)) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u) * inner u v) * u)"
   proof -
     have "\<forall>r ra rb. (ra::real) / r = ra * (rb / (rb * r)) \<or> 0 = rb"
       by simp
-    then have "cor (\<gamma> (Rep_PoincareDisc u) * (\<gamma> (Rep_PoincareDisc v) / ((1 + inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (\<gamma> (Rep_PoincareDisc u) * \<gamma> (Rep_PoincareDisc v)) + 1))) * (Rep_PoincareDisc u + Rep_PoincareDisc v * cor (1 / \<gamma> (Rep_PoincareDisc u)) + Rep_PoincareDisc u * cor (\<gamma> (Rep_PoincareDisc u) * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) / (1 + \<gamma> (Rep_PoincareDisc u))))) = cor (\<gamma> (Rep_PoincareDisc u) * (\<gamma> (Rep_PoincareDisc v) * (2 / (2 * ((1 + inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (\<gamma> (Rep_PoincareDisc u) * \<gamma> (Rep_PoincareDisc v)) + 1))))) * (Rep_PoincareDisc u + Rep_PoincareDisc v * cor (1 / \<gamma> (Rep_PoincareDisc u)) + Rep_PoincareDisc u * cor (\<gamma> (Rep_PoincareDisc u) * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) / (1 + \<gamma> (Rep_PoincareDisc u)))))"
+    then have "(\<gamma> u * (\<gamma> v / ((1 + inner u v) * (\<gamma> u * \<gamma> v) + 1))) * ( u +  v * (1 / \<gamma> u) +  u * (\<gamma> u * (inner u v / (1 + \<gamma> u)))) = (\<gamma> u * (\<gamma> v * (2 / (2 * ((1 + inner u v) * (\<gamma> u * \<gamma> v) + 1))))) * ( u +  v * (1 / \<gamma> u) +  u * (\<gamma> u * (inner u v / (1 + \<gamma> u))))"
       by (metis (no_types) zero_neq_numeral)
-    then have "cor (\<gamma> (Rep_PoincareDisc u) * (\<gamma> (Rep_PoincareDisc v) / ((1 + inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (\<gamma> (Rep_PoincareDisc u) * \<gamma> (Rep_PoincareDisc v)) + 1))) * (Rep_PoincareDisc u + Rep_PoincareDisc v * cor (1 / \<gamma> (Rep_PoincareDisc u)) + Rep_PoincareDisc u * cor (\<gamma> (Rep_PoincareDisc u) * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) / (1 + \<gamma> (Rep_PoincareDisc u))))) = cor (\<gamma> (Rep_PoincareDisc u) * (\<gamma> (Rep_PoincareDisc v) * 2 / (2 * ((1 + inner (Rep_PoincareDisc u) (Rep_PoincareDisc v)) * (\<gamma> (Rep_PoincareDisc u) * \<gamma> (Rep_PoincareDisc v)) + 1)))) * (Rep_PoincareDisc u + Rep_PoincareDisc v * cor (1 / \<gamma> (Rep_PoincareDisc u)) + Rep_PoincareDisc u * cor (\<gamma> (Rep_PoincareDisc u) * (inner (Rep_PoincareDisc u) (Rep_PoincareDisc v) / (1 + \<gamma> (Rep_PoincareDisc u)))))"
-      by auto
     then show ?thesis
       by (simp add: mult.commute)
   qed
   ultimately show ?thesis
+    using iso_ei_mo_help13 assms
     by presburger
 qed
 
+lemma m_half':
+  assumes "cmod u < 1"
+  shows "m_otimes' (1 / 2) u = m_half' u"
+  using assms m_half m_half.rep_eq[of "of_complex u"] m_otimes.rep_eq
+  by (simp add: Moebius_gyrodom'.to_dom)
 
 lemma iso_ei_mo_half:
-  shows "(1/2) \<otimes>\<^sub>E ( u \<oplus>\<^sub>E v) =  ((1/2)\<otimes>\<^sub>m u \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>m v)"
-  by (simp add: iso_ei_mo_help10 iso_ei_mo_help14 m_plus_full_m_plus)
-
+  shows "(1/2) \<otimes>\<^sub>E (u \<oplus>\<^sub>E v) = ((1/2) \<otimes>\<^sub>m u \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>m v)"
+proof transfer
+  fix u v
+  assume *: "cmod u < 1" "cmod v < 1"
+  have "e_otimes' (1 / 2) (e_oplus' u v) = m_half' (e_oplus' u v)"
+    using m_half'[of "e_oplus' u v"] *
+    unfolding e_otimes'_def
+    using e_oplus'_in_unit_disc 
+    by blast
+  moreover
+  have "m_otimes' (1 / 2) u = m_half' u" "m_otimes' (1 / 2) v = m_half' v"
+    using m_half' *
+    by auto
+  moreover
+  have **: "cmod (m_half' u) < 1" "cmod (m_half' v) < 1"
+    using *
+    by (metis eq_onp_same_args m_half.rsp rel_fun_eq_onp_rel)+
+  have "m_half' (e_oplus' u v) = m_oplus' (m_half' u) (m_half' v)"
+    using * iso_ei_mo_help10[OF *] iso_ei_mo_help14[OF *]
+    unfolding m_oplus'_full[OF **, symmetric]
+    by simp
+  ultimately
+  show "e_otimes' (1 / 2) (e_oplus' u v) = m_oplus' (m_otimes' (1 / 2) u) (m_otimes' (1 / 2) v)"
+    by simp
+qed
+ 
 lemma iso_mo_ei_two:
   shows " 2 \<otimes>\<^sub>m ( u \<oplus>\<^sub>m v) =  (2 \<otimes>\<^sub>E u \<oplus>\<^sub>E 2 \<otimes>\<^sub>E v)"
 proof-

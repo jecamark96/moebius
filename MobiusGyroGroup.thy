@@ -1165,54 +1165,54 @@ lemma m_gyr_general_m_gyr:
   shows "m_gyr_general u v w = m_gyr u v w"
   by (simp add: Moebius_gyrogroup.gyr_def m_gyr_general_def)
 
-definition m_plus_full :: "complex \<Rightarrow> complex \<Rightarrow> complex" where 
-  "m_plus_full u v = ((1 + 2*inner u v + (norm v)^2) *\<^sub>R u + (1 - (norm u)^2) *\<^sub>R v) /
-                      (1 + 2*inner u v + (norm u)^2 * (norm v)^2)"
+definition m_oplus'_full :: "complex \<Rightarrow> complex \<Rightarrow> complex" where 
+  "m_oplus'_full u v = ((1 + 2*inner u v + (norm v)^2) *\<^sub>R u + (1 - (norm u)^2) *\<^sub>R v) /
+                        (1 + 2*inner u v + (norm u)^2 * (norm v)^2)"
 
-lemma m_plus_full_m_plus:
-  shows "u \<oplus>\<^sub>m v = of_complex (m_plus_full (to_complex u) (to_complex v))"
+lemma m_oplus'_full:
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_oplus'_full u v = m_oplus' u v"
 proof-
-  let ?u = "to_complex u" and ?v = "to_complex v"
-  have *: "2 * inner ?u ?v = cnj ?u * ?v + cnj ?v * ?u"
+  have *: "2 * inner u v = cnj u * v + cnj v * u"
     using two_inner_cnj
     by auto
   
-  have "(1 + 2*inner ?u ?v + (norm ?v)^2) * ?u =
-        (1 + cnj ?u *?v + cnj ?v * ?u + (norm ?v)^2) * ?u"
+  have "(1 + 2*inner u v + (norm v)^2) * u =
+        (1 + cnj u *v + cnj v * u + (norm v)^2) * u"
     using *
     by auto
 
   moreover
 
-  have "1 + 2*inner ?u ?v + (norm ?u)^2 * (norm ?v)^2 = 
-        1 + cnj ?u * ?v + cnj ?v * ?u + (norm ?u)^2 * (norm ?v)^2"
+  have "1 + 2*inner u v + (norm u)^2 * (norm v)^2 = 
+        1 + cnj u * v + cnj v * u + (norm u)^2 * (norm v)^2"
     using *
     by auto
 
   moreover
 
-  have "(1 + cnj ?u * ?v + cnj ?v * ?u + (norm ?v)^2) * ?u + (1 - (norm ?u)^2) * ?v =
-        (1 + cnj ?v * ?u) * (?u + ?v)"
+  have "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1 - (norm u)^2) * v =
+        (1 + cnj v * u) * (u + v)"
   proof-
-    have *: "(1 + cnj ?u * ?v + cnj ?v *?u + (norm ?v)^2) * ?u = 
-             ?u + (norm ?u)^2 * ?v + cnj ?v * ?u^2 + (norm ?v)^2 * ?u"
+    have *: "(1 + cnj u * v + cnj v * u + (norm v)^2) * u = 
+             u + (norm u)^2 * v + cnj v * u^2 + (norm v)^2 * u"
       by (smt (verit, del_insts) ab_semigroup_mult_class.mult_ac(1) comm_semiring_class.distrib complex_norm_square mult.commute mult_cancel_right1 power2_eq_square)
-    have **: "(1 + cnj ?v * ?u) * (?u + ?v) = ?u + cnj ?v * ?u * ?u + ?v + cnj ?v * ?u * ?v"
+    have **: "(1 + cnj v * u) * (u + v) = u + cnj v * u * u + v + cnj v * u * v"
       by (simp add: distrib_left ring_class.ring_distribs(2))
-    have "?u + cnj ?u * ?v *?u + ?v + cnj ?u* ?v * ?v = ?u + cnj ?u * ?v^2 + (norm ?u)^2 * ?v + ?v"
+    have "u + cnj u * v *u + v + cnj u* v * v = u + cnj u * v^2 + (norm u)^2 * v + v"
       by (simp add: cnj_cmod mult.commute power2_eq_square)
-    have ***: "(1 - (norm ?u)^2) * ?v = ?v - (norm ?u)^2 * ?v"
+    have ***: "(1 - (norm u)^2) * v = v - (norm u)^2 * v"
       by (simp add: mult.commute right_diff_distrib')
-    have "(1 + cnj ?u * ?v + cnj ?v * ?u + (norm ?v)^2) * ?u + (1 - (norm ?u)^2) * ?v =
-          ?u + (norm ?u)^2 * ?v + (cnj ?v) * ?u^2 + (norm ?v)^2 * ?u + ?v - (norm ?u)^2 * ?v"
+    have "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1 - (norm u)^2) * v =
+          u + (norm u)^2 * v + (cnj v) * u^2 + (norm v)^2 * u + v - (norm u)^2 * v"
       using * ***
       by force
-    have ****: "(1 + cnj ?u * ?v + cnj ?v * ?u + (norm ?v)^2) * ?u + (1-(norm ?u)^2) * ?v =
-                ?u + cnj ?v *?u^2 + (norm ?v)^2 * ?u + ?v"
+    have ****: "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1-(norm u)^2) * v =
+                u + cnj v *u^2 + (norm v)^2 * u + v"
       using * *** 
       by auto
 
-    have "(1 + cnj ?v * ?u) * (?u+?v) = ?u + (norm ?v)^2 *?u + ?v + cnj ?v * ?u^2"
+    have "(1 + cnj v * u) * (u+v) = u + (norm v)^2 *u + v + cnj v * u^2"
       using **
       by (simp add: cnj_cmod mult.commute power2_eq_square)
 
@@ -1221,14 +1221,15 @@ proof-
       by auto
   qed
 
-  moreover have "1 + cnj?u * ?v + cnj ?v *?u + (norm ?u)^2 * (norm ?v)^2  =
-                (1+ cnj ?u * ?v) * (1 + cnj ?v * ?u)"
+  moreover have "1 + cnj u * v + cnj v *u + (norm u)^2 * (norm v)^2  =
+                (1 + cnj u * v) * (1 + cnj v * u)"
     by (smt (verit, del_insts) cnj_cmod comm_semiring_class.distrib complex_cnj_cnj complex_cnj_mult complex_mod_cnj is_num_normalize(1) mult.commute mult_numeral_1 norm_mult numeral_One power_mult_distrib)
   
   ultimately
   show ?thesis 
-    using m_oplus_def m_oplus'_def
-    by (metis (no_types, lifting) Rep_PoincareDisc Rep_PoincareDisc_inverse den_not_zero divide_divide_eq_left' m_oplus.rep_eq m_plus_full_def mem_Collect_eq nonzero_mult_div_cancel_left scaleR_conv_of_real)
+    using assms
+    unfolding m_oplus'_full_def m_oplus'_def
+    by (metis (no_types, lifting) den_not_zero divide_divide_eq_left' nonzero_mult_div_cancel_left scaleR_conv_of_real)
 qed
 
 lemma times2_m: "2 \<otimes>\<^sub>m u = u \<oplus>\<^sub>m u"
@@ -1273,16 +1274,20 @@ qed
 lift_definition m_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>m") is gamma_factor
   done
 
-lift_definition m_half :: "PoincareDisc \<Rightarrow> PoincareDisc" is "\<lambda> (v::complex). (\<gamma> v / (1 + \<gamma> v)) * v"
+definition m_half' :: "complex \<Rightarrow> complex" where
+  "m_half' v = (\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v"
+
+lift_definition m_half :: "PoincareDisc \<Rightarrow> PoincareDisc" is m_half'
+  unfolding m_half'_def
 proof-
   fix v
   assume "cmod v < 1"
   let ?k = "\<gamma> v / (1 + \<gamma> v)"
   have "abs ?k < 1"
     using \<open>cmod v < 1\<close> gamma_factor_positive by fastforce
-  then show "cmod (?k * v) < 1"
+  then show "cmod (?k *\<^sub>R v) < 1"
     using \<open>cmod v < 1\<close>
-    by (metis mult_closed_for_unit_disc norm_of_real)
+    by (metis mult_closed_for_unit_disc norm_of_real scaleR_conv_of_real)
 qed
 
 lemma two_times_half:
@@ -1318,10 +1323,10 @@ proof-
     also have "\<dots> = 2 * ?k"
       using *
       by (simp add: field_simps)
-    finally show "m_oplus' (cor (\<gamma> v / (1 + \<gamma> v)) * v) (cor (\<gamma> v / (1 + \<gamma> v)) * v) = v"
-      unfolding m_oplus'_def
-      using *
-      by auto
+    finally show "m_oplus' (m_half' v) (m_half' v) = v"
+      unfolding m_oplus'_def m_half'_def
+      using * \<open>1 + cnj (?k * v) * (?k * v) = 1 + ?k\<^sup>2 * (cmod v)\<^sup>2\<close>
+      by (smt (verit)  mult_eq_0_iff nonzero_mult_div_cancel_left of_real_eq_0_iff power2_eq_square scaleR_conv_of_real scaleR_left_distrib)
   qed
   finally show ?thesis
     .
