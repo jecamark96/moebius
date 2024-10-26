@@ -1,62 +1,7 @@
 theory MobiusGyroGroup
   imports Complex_Main HOL.Real_Vector_Spaces HOL.Transcendental
-          GyroGroup GyroVectorSpace GammaFactor 
+          GyroGroup GyroVectorSpace GammaFactor HyperbolicFunctions
 begin
-
-lemmas div_help = nonzero_divide_mult_cancel_left
-
-lemma artanh_abs_tanh:
-  fixes x::real
-  shows "artanh (abs (tanh x)) = abs x"
-proof (cases "x \<ge> 0")
-  case True
-  then show ?thesis 
-    by (simp add: artanh_tanh_real)
-next
-  case False
-  then show ?thesis
-    by (metis artanh_tanh_real tanh_real_abs)
-qed
-
-lemma artanh_nonneg:
-  fixes x :: real
-  assumes "0 \<le> x" "x < 1"
-  shows "artanh x \<ge> 0"
-proof-
-  have "(1+x)/(1-x) \<ge> 1/(1-x)"
-    by (metis assms add_0 add_increasing2 divide_right_mono le_diff_eq less_eq_real_def)
-  moreover have "1/(1-x) \<ge> 1"
-    using assms 
-    by simp
-  moreover have "artanh x = 1/2*ln((1+x)/(1-x))"
-    by (simp add: artanh_def)
-  moreover have "ln((1+x)/(1-x))\<ge>0"
-    using calculation(1) calculation(2) by fastforce
-  moreover have "((artanh x)\<ge>0)"
-    using calculation(3) calculation(4) by linarith
-  moreover have "(0\<le>x \<and> x<1)\<longrightarrow> ((artanh x)\<ge>0)"
-    using calculation by blast
-  ultimately 
-  show ?thesis 
-    by blast
-qed
-
-lemma artanh_not_0:
-  fixes x :: real
-  assumes "x > 0" "x < 1"
-  shows "artanh x \<noteq> 0"
-  using assms
-  by (simp add: artanh_def)
-
-lemma tanh_not_0:
-  fixes x :: real
-  assumes "x > 0" "x < 1"
-  shows "tanh x \<noteq> 0"
-  using assms
-  by simp
-
-(* ------------------------------------------------------------------ *)
-
 
 typedef PoincareDisc = "{z::complex. cmod z < 1}"
   by (rule_tac x=0 in exI, auto)
@@ -68,40 +13,25 @@ abbreviation to_complex :: "PoincareDisc \<Rightarrow> complex" where
 abbreviation of_complex :: "complex \<Rightarrow> PoincareDisc" where 
   "of_complex \<equiv> Abs_PoincareDisc" 
 
-definition m_inner' :: "complex \<Rightarrow> complex \<Rightarrow> real" where
-  "m_inner' z1 z2 = Re z1 * Re z2 + Im z1 * Im z2"
-
-lemma m_inner'_def1: 
-  shows "m_inner' z1 z2 = (z1 * cnj z2 + z2 * cnj z1) / 2"
+lemma poincare_disc_two_elems:
+  shows "\<exists> z1 z2::PoincareDisc. z1 \<noteq> z2"
 proof-
-  obtain "a" "b" where ab: "Re z1 = a \<and> Im z1 = b"
-    by blast
-  obtain "c" "d" where cd: "Re z2 = c \<and> Im z2 = d"
-    by blast
-  have "Re (z1 * cnj z2) = a*c + b*d" "Re (z2 * cnj z1) = a*c + b*d"
-       "Im (z1 * cnj z2) = b*c - a*d" "Im (z2 * cnj z1) = -b*c + a*d"
-    using ab cd
-    by simp+
-  then have "(z1 * cnj z2 + z2 * cnj z1) / 2 =  a*c + b*d"
-    using complex_eq_iff by force
-  then show ?thesis
-    using ab cd m_inner'_def
-    by presburger
+  have "cmod 0 < 1"
+    by simp
+  moreover
+  have "cmod (1/2) < 1"
+    by simp
+  moreover
+  have "(0::complex) \<noteq> 1/2"
+    by simp
+  ultimately
+  show ?thesis
+    by transfer blast
 qed
 
-lemma m_inner'_def2:
-  shows "m_inner' z1 z2 = Re (cnj z1 * z2)"
-  by (simp add: m_inner'_def)
-
-lemma m_inner'_def3:
-  shows "m_inner' z1 z2 = inner z1 z2"
-  by (simp add: inner_complex_def m_inner'_def)
-
-lift_definition m_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>\<^sub>m" 100) is inner
-  done
 
 definition m_oplus' :: "complex \<Rightarrow> complex \<Rightarrow> complex"  where
-  "m_oplus' a z = (a + z) / (1 + (cnj a) *z)"
+  "m_oplus' a z = (a + z) / (1 + (cnj a) * z)"
 
 lemma m_oplus'_in_disc:
   assumes "cmod c1 < 1" "cmod c2 < 1"
@@ -199,7 +129,6 @@ lemma m_left_inv:
   shows "\<ominus>\<^sub>m a \<oplus>\<^sub>m a = 0\<^sub>m"
   by (transfer, simp add: m_oplus'_def m_ominus'_def m_ozero'_def)
 
-
 definition m_gyr' :: "complex \<Rightarrow> complex \<Rightarrow> complex \<Rightarrow> complex" where
   "m_gyr' a b z = ((1 + a * cnj b) / (1 + cnj a * b)) * z"
 
@@ -266,22 +195,6 @@ lemma m_gyr_inv:
 lemma m_gyr_bij:
   shows "bij (m_gyr a b)"
   by (metis bij_betw_def inj_def m_gyr_inv surj_def)
-
-lemma poincare_disc_two_elems:
-  shows "\<exists> z1 z2::PoincareDisc. z1 \<noteq> z2"
-proof-
-  have "cmod 0 < 1"
-    by simp
-  moreover
-  have "cmod (1/2) < 1"
-    by simp
-  moreover
-  have "(0::complex) \<noteq> 1/2"
-    by simp
-  ultimately
-  show ?thesis
-    by transfer blast
-qed
 
 lemma m_gyr_not_degenerate:
   shows "\<exists> z1 z2. m_gyr a b z1 \<noteq> m_gyr a b z2"
@@ -424,12 +337,11 @@ end
 
 (* --------------------------------------------------------- *)
 
-definition m_norm' :: "complex \<Rightarrow> real" where
-  "m_norm' z = norm z"
-
-lift_definition m_norm :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>\<^sub>m" [100] 100) is m_norm'
+lift_definition m_inner :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>\<^sub>m" 100) is inner
   done
 
+lift_definition m_norm :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>\<^sub>m" [100] 100) is norm
+  done
 
 interpretation Moebius_gyrodom': gyrodom' where
   to_dom = to_complex and
@@ -459,16 +371,18 @@ proof-
     apply rule
     unfolding gyrodom'.gyroinner_def[OF *]
     apply transfer
-    by (simp add: inner_complex_def m_inner'_def)
+    by (simp add: inner_complex_def)
 
   show "gyrodom'.gyronorm to_complex = m_norm"
     apply rule
     unfolding gyrodom'.gyronorm_def[OF *]
     apply transfer
-    by (simp add: m_norm'_def)
+    by simp
 qed
 
-lemma mobius_gyroauto:
+(* --------------------------------------------------------- *)
+
+lemma moebius_gyroauto:
   shows "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = a \<cdot>\<^sub>m b"
 proof-
   have "m_gyr u v a \<cdot>\<^sub>m m_gyr u v b = Re((cnj (to_complex (m_gyr u v a))) * (to_complex (m_gyr u v b)))"
@@ -490,7 +404,7 @@ proof-
     moreover have **:"cmod (to_complex v) < 1"
       using Rep_PoincareDisc by blast
     moreover have "cmod (((1 + (to_complex u) * cnj (to_complex v)) / (1 +  (to_complex v)*(cnj (to_complex u))))) =1"
-      using  mobius_gyroauto_help[OF * **] 
+      using  cmod_mix_cnj[OF * **] 
       by force
     ultimately show ?thesis using cnj_cmod_1
       by (metis mult.commute)
@@ -503,12 +417,11 @@ proof-
     by presburger
 qed
 
-(* --------------------------------------------------------- *)
 interpretation Moebius_gyrodom: gyrodom to_complex of_complex "\<lambda> z. cmod z < 1"
 proof
   fix u v a b
   have "gyr u v a \<cdot>\<^sub>m gyr u v b = a \<cdot>\<^sub>m b"
-    by (simp add: gyr_PoincareDisc_def mobius_gyroauto)
+    by (simp add: gyr_PoincareDisc_def moebius_gyroauto)
   then show "gyrodom'.gyroinner to_complex (gyr u v a) (gyr u v b) =
              gyrodom'.gyroinner to_complex a b"  
     using Moebius_gyrodom'.gyrodom'_axioms Moebius_gyrodom'.gyroinner_def gyrodom'.gyroinner_def by fastforce
@@ -516,14 +429,13 @@ qed
 
 
 (* --------------------------------------------------------- *)
-  
-definition m_otimes'_k :: "real \<Rightarrow> complex \<Rightarrow> real" where
-  "m_otimes'_k r z = ((1 + cmod z) powr r - (1 - cmod z) powr r) /
-                     ((1 + cmod z) powr r + (1 - cmod z) powr r)" 
+definition otimes'_k :: "real \<Rightarrow> complex \<Rightarrow> real" where
+  "otimes'_k r z = ((1 + cmod z) powr r - (1 - cmod z) powr r) /
+                   ((1 + cmod z) powr r + (1 - cmod z) powr r)" 
 
-lemma m_otimes'_k_tanh: 
+lemma otimes'_k_tanh: 
   assumes "cmod z < 1"
-  shows "m_otimes'_k r z = tanh (r * artanh (cmod z))"
+  shows "otimes'_k r z = tanh (r * artanh (cmod z))"
 proof-
   have "0 < 1 + cmod z"
     by (smt norm_not_less_zero)
@@ -547,39 +459,39 @@ proof-
   show ?thesis
     using assms powr_divide[of "1 + cmod z" "1 - cmod z" r]
     using `0 < 1 + cmod z` `(1 + cmod z) powr r \<noteq> 0`
-    unfolding m_otimes'_k_def tanh_real_altdef artanh_def
+    unfolding otimes'_k_def tanh_real_altdef artanh_def
     by (simp add: powr_minus_divide)
 qed
 
-lemma cmod_m_otimes'_k: 
+lemma cmod_otimes'_k: 
   assumes "cmod z < 1"
-  shows "cmod (m_otimes'_k r z) < 1"
-  by (smt assms divide_less_eq_1_pos divide_minus_left m_otimes'_k_def norm_of_real powr_gt_zero zero_less_norm_iff)
+  shows "cmod (otimes'_k r z) < 1"
+  by (smt assms divide_less_eq_1_pos divide_minus_left otimes'_k_def norm_of_real powr_gt_zero zero_less_norm_iff)
 
-definition m_otimes' :: "real \<Rightarrow> complex \<Rightarrow> complex" where
-  "m_otimes' r z = (if z = 0 then 0 else cor (m_otimes'_k r z) * (z / cmod z))"
+definition otimes' :: "real \<Rightarrow> complex \<Rightarrow> complex" where
+  "otimes' r z = (if z = 0 then 0 else cor (otimes'_k r z) * (z / cmod z))"
 
-lemma cmod_m_otimes':
+lemma cmod_otimes':
   assumes "cmod z < 1"
-  shows "cmod (m_otimes' r z) = abs (m_otimes'_k r z)"
+  shows "cmod (otimes' r z) = abs (otimes'_k r z)"
 proof (cases "z = 0")
   case True
   thus ?thesis
-    by (simp add: m_otimes'_def m_otimes'_k_def)
+    by (simp add: otimes'_def otimes'_k_def)
 next
   case False
-  hence "cmod (cor (m_otimes'_k r z)) = abs (m_otimes'_k r z)"
+  hence "cmod (cor (otimes'_k r z)) = abs (otimes'_k r z)"
     by simp
   then show ?thesis
     using False
-    unfolding m_otimes'_def
+    unfolding otimes'_def
     by (simp add: norm_divide norm_mult)
 qed
 
-lift_definition m_otimes :: "real \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" (infixl "\<otimes>\<^sub>m" 105) is m_otimes'
-  using cmod_m_otimes' cmod_m_otimes'_k by auto
+lift_definition otimes :: "real \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" (infixl "\<otimes>" 105) is otimes'
+  using cmod_otimes' cmod_otimes'_k by auto
 
-lemma m_otimes_distrib_lemma':
+lemma otimes_distrib_lemma':
   fixes "ax" "bx" "ay" "by" :: real
   assumes "ax + bx \<noteq> 0" "ay + by \<noteq> 0"
   shows "(ax * ay - bx * by) / (ax * ay + bx * by) = 
@@ -613,71 +525,71 @@ proof-
     by simp                                                                                 
 qed
 
-lemma m_otimes_distrib_lemma:
+lemma otimes_distrib_lemma:
   assumes "cmod a < 1"
-  shows "m_otimes'_k (r1 + r2) a = m_oplus' (m_otimes'_k r1 a) (m_otimes'_k r2 a)"
-  unfolding m_otimes'_k_def m_oplus'_def
+  shows "otimes'_k (r1 + r2) a = m_oplus' (otimes'_k r1 a) (otimes'_k r2 a)"
+  unfolding otimes'_k_def m_oplus'_def
   unfolding powr_add
-  apply (subst m_otimes_distrib_lemma')
+  apply (subst otimes_distrib_lemma')
   apply (smt powr_gt_zero powr_non_neg)
   apply (smt powr_gt_zero powr_non_neg)
   apply simp
   done
 
-lemma m_otimes_distrib:
-  shows "(r1 + r2) \<otimes>\<^sub>m a = r1 \<otimes>\<^sub>m a \<oplus>\<^sub>m r2 \<otimes>\<^sub>m a" 
+lemma otimes_distrib:
+  shows "(r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus>\<^sub>m r2 \<otimes> a" 
 proof transfer
   fix r1 r2 a
   assume "cmod a < 1"
-  show "m_otimes' (r1 + r2) a = m_oplus' (m_otimes' r1 a) (m_otimes' r2 a)"
+  show "otimes' (r1 + r2) a = m_oplus' (otimes' r1 a) (otimes' r2 a)"
   proof (cases "a = 0")
     case True
     then show ?thesis
-      by (simp add: m_otimes'_def m_oplus'_def)
+      by (simp add: otimes'_def m_oplus'_def)
   next
     case False
     let ?p = "1 + cmod a" and ?m = "1 - cmod a"
-    have "cor (m_otimes'_k (r1 + r2) a) * a / cor (cmod a) = 
-          m_oplus' (m_otimes'_k r1 a) (m_otimes'_k r2 a) * a / cor (cmod a)"
-      by (simp add: \<open>cmod a < 1\<close> m_otimes_distrib_lemma)
+    have "cor (otimes'_k (r1 + r2) a) * a / cor (cmod a) = 
+          m_oplus' (otimes'_k r1 a) (otimes'_k r2 a) * a / cor (cmod a)"
+      by (simp add: \<open>cmod a < 1\<close> otimes_distrib_lemma)
     moreover
-    have "cor (m_otimes'_k r1 a) * cnj a * (cor (m_otimes'_k r2 a) * a) / (cor (cmod a) * cor (cmod a)) = 
-          cor (m_otimes'_k r1 a) * cor (m_otimes'_k r2 a)"
+    have "cor (otimes'_k r1 a) * cnj a * (cor (otimes'_k r2 a) * a) / (cor (cmod a) * cor (cmod a)) = 
+          cor (otimes'_k r1 a) * cor (otimes'_k r2 a)"
       by (smt False complex_mod_cnj complex_mod_mult_cnj complex_norm_square mult.commute nonzero_mult_div_cancel_left norm_mult of_real_mult times_divide_times_eq zero_less_norm_iff)
     ultimately
      show ?thesis
       using False
-      unfolding m_otimes'_def m_oplus'_def
+      unfolding otimes'_def m_oplus'_def
       by (smt complex_cnj_complex_of_real complex_cnj_divide complex_cnj_mult distrib_right times_divide_eq_left times_divide_eq_right times_divide_times_eq)
   qed      
 qed
 
-lemma m_otimes_assoc:
-  shows "(r1 * r2) \<otimes>\<^sub>m a = r1 \<otimes>\<^sub>m (r2 \<otimes>\<^sub>m a)"
+lemma otimes_assoc:
+  shows "(r1 * r2) \<otimes> a = r1 \<otimes> (r2 \<otimes> a)"
 proof transfer
   fix r1 r2 a
   assume "cmod a < 1"
-  show "m_otimes' (r1 * r2) a = m_otimes' r1 (m_otimes' r2 a)"
+  show "otimes' (r1 * r2) a = otimes' r1 (otimes' r2 a)"
   proof (cases "a = 0")
     case True
     then show ?thesis
-      by (simp add: m_otimes'_def)
+      by (simp add: otimes'_def)
   next
     case False
     show ?thesis
     proof (cases "r2 = 0")
       case True
       thus ?thesis
-        by (simp add: \<open>cmod a < 1\<close> m_otimes'_def m_otimes'_k_tanh)
+        by (simp add: \<open>cmod a < 1\<close> otimes'_def otimes'_k_tanh)
     next
       case False
-      let ?a2 = "m_otimes' r2 a"
-      let ?k2 = "m_otimes'_k r2 a"
+      let ?a2 = "otimes' r2 a"
+      let ?k2 = "otimes'_k r2 a"
       have "cmod ?a2 = abs ?k2"
-        using \<open>cmod a < 1\<close> cmod_m_otimes'
+        using \<open>cmod a < 1\<close> cmod_otimes'
         by blast
       hence "cmod ?a2 < 1"
-        using \<open>cmod a < 1\<close> cmod_m_otimes'_k
+        using \<open>cmod a < 1\<close> cmod_otimes'_k
         by auto
       have "(1 + cmod a) / (1 - cmod a) > 1"
         using `a \<noteq> 0`
@@ -685,28 +597,28 @@ proof transfer
       hence "artanh (cmod a) > 0"
         by (simp add: artanh_def)
       hence "?k2 \<noteq> 0"
-        using `cmod a < 1` `a \<noteq> 0` m_otimes'_k_tanh[of a r2] `r2 \<noteq> 0`
+        using `cmod a < 1` `a \<noteq> 0` otimes'_k_tanh[of a r2] `r2 \<noteq> 0`
         by auto
       hence "?a2 \<noteq> 0"
         using `a \<noteq> 0`
-        unfolding m_otimes'_def
+        unfolding otimes'_def
         by simp
       have "sgn ?k2 = sgn r2"
-        using m_otimes'_k_tanh[OF `cmod a < 1`, of r2]
+        using otimes'_k_tanh[OF `cmod a < 1`, of r2]
         by (smt \<open>0 < artanh (cmod a)\<close> \<open>cmod ?a2 = \<bar>?k2\<bar>\<close> \<open>?a2 \<noteq> 0\<close> mult_nonneg_nonneg mult_nonpos_nonneg sgn_neg sgn_pos tanh_0 tanh_real_neg_iff zero_less_norm_iff)
-      have "m_otimes' r1 (m_otimes' r2 a) = 
-             cor (m_otimes'_k r1 (cor ?k2 * a / cor (cmod a))) *
+      have "otimes' r1 (otimes' r2 a) = 
+             cor (otimes'_k r1 (cor ?k2 * a / cor (cmod a))) *
              (cor ?k2 * a) / (cor (cmod a) * abs ?k2)"
         using False `?a2 \<noteq> 0`
         using \<open>cmod ?a2 = \<bar>?k2\<bar>\<close> 
-        unfolding m_otimes'_def
+        unfolding otimes'_def
         by auto
       also have "... = cor (tanh (r1 * \<bar>r2 * artanh (cmod a)\<bar>)) *  
                  (cor ?k2 * a) / (cor (cmod a) * abs ?k2)"
-        using cmod_m_otimes'[of a r2] `cmod a < 1` `a \<noteq> 0`
-        unfolding m_otimes'_def
-        using \<open>cmod ?a2 < 1\<close> \<open>cmod ?a2 = \<bar>?k2\<bar>\<close> m_otimes'_k_tanh 
-        using \<open>cmod a < 1\<close> m_otimes'_k_tanh[of a r2]
+        using cmod_otimes'[of a r2] `cmod a < 1` `a \<noteq> 0`
+        unfolding otimes'_def
+        using \<open>cmod ?a2 < 1\<close> \<open>cmod ?a2 = \<bar>?k2\<bar>\<close> otimes'_k_tanh 
+        using \<open>cmod a < 1\<close> otimes'_k_tanh[of a r2]
         by (simp add: artanh_abs_tanh)
       also have "... = cor (tanh (r1 * \<bar>r2\<bar> * artanh (cmod a))) *  
                  (cor ?k2 * a) / (cor (cmod a) * abs ?k2)"
@@ -720,24 +632,24 @@ proof transfer
       also have "... = cor (tanh (r1 * r2 * artanh (cmod a))) * (a / cor (cmod a))"
         by (cases "r2 \<ge> 0") auto
       finally show ?thesis
-        by (simp add: \<open>cmod a < 1\<close> m_otimes'_def m_otimes'_k_tanh)
+        by (simp add: \<open>cmod a < 1\<close> otimes'_def otimes'_k_tanh)
     qed
   qed
 qed
 
-lemma mobius_scale_prop:
+lemma otimes_scale_prop:
   fixes r :: real
   assumes "r \<noteq> 0"
-  shows "to_complex (\<bar>r\<bar> \<otimes>\<^sub>m a) / \<llangle>r \<otimes>\<^sub>m a\<rrangle>\<^sub>m  = to_complex a / \<llangle>a\<rrangle>\<^sub>m"
+  shows "to_complex (\<bar>r\<bar> \<otimes> a) / \<llangle>r \<otimes> a\<rrangle>\<^sub>m  = to_complex a / \<llangle>a\<rrangle>\<^sub>m"
 proof-
   let ?f = "\<lambda> r a. tanh (r * artanh (cmod (to_complex a)))"
 
-  have *: "to_complex (\<bar>r\<bar> \<otimes>\<^sub>m a) = ?f \<bar>r\<bar> a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m)"
-    using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc m_otimes'_def m_otimes'_k_tanh m_otimes.rep_eq
+  have *: "to_complex (\<bar>r\<bar> \<otimes> a) = ?f \<bar>r\<bar> a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m)"
+    using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc otimes'_def otimes'_k_tanh otimes.rep_eq
     by force
-  then have "\<llangle>r \<otimes>\<^sub>m a\<rrangle>\<^sub>m = cmod (?f r a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m))"
-    by (metis (no_types, lifting) Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_m_otimes' m_otimes'_def m_otimes'_k_tanh m_otimes.rep_eq mem_Collect_eq norm_mult norm_of_real)
-  then have "\<llangle>r \<otimes>\<^sub>m a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)"
+  then have "\<llangle>r \<otimes> a\<rrangle>\<^sub>m = cmod (?f r a * (to_complex a / \<llangle>a\<rrangle>\<^sub>m))"
+    by (metis (no_types, lifting) Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_def otimes'_k_tanh otimes.rep_eq mem_Collect_eq norm_mult norm_of_real)
+  then have "\<llangle>r \<otimes> a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)"
     by (metis (no_types, opaque_lifting) norm_mult norm_of_real of_real_divide times_divide_eq_left times_divide_eq_right)
 
   have "?f \<bar>r\<bar> a = tanh(\<bar>r\<bar> * \<bar>artanh (cmod (to_complex a))\<bar>)"
@@ -755,7 +667,7 @@ proof-
     case True
     then show ?thesis
       using assms
-      by (simp add: m_otimes'_def m_otimes.rep_eq)
+      by (simp add: otimes'_def otimes.rep_eq)
   next
     case False
     then have "\<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> \<noteq>0"
@@ -763,7 +675,7 @@ proof-
       by (metis artanh_0 Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc abs_norm_cancel artanh_not_0 artanh_tanh_real divide_eq_0_iff linorder_not_less mem_Collect_eq mult_eq_0_iff norm_eq_zero not_less_iff_gr_or_eq zero_less_abs_iff)
     then show ?thesis
       using * ** Moebius_gyrodom'.gyronorm_def 
-            \<open>\<llangle>r \<otimes>\<^sub>m a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)\<close> 
+            \<open>\<llangle>r \<otimes> a\<rrangle>\<^sub>m = \<bar>?f r a / \<llangle>a\<rrangle>\<^sub>m\<bar> * cmod (to_complex a)\<close> 
       by fastforce
   qed
 qed
@@ -900,7 +812,7 @@ proof-
       by auto
 
     have **: "norm (\<llangle>a\<rrangle>\<^sub>m) < 1" "norm (\<llangle>b\<rrangle>\<^sub>m) < 1"
-      using Rep_PoincareDisc abs_square_less_1 m_norm'_def m_norm.rep_eq 
+      using Rep_PoincareDisc abs_square_less_1 m_norm.rep_eq 
       by fastforce+
     then have ***: "\<gamma> (\<llangle>a\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>a\<rrangle>\<^sub>m) * (\<llangle>a\<rrangle>\<^sub>m))"
                    "\<gamma> (\<llangle>b\<rrangle>\<^sub>m) = 1 / sqrt(1 - (\<llangle>b\<rrangle>\<^sub>m) * (\<llangle>b\<rrangle>\<^sub>m))"
@@ -979,30 +891,30 @@ next
     by (smt (verit, del_insts) gamma_factor_def gamma_factor_increasing gamma_factor_ineq1 norm_of_real)
 qed
 
-lemma mobius_gyroauto_norm:
+lemma moebius_gyroauto_norm:
   shows "\<llangle>m_gyr a b v\<rrangle>\<^sub>m = \<llangle>v\<rrangle>\<^sub>m"
   using Moebius_gyrodom.norm_gyr gyr_PoincareDisc_def
   by auto
 
-lemma moebius_homogenity:
-  shows "\<llangle>(r \<otimes>\<^sub>m a)\<rrangle>\<^sub>m = cmod (to_complex (\<bar>r\<bar> \<otimes>\<^sub>m of_complex (\<llangle>a\<rrangle>\<^sub>m)))"
+lemma otimes_homogenity:
+  shows "\<llangle>(r \<otimes> a)\<rrangle>\<^sub>m = cmod (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)))"
 proof (cases "a = 0\<^sub>m")
   case True
   then show ?thesis
-    using Moebius_gyrodom'.gyronorm_def m_otimes'_def m_otimes.rep_eq m_ozero'_def m_ozero.rep_eq m_ozero_def
+    using Moebius_gyrodom'.gyronorm_def otimes'_def otimes.rep_eq m_ozero'_def m_ozero.rep_eq m_ozero_def
     by force
 next
   case False
-  have "\<llangle>(r \<otimes>\<^sub>m a)\<rrangle>\<^sub>m = \<bar>tanh (r * artanh (\<llangle>a\<rrangle>\<^sub>m))\<bar>"
-    using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_m_otimes' m_otimes'_k_tanh m_otimes.rep_eq
+  have "\<llangle>(r \<otimes> a)\<rrangle>\<^sub>m = \<bar>tanh (r * artanh (\<llangle>a\<rrangle>\<^sub>m))\<bar>"
+    using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_k_tanh otimes.rep_eq
     by force
   moreover
-  have "to_complex (\<bar>r\<bar> \<otimes>\<^sub>m of_complex (\<llangle>a\<rrangle>\<^sub>m)) = tanh (\<bar>r\<bar> * artanh (\<llangle>a\<rrangle>\<^sub>m))"
+  have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)) = tanh (\<bar>r\<bar> * artanh (\<llangle>a\<rrangle>\<^sub>m))"
   proof-
-    have "to_complex (\<bar>r\<bar> \<otimes>\<^sub>m of_complex (\<llangle>a\<rrangle>\<^sub>m)) = 
-          m_otimes'_k \<bar>r\<bar> (\<llangle>a\<rrangle>\<^sub>m) * ((\<llangle>a\<rrangle>\<^sub>m) / cmod (\<llangle>a\<rrangle>\<^sub>m))" 
-      using m_otimes_def m_otimes'_def
-      using Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.to_dom Rep_PoincareDisc m_otimes.rep_eq
+    have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>\<^sub>m)) = 
+          otimes'_k \<bar>r\<bar> (\<llangle>a\<rrangle>\<^sub>m) * ((\<llangle>a\<rrangle>\<^sub>m) / cmod (\<llangle>a\<rrangle>\<^sub>m))" 
+      using otimes_def otimes'_def
+      using Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.to_dom Rep_PoincareDisc otimes.rep_eq
       by force 
     moreover
     have "cmod (cmod (to_complex a)) = cmod (to_complex a)"
@@ -1011,10 +923,10 @@ next
       using \<open>a \<noteq> 0\<^sub>m\<close>
       by (metis Moebius_gyrodom'.gyronorm_def Moebius_gyrodom'.of_dom divide_self_if m_ozero'_def m_ozero_def norm_eq_zero)
     ultimately
-    have "to_complex ((abs r)  \<otimes>\<^sub>m ( of_complex (cor(\<llangle>a\<rrangle>\<^sub>m)))) = cor (m_otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>\<^sub>m)))"
+    have "to_complex (\<bar>r\<bar> \<otimes> ( of_complex (cor(\<llangle>a\<rrangle>\<^sub>m)))) = cor (otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>\<^sub>m)))"
       by auto
     then show ?thesis
-      using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc m_otimes'_k_tanh
+      using Moebius_gyrodom'.gyronorm_def Rep_PoincareDisc otimes'_k_tanh
       by auto
   qed
   moreover 
@@ -1026,17 +938,17 @@ next
 qed
 
 lemma m_gyr_gyrospace:
-  shows "m_gyr (r1 \<otimes>\<^sub>m v) (r2 \<otimes>\<^sub>m v) = id"
+  shows "m_gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
 proof-
-  have "m_gyr' (to_complex (r1 \<otimes>\<^sub>m v)) (to_complex (r2 \<otimes>\<^sub>m v)) = id"
+  have "m_gyr' (to_complex (r1 \<otimes> v)) (to_complex (r2 \<otimes> v)) = id"
   proof-
     let ?v = "to_complex v"
     let ?e1 = "?v * tanh (r1 * artanh (cmod ?v)) /cmod(to_complex v)"
     let ?e2 = "?v * tanh (r2 * artanh (cmod ?v)) /cmod(to_complex v)"
 
-    have "to_complex (r1 \<otimes>\<^sub>m v) = ?e1"
-         "to_complex (r2 \<otimes>\<^sub>m v) = ?e2"
-      using Rep_PoincareDisc m_otimes'_def m_otimes'_k_tanh m_otimes.rep_eq
+    have "to_complex (r1 \<otimes> v) = ?e1"
+         "to_complex (r2 \<otimes> v) = ?e2"
+      using Rep_PoincareDisc otimes'_def otimes'_k_tanh otimes.rep_eq
       by auto
 
     moreover
@@ -1053,8 +965,8 @@ proof-
         by simp
       moreover
       have "1 + ?e2 * (cnj ?e1) \<noteq> 0"
-        using \<open>to_complex (r1 \<otimes>\<^sub>m v) =?e1\<close> \<open>to_complex (r2 \<otimes>\<^sub>m v) = ?e2\<close>
-        by (metis Rep_PoincareDisc  div_by_0 divide_eq_1_iff mem_Collect_eq mobius_gyroauto_help norm_zero)
+        using \<open>to_complex (r1 \<otimes> v) = ?e1\<close> \<open>to_complex (r2 \<otimes> v) = ?e2\<close>
+        by (metis Rep_PoincareDisc  div_by_0 divide_eq_1_iff mem_Collect_eq cmod_mix_cnj norm_zero)
       ultimately
       show ?thesis
         by simp
@@ -1069,14 +981,8 @@ proof-
      by (metis (no_types, opaque_lifting) add_0_left add_0_right complex_cnj_zero div_by_1 eq_id_iff m_gyr_def m_left_id m_oplus'_def m_oplus_def m_ozero'_def m_ozero.rep_eq map_fun_apply mult_zero_left)
 qed
 
-lemma help8:
-  assumes "cmod u < 1" "cmod v < 1"
-  shows "cmod ((1 + cnj u * v) / (1 + u * cnj v)) = 1"
-  using assms norm_divide
-  by (simp add: mobius_gyroauto_help mult.commute)
-
 lemma m_gyr_gyrospace2:
-  shows "m_gyr u v (r \<otimes>\<^sub>m a) = r \<otimes>\<^sub>m (m_gyr u v a)"
+  shows "m_gyr u v (r \<otimes> a) = r \<otimes> (m_gyr u v a)"
 proof-
   let ?u = "to_complex u" and ?v = "to_complex v" and ?a = "to_complex a"
   let ?e1 = "m_gyr u v a"
@@ -1087,16 +993,16 @@ proof-
   then have "?e2 = cmod ((1 + ?u * cnj ?v) / (1 + cnj ?u *?v)) * cmod ?a"
     by (metis m_gyr'_def m_gyr.rep_eq norm_mult)
   then have "?e2 = cmod ?a"
-    using Moebius_gyrodom'.gyronorm_def mobius_gyroauto_norm 
+    using Moebius_gyrodom'.gyronorm_def moebius_gyroauto_norm 
     by presburger
-  then have "r \<otimes>\<^sub>m ?e1 = of_complex (((1+cmod ?a) powr r - (1-cmod ?a) powr r) /
+  then have "r \<otimes> ?e1 = of_complex (((1+cmod ?a) powr r - (1-cmod ?a) powr r) /
                                     ((1+cmod ?a) powr r + (1-cmod ?a) powr r) * to_complex ?e1 / ?e2)"
-    using m_otimes_def 
-    by (metis (no_types, lifting) Moebius_gyrodom'.of_dom m_otimes'_def m_otimes'_k_def m_otimes.rep_eq mult_eq_0_iff times_divide_eq_right)
-  then have "r \<otimes>\<^sub>m ?e1 = of_complex (to_complex (r \<otimes>\<^sub>m a) * ((1 + ?u * cnj ?v) / (1 + cnj ?u * ?v)))"
-    using m_otimes_def
+    using otimes_def 
+    by (metis (no_types, lifting) Moebius_gyrodom'.of_dom otimes'_def otimes'_k_def otimes.rep_eq mult_eq_0_iff times_divide_eq_right)
+  then have "r \<otimes> ?e1 = of_complex (to_complex (r \<otimes> a) * ((1 + ?u * cnj ?v) / (1 + cnj ?u * ?v)))"
+    using otimes_def
     using \<open>?e2 = cmod ?a\<close>
-    by (smt (verit, ccfv_threshold) Moebius_gyrodom'.of_dom  ab_semigroup_mult_class.mult_ac(1) m_gyr'_def m_gyr.rep_eq m_otimes'_def m_otimes'_k_def m_otimes.rep_eq mult.commute mult_eq_0_iff times_divide_eq_right)
+    by (smt (verit, ccfv_threshold) Moebius_gyrodom'.of_dom  ab_semigroup_mult_class.mult_ac(1) m_gyr'_def m_gyr.rep_eq otimes'_def otimes'_k_def otimes.rep_eq mult.commute mult_eq_0_iff times_divide_eq_right)
   then show ?thesis 
     by (metis Moebius_gyrodom'.of_dom m_gyr'_def m_gyr.rep_eq mult.commute)
 qed
@@ -1105,46 +1011,46 @@ definition m_gyroplus_r :: "real \<Rightarrow> real \<Rightarrow> real" (infixl 
   "r1 \<oplus>\<^sub>m\<^sub>r r2 = (r1 + r2) / (1 + r1*r2)"
 
 interpretation Moebious_gyrovector_space:
- gyrovector_space of_complex "\<lambda> z. cmod z < 1" to_complex m_otimes "of_complex \<circ> cor" "cmod \<circ> to_complex"
+ gyrovector_space of_complex "\<lambda> z. cmod z < 1" to_complex otimes "of_complex \<circ> cor" "cmod \<circ> to_complex"
 proof
   fix a :: PoincareDisc
-  show "1 \<otimes>\<^sub>m a = a"
-    by transfer (auto simp add: m_otimes'_def m_otimes'_k_def)
+  show "1 \<otimes> a = a"
+    by transfer (auto simp add: otimes'_def otimes'_k_def)
 next
   fix r1 r2 a
-  show "(r1 + r2) \<otimes>\<^sub>m a = r1 \<otimes>\<^sub>m a \<oplus> r2 \<otimes>\<^sub>m a"
-    using gyroplus_PoincareDisc_def m_otimes_distrib by auto
+  show "(r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus> r2 \<otimes> a"
+    using gyroplus_PoincareDisc_def otimes_distrib by auto
 next
   fix r1 r2 a
-  show "(r1 * r2) \<otimes>\<^sub>m a = r1 \<otimes>\<^sub>m (r2 \<otimes>\<^sub>m a)"
-    by (simp add: m_otimes_assoc)
+  show "(r1 * r2) \<otimes> a = r1 \<otimes> (r2 \<otimes> a)"
+    by (simp add: otimes_assoc)
 next
   fix r :: real and a
   assume "r \<noteq> 0" 
-  then show "to_complex (abs r \<otimes>\<^sub>m a) /\<^sub>R gyrodom'.gyronorm to_complex (r \<otimes>\<^sub>m a) =
+  then show "to_complex (abs r \<otimes> a) /\<^sub>R gyrodom'.gyronorm to_complex (r \<otimes> a) =
              to_complex a /\<^sub>R  gyrodom'.gyronorm to_complex a"
-    using mobius_scale_prop[of r a]
+    using otimes_scale_prop[of r a]
     by (metis Moebius_gyrodom'.gyrodom'_axioms Moebius_gyrodom'.gyronorm_def divide_inverse_commute gyrodom'.gyronorm_def of_real_inverse scaleR_conv_of_real)
 next
   fix u v r a
-  have "m_gyr u v (r \<otimes>\<^sub>m a) = r \<otimes>\<^sub>m m_gyr u v a"
+  have "m_gyr u v (r \<otimes> a) = r \<otimes> m_gyr u v a"
     using m_gyr_gyrospace2 
     by auto
-  then show "gyr u v (r \<otimes>\<^sub>m a) = r \<otimes>\<^sub>m gyr u v a"
+  then show "gyr u v (r \<otimes> a) = r \<otimes> gyr u v a"
     using gyr_PoincareDisc_def by auto
 next
   fix r1 r2 v
-  have "m_gyr (r1 \<otimes>\<^sub>m v) (r2 \<otimes>\<^sub>m v) = id"
+  have "m_gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
     using m_gyr_gyrospace
     by simp
-  then show "gyr (r1 \<otimes>\<^sub>m v) (r2 \<otimes>\<^sub>m v) = id"
+  then show "gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
     by (simp add: gyr_PoincareDisc_def)
 next
   fix r a
-  show " gyrodom'.gyronorm to_complex (r \<otimes>\<^sub>m a) =
+  show "gyrodom'.gyronorm to_complex (r \<otimes> a) =
            (cmod \<circ> to_complex)
-            (\<bar>r\<bar> \<otimes>\<^sub>m (of_complex \<circ> cor) (gyrodom'.gyronorm to_complex a))"
-    using moebius_homogenity[of r a]
+            (\<bar>r\<bar> \<otimes> (of_complex \<circ> cor) (gyrodom'.gyronorm to_complex a))"
+    using otimes_homogenity[of r a]
     using Moebius_gyrodom'.gyrodom'_axioms Moebius_gyrodom'.gyronorm_def gyrodom'.gyronorm_def by fastforce   
 next
   fix a b
@@ -1232,53 +1138,18 @@ proof-
     by (metis (no_types, lifting) den_not_zero divide_divide_eq_left' nonzero_mult_div_cancel_left scaleR_conv_of_real)
 qed
 
-lemma times2_m: "2 \<otimes>\<^sub>m u = u \<oplus>\<^sub>m u"
+lemma times2_m: "2 \<otimes> u = u \<oplus>\<^sub>m u"
   using Moebious_gyrovector_space.times2 gyroplus_PoincareDisc_def
   by simp
-(*
-proof transfer
-  fix u
-  assume "cmod u < 1"
-  show "m_otimes' 2 u = m_oplus' u u"
-  proof (cases "u = 0")
-    case True
-    then show ?thesis
-      unfolding m_otimes'_def m_otimes'_k_def m_oplus'_def
-      by auto
-  next
-    case False
-    have "(1 + (cmod u))\<^sup>2 - (1 - (cmod u))\<^sup>2 = 4 * cmod u"
-      by (simp add: power2_eq_square field_simps)
-    moreover
-    have "(1 + (cmod u))\<^sup>2 + (1 - (cmod u))\<^sup>2 = 2 * (1 + (cmod u)\<^sup>2)"
-      by (simp add: power2_eq_square field_simps)
-    ultimately
-    have "m_otimes' 2 u = 4 * u / (2 * (1 + (cmod u)\<^sup>2))"
-      using False \<open>cmod u < 1\<close>
-      unfolding m_otimes'_def m_otimes'_k_def
-      by auto
-    also have "\<dots> = 2 * (2 * u) / (2 * (1 + (cmod u)\<^sup>2))"
-      by (simp add: field_simps)
-    also have "\<dots> = 2 * u / (1 + (cmod u)\<^sup>2)"
-      by (smt (verit, ccfv_threshold) divide_divide_eq_right mult.commute mult_2 nonzero_mult_div_cancel_left of_real_add of_real_diff of_real_divide of_real_mult of_real_numeral of_real_power times_divide_eq_left times_divide_eq_right zero_neq_numeral)
-    finally show ?thesis
-      using False
-      unfolding m_otimes'_def m_otimes'_k_def m_oplus'_def
-      using complex_norm_square 
-      by fastforce
-  qed
-qed
-*)
-
 
 lift_definition m_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>m") is gamma_factor
   done
 
-definition m_half' :: "complex \<Rightarrow> complex" where
-  "m_half' v = (\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v"
+definition half' :: "complex \<Rightarrow> complex" where
+  "half' v = (\<gamma> v / (1 + \<gamma> v)) *\<^sub>R v"
 
-lift_definition m_half :: "PoincareDisc \<Rightarrow> PoincareDisc" is m_half'
-  unfolding m_half'_def
+lift_definition half :: "PoincareDisc \<Rightarrow> PoincareDisc" is half'
+  unfolding half'_def
 proof-
   fix v
   assume "cmod v < 1"
@@ -1290,10 +1161,11 @@ proof-
     by (metis mult_closed_for_unit_disc norm_of_real scaleR_conv_of_real)
 qed
 
+
 lemma two_times_half:
-  shows "2 \<otimes>\<^sub>m (m_half v) = v"
+  shows "2 \<otimes> (half v) = v"
 proof-
-  have "2 \<otimes>\<^sub>m (m_half v) = m_half v \<oplus>\<^sub>m m_half v"
+  have "2 \<otimes> (half v) = half v \<oplus>\<^sub>m half v"
     using times2_m
     by simp
   also have "\<dots> = v"
@@ -1323,8 +1195,8 @@ proof-
     also have "\<dots> = 2 * ?k"
       using *
       by (simp add: field_simps)
-    finally show "m_oplus' (m_half' v) (m_half' v) = v"
-      unfolding m_oplus'_def m_half'_def
+    finally show "m_oplus' (half' v) (half' v) = v"
+      unfolding m_oplus'_def half'_def
       using * \<open>1 + cnj (?k * v) * (?k * v) = 1 + ?k\<^sup>2 * (cmod v)\<^sup>2\<close>
       by (smt (verit)  mult_eq_0_iff nonzero_mult_div_cancel_left of_real_eq_0_iff power2_eq_square scaleR_conv_of_real scaleR_left_distrib)
   qed
@@ -1332,10 +1204,14 @@ proof-
     .
 qed
 
-lemma m_half:
-  shows "m_half v = (1/2) \<otimes>\<^sub>m v"
+lemma half:
+  shows "half v = (1/2) \<otimes> v"
   by (metis Moebious_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double two_times_half)
 
-
+lemma half':
+  assumes "cmod u < 1"
+  shows "otimes' (1/2) u = half' u"
+  using assms half half.rep_eq[of "of_complex u"] otimes.rep_eq
+  by (simp add: Moebius_gyrodom'.to_dom)
 
 end

@@ -29,7 +29,6 @@ lift_definition e_ozero :: PoincareDisc  ("0\<^sub>E") is e_ozero'
 definition e_oplus' :: "complex \<Rightarrow> complex \<Rightarrow> complex"  where
   "e_oplus' u v = (1 / (1 + inner u v)) *\<^sub>R (u + (1 / \<gamma> u) *\<^sub>R v + ((\<gamma> u / (1 + \<gamma> u)) * (inner u v)) *\<^sub>R u)"
 
-
 lemma norm_oplus'_e:
   assumes "norm u < 1" "norm v <1"
   shows "norm (e_oplus' u v)^2 =
@@ -247,7 +246,6 @@ lift_definition e_oplus :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow
 lift_definition e_gammma_factor :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>E") is gamma_factor
   done
 
-
 lemma gamma_factor_oplus_e:
   shows "\<gamma>\<^sub>E (u \<oplus>\<^sub>E v) = \<gamma>\<^sub>E u * \<gamma>\<^sub>E v * (1 + u \<cdot>\<^sub>E v)"
   using gamma_factor_e_oplus' 
@@ -272,17 +270,6 @@ lemma e_ominus'_in_unit_disc:
 lift_definition e_ominus :: "PoincareDisc \<Rightarrow> PoincareDisc" ("\<ominus>\<^sub>E") is e_ominus'
   using e_ominus'_in_unit_disc by blast
 
-definition e_otimes' :: "real \<Rightarrow> complex \<Rightarrow> complex" where
-  "e_otimes' r z = m_otimes' r z"
-
-lift_definition e_otimes :: "real \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" (infixl "\<otimes>\<^sub>E" 105) is e_otimes'
-  using cmod_m_otimes' cmod_m_otimes'_k e_otimes'_def 
-  by auto
-
-
-lemma e_half:
-  shows "(1/2) \<otimes>\<^sub>E u = m_half u"
-  by (metis Moebius_gyrodom'.of_dom e_otimes'_def e_otimes.rep_eq m_half m_otimes.rep_eq)
 
 lemma norm_square_gamma_half:
   assumes "norm v < 1"
@@ -381,42 +368,41 @@ lemma iso_ei_inner_help:
   by fastforce
 
 lemma iso_ei_inner_help2:
-  shows "to_complex ((1 / 2) \<otimes>\<^sub>m u) = 
+  shows "to_complex ((1 / 2) \<otimes> u) = 
          (\<gamma> (to_complex u)) / (1 + \<gamma> (to_complex u)) * to_complex u"
-  using m_half m_half.rep_eq m_half'_def
+  using half half.rep_eq half'_def
   by (simp add: scaleR_conv_of_real)
   
 lemma iso_ei_inner_mo_help3:
   assumes "cmod v < 1"
-  shows "(cmod (m_half' v))\<^sup>2 = (\<gamma> v / (1 + \<gamma> v))^2 * (norm v)^2"
-  unfolding m_half'_def 
+  shows "(cmod (half' v))\<^sup>2 = (\<gamma> v / (1 + \<gamma> v))^2 * (norm v)^2"
+  unfolding half'_def 
   using norm_square_gamma_half assms
   by (smt (verit) divide_pos_pos gamma_factor_positive norm_scaleR power_mult_distrib)
 
-
 lemma iso_ei_inner_mo_help4:
   assumes "cmod u < 1" "cmod v < 1"
-  shows "inner (m_half' u) (m_half' v) = (\<gamma> u / (1 + \<gamma> u)) * (\<gamma> v / (1 + \<gamma> v)) * (inner u v)"
-  unfolding m_half'_def scaleR_conv_of_real
+  shows "inner (half' u) (half' v) = (\<gamma> u / (1 + \<gamma> u)) * (\<gamma> v / (1 + \<gamma> v)) * (inner u v)"
+  unfolding half'_def scaleR_conv_of_real
   by (metis inner_mult_left inner_mult_right mult.assoc)
 
 
 lemma iso_ei_mo_inner_help6:
   fixes u v :: complex
   assumes "cmod u < 1" "cmod v < 1"
-  shows "(1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' v))\<^sup>2) *\<^sub>R (m_half' u) = 
+  shows "(1 + 2 * inner (half' u) (half' v) + (cmod (half' v))\<^sup>2) *\<^sub>R (half' u) = 
         (2 * \<gamma> v / (1 + \<gamma> v) + 2 * \<gamma> v * \<gamma> u / ((1 + \<gamma> v) * (1 + \<gamma> u)) * inner u v) * (\<gamma> u / (1 + \<gamma> u)) * u"
 proof-
-  have *: "m_half' u = (\<gamma> u / (1 + \<gamma> u)) * u"
-    by (simp add: m_half'_def scaleR_conv_of_real)
+  have *: "half' u = (\<gamma> u / (1 + \<gamma> u)) * u"
+    by (simp add: half'_def scaleR_conv_of_real)
   
-  have "1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' v))\<^sup>2 = 
+  have "1 + 2 * inner (half' u) (half' v) + (cmod (half' v))\<^sup>2 = 
         1 + 2 * (\<gamma> u / (1 + \<gamma> u) * (\<gamma> v / (1 + \<gamma> v)) * inner u v) + (\<gamma> v / (1 + \<gamma> v))\<^sup>2 * (cmod v)\<^sup>2"
     using iso_ei_inner_mo_help4 iso_ei_inner_mo_help3 assms
     by simp
   also have "\<dots> = (2 * \<gamma> v / (1 + \<gamma> v) + 2 * \<gamma> v * \<gamma> u / ((1 + \<gamma> v) * (1 + \<gamma> u)) * inner u v)"
     using iso_ei_mo_help6[OF assms]
-    using assms(2) iso_ei_inner_mo_help3 m_half'_def by auto
+    using assms(2) iso_ei_inner_mo_help3 half'_def by auto
   finally
   show ?thesis
     using *
@@ -425,22 +411,22 @@ qed
 
 lemma iso_ei_mo_inner_help7_1:
   assumes "cmod u < 1"
-  shows "(cmod (m_half' u))\<^sup>2 = (\<gamma> u - 1) / (1 + \<gamma> u)"
+  shows "(cmod (half' u))\<^sup>2 = (\<gamma> u - 1) / (1 + \<gamma> u)"
   using assms
-  using m_half'_def norm_square_gamma_half
+  using half'_def norm_square_gamma_half
   by auto
 
 lemma iso_ei_mo_inner_help7:
   fixes u v :: complex
   assumes "cmod u < 1"
-  shows "(1 - (cmod (m_half' u))\<^sup>2) *\<^sub>R (m_half' v) = 
+  shows "(1 - (cmod (half' u))\<^sup>2) *\<^sub>R (half' v) = 
          2 * (\<gamma> v) / ((1 + \<gamma> v) *(1 + \<gamma> u)) * v"
   using iso_ei_mo_help4 iso_ei_mo_inner_help7_1 assms
-  by (simp add: m_half'_def mult.assoc scaleR_conv_of_real)
+  by (simp add: half'_def mult.assoc scaleR_conv_of_real)
 
 lemma iso_ei_mo_inner_help8:
   assumes "cmod u < 1" "cmod v < 1"
-  shows "1 + 2 * inner (m_half' u) (m_half' v) + (cmod (m_half' u))\<^sup>2 * (cmod (m_half' v))\<^sup>2 =
+  shows "1 + 2 * inner (half' u) (half' v) + (cmod (half' u))\<^sup>2 * (cmod (half' v))\<^sup>2 =
          2 * (\<gamma> u) * (\<gamma> v) * inner u v / ((1 + \<gamma> u) * (1 + \<gamma> v)) + 2 * (1 + (\<gamma> u)*(\<gamma> v)) / ((1 + \<gamma> u) * (1 + \<gamma> v))"
   using assms iso_ei_inner_mo_help4 iso_ei_mo_help8_1 iso_ei_mo_inner_help7_1
   by fastforce
@@ -449,7 +435,7 @@ lemma iso_ei_mo_inner_help8:
 lemma iso_ei_mo_help9:
   fixes u v :: complex
   assumes "cmod u < 1" "cmod v < 1"
-  shows "m_oplus'_full (m_half' u) (m_half' v) = 
+  shows "m_oplus'_full (half' u) (half' v) = 
          ((2*(\<gamma> v / (1 + \<gamma> v)) + (2*(\<gamma> v / (1 + \<gamma> v)) * (\<gamma> u / (1 + \<gamma> u)) * inner u v)) *
           (\<gamma> u / (1 + \<gamma> u)) * u + 2 * \<gamma> v / ((1 + \<gamma> v) * (1 + \<gamma> u)) * v) /
           (2 * (\<gamma> u) * (\<gamma> v) * inner u v / ((1 + \<gamma> v) * (1 + \<gamma> u)) + 2 * (1 + (\<gamma> u) * (\<gamma> v)) / ((1 + \<gamma> v) * (1 + \<gamma> u)))" (is "?lhs = ?rhs")
@@ -460,13 +446,13 @@ lemma iso_ei_mo_help9:
 lemma iso_ei_mo_help10:
   fixes u v :: complex
   assumes "cmod u < 1" "cmod v < 1"
-  shows "m_half' (e_oplus' u v) = 
+  shows "half' (e_oplus' u v) = 
          \<gamma> u * \<gamma> v / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u)) * inner u v * u)"
 proof-
-  have "m_half' (e_oplus' u v) = 
+  have "half' (e_oplus' u v) = 
        \<gamma> u * \<gamma> v * (1 + inner u v) / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1) *
        ((1 / (1 + inner u v)) * (u + (1 / \<gamma> u)*v + (\<gamma> u / (1 + \<gamma> u)) * inner u v * u))"
-    unfolding m_half'_def
+    unfolding half'_def
     unfolding gamma_factor_e_oplus'[OF assms] scaleR_conv_of_real
     unfolding e_oplus'_def scaleR_conv_of_real
     by simp
@@ -499,7 +485,7 @@ lemma iso_ei_mo_help12:
 lemma iso_ei_mo_help13:
   fixes u v :: complex
   assumes "cmod u < 1" "cmod v < 1"
-  shows "m_oplus'_full (m_half' u) (m_half' v) = 
+  shows "m_oplus'_full (half' u) (half' v) = 
          ((2 * \<gamma> v * \<gamma> u * u) + 2 * \<gamma> v * \<gamma> u * inner u v * \<gamma> u / (1 + \<gamma> u) * u + 2 * \<gamma> v * v) / ((2 * \<gamma> u * \<gamma> v * inner u v) + ((2 + 2 * \<gamma> u * \<gamma> v)))"
 proof-
   have "1 + \<gamma> u \<noteq>0" "1 + \<gamma> v \<noteq> 0"
@@ -525,7 +511,7 @@ qed
 lemma iso_ei_mo_help14:
   fixes u v :: complex
   assumes "cmod u < 1" "cmod v < 1"
-  shows "m_oplus'_full (m_half' u) (m_half' v) =
+  shows "m_oplus'_full (half' u) (half' v) =
         (\<gamma> u * \<gamma> v / (\<gamma> u * \<gamma> v * (1 + inner u v) + 1)) * (u + (1 / \<gamma> u) * v + (\<gamma> u / (1 + \<gamma> u) * inner u v) * u)"
 proof-
   have "\<gamma> u \<noteq> 0" "\<gamma> v \<noteq> 0"
@@ -556,71 +542,46 @@ proof-
     by presburger
 qed
 
-lemma m_half':
-  assumes "cmod u < 1"
-  shows "m_otimes' (1 / 2) u = m_half' u"
-  using assms m_half m_half.rep_eq[of "of_complex u"] m_otimes.rep_eq
-  by (simp add: Moebius_gyrodom'.to_dom)
 
 lemma iso_ei_mo_half:
-  shows "(1/2) \<otimes>\<^sub>E (u \<oplus>\<^sub>E v) = ((1/2) \<otimes>\<^sub>m u \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>m v)"
+  shows "(1/2) \<otimes> (u \<oplus>\<^sub>E v) = ((1/2) \<otimes> u \<oplus>\<^sub>m (1/2) \<otimes> v)"
 proof transfer
   fix u v
   assume *: "cmod u < 1" "cmod v < 1"
-  have "e_otimes' (1 / 2) (e_oplus' u v) = m_half' (e_oplus' u v)"
-    using m_half'[of "e_oplus' u v"] *
-    unfolding e_otimes'_def
+  have "otimes' (1 / 2) (e_oplus' u v) = half' (e_oplus' u v)"
+    using half'[of "e_oplus' u v"] *
+    unfolding otimes'_def
     using e_oplus'_in_unit_disc 
     by blast
   moreover
-  have "m_otimes' (1 / 2) u = m_half' u" "m_otimes' (1 / 2) v = m_half' v"
-    using m_half' *
+  have "otimes' (1 / 2) u = half' u" "otimes' (1 / 2) v = half' v"
+    using half' *
     by auto
   moreover
-  have **: "cmod (m_half' u) < 1" "cmod (m_half' v) < 1"
+  have **: "cmod (half' u) < 1" "cmod (half' v) < 1"
     using *
-    by (metis eq_onp_same_args m_half.rsp rel_fun_eq_onp_rel)+
-  have "m_half' (e_oplus' u v) = m_oplus' (m_half' u) (m_half' v)"
+    by (metis eq_onp_same_args half.rsp rel_fun_eq_onp_rel)+
+  have "half' (e_oplus' u v) = m_oplus' (half' u) (half' v)"
     using * iso_ei_mo_help10[OF *] iso_ei_mo_help14[OF *]
     unfolding m_oplus'_full[OF **, symmetric]
     by simp
   ultimately
-  show "e_otimes' (1 / 2) (e_oplus' u v) = m_oplus' (m_otimes' (1 / 2) u) (m_otimes' (1 / 2) v)"
+  show "otimes' (1 / 2) (e_oplus' u v) = m_oplus' (otimes' (1 / 2) u) (otimes' (1 / 2) v)"
     by simp
 qed
- 
-lemma iso_mo_ei_two:
-  shows " 2 \<otimes>\<^sub>m ( u \<oplus>\<^sub>m v) =  (2 \<otimes>\<^sub>E u \<oplus>\<^sub>E 2 \<otimes>\<^sub>E v)"
-proof-
-  have  "(1/2)  \<otimes>\<^sub>E (2 \<otimes>\<^sub>m ( u \<oplus>\<^sub>m v)) =  ( u \<oplus>\<^sub>m v) "
-    proof -
-      have "\<forall>r ra. (1::real) / ra * r = r / ra"
-        by simp
-      then show ?thesis
-        by (smt (z3) Moebious_gyrovector_space.scale_1 Moebius_gyrodom'.of_dom div_self e_otimes'_def e_otimes.rep_eq m_otimes.rep_eq m_otimes_assoc)
-    qed
-    moreover have "(1/2)  \<otimes>\<^sub>E  (2 \<otimes>\<^sub>E u \<oplus>\<^sub>E 2 \<otimes>\<^sub>E v) = ((1/2) \<otimes>\<^sub>E (2 \<otimes>\<^sub>E u)  \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>E (2\<otimes>\<^sub>E v))"
-      using e_otimes'_def e_otimes_def iso_ei_mo_half m_otimes_def by presburger
-    moreover have "((1/2) \<otimes>\<^sub>E (2 \<otimes>\<^sub>E u)  \<oplus>\<^sub>m (1/2) \<otimes>\<^sub>E (2\<otimes>\<^sub>E v)) =  ( u \<oplus>\<^sub>m v) "
-    proof -
-      have "(\<otimes>\<^sub>E) = (\<otimes>\<^sub>m)"
-        using e_otimes'_def e_otimes_def m_otimes_def by presburger
-      then show ?thesis
-        by (smt (z3) Moebious_gyrovector_space.scale_1 div_self m_otimes_assoc times_divide_eq_left times_divide_eq_right)
-    qed
-    ultimately show ?thesis
-      by (metis Moebious_gyrovector_space.scale_1 Moebius_gyrodom'.of_dom e_otimes'_def e_otimes.rep_eq field_sum_of_halves m_otimes.rep_eq m_otimes_distrib)
-qed
 
+lemma iso_ei_mo:
+  shows "u \<oplus>\<^sub>E v = 2 \<otimes> ((1/2) \<otimes> u \<oplus>\<^sub>m (1/2) \<otimes> v)"
+  by (metis half iso_ei_mo_half two_times_half)
 
+(* ---------------------------------------------------------------------------------------------- *)
 
 definition e_gyr::"PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" where
     "e_gyr u v w = \<ominus>\<^sub>E(u\<oplus>\<^sub>Ev)\<oplus>\<^sub>E(u \<oplus>\<^sub>E(v \<oplus>\<^sub>E w))"
 
 lemma e_minus_m_minus:
-  shows "\<ominus>\<^sub>m a = \<ominus>\<^sub>E a"
+  shows "\<ominus>\<^sub>E a = \<ominus>\<^sub>m a"
   by (simp add: e_ominus'_def e_ominus_def m_ominus'_def m_ominus_def)
-
 
 lemma e_gamma_minus_plus:
   shows "\<gamma> (Rep_PoincareDisc (\<ominus>\<^sub>E a)) = \<gamma> (Rep_PoincareDisc a)"
