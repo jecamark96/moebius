@@ -104,4 +104,18 @@ lemma tanh_artanh_mono:
   using artanh_monotone
   by auto
 
+lemma tanh_def':
+  fixes x :: real
+  shows "tanh x = (exp (2*x) - 1) / (exp (2*x) + 1)"
+  unfolding tanh_def sinh_def cosh_def
+  by (metis cosh_def exp_gt_zero exp_of_nat_mult ln_unique of_nat_numeral sinh_def tanh_def tanh_ln_real)
+
+lemma tanh_artanh:
+  fixes x :: real
+  assumes "-1 < x" "x < 1"
+  shows "tanh (artanh x) = x"
+  using assms
+  unfolding artanh_def tanh_def'
+  by (simp add: field_simps)
+
 end

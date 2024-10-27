@@ -1,17 +1,11 @@
 theory hDistance
-  imports Complex_Main GyroGroup GyroVectorSpace HOL.Real_Vector_Spaces
-        MobiusGyroGroup Einstein
+  imports MobiusGyroVectorSpace
 begin
 
+definition hexplicit1 :: "complex \<Rightarrow> complex \<Rightarrow> real" where 
+  "hexplicit1 u v = arcosh (1 + 2 * norm(u-v)^2 / ((1 - (norm u)^2) * (1 - (norm v)^2)))"
 
-definition hexplicit1::"complex \<Rightarrow> complex \<Rightarrow> real" where 
-  "hexplicit1 u v = arcosh(1+ 2*norm(u-v)^2/((1-norm(u)^2)*(1-norm(v)^2)))"
-
-lemma arcosh_ln:
-  fixes x::real
-  assumes "x\<ge>1"
-  shows "arcosh x = ln(x+sqrt(x^2-1))"
-  using arcosh_real_def assms by blast
+lemmas arcosh_ln = arcosh_real_def
 
 lemma h1:
   shows "(norm (1-(cnj u)*v))^2 = 1-(cnj u)*v - u*(cnj v) + (norm u)^2 * (norm v)^2"
@@ -188,7 +182,7 @@ lemma h13:
   assumes "norm u <1" "norm v <1"
   shows "1 + (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (u-v)) + (norm (1-(cnj u)*v)))
       /(norm(1 - (cnj u)*v))"
-  by (metis (no_types, opaque_lifting) add_diff_cancel_left' add_divide_distrib assms(1) assms(2) complex_mod_cnj diff_diff_eq2 diff_zero divide_self_if mult_closed norm_eq_zero norm_one order_less_irrefl)
+  by (metis (no_types, opaque_lifting) add_diff_cancel_left' add_divide_distrib assms(1) assms(2) complex_mod_cnj diff_diff_eq2 diff_zero divide_self_if mult_closed_for_unit_disc norm_eq_zero norm_one order_less_irrefl)
 
 lemma h14:
   assumes "norm u < 1" "norm v <1"
@@ -202,7 +196,7 @@ lemma h15:
     ((norm (u-v)) + (norm (1-(cnj u)*v)))/ ((norm (1-(cnj u)*v))-(norm (u-v)))"
 proof-
   have "(norm (1-(cnj u)*v))\<noteq>0"
-        by (metis assms(1) assms(2) complex_mod_cnj eq_iff_diff_eq_0 mult_closed norm_eq_zero norm_one order_less_irrefl)
+        by (metis assms(1) assms(2) complex_mod_cnj eq_iff_diff_eq_0 mult_closed_for_unit_disc norm_eq_zero norm_one order_less_irrefl)
       moreover have "1 + (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (u-v)) + (norm (1-(cnj u)*v)))
       /(norm(1 - (cnj u)*v))"
         using assms(1) assms(2) h13 by blast
@@ -253,5 +247,36 @@ lemma h18:
   shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) = 
 ln((1 + (norm (u-v))/(norm (1-(cnj u)*v)))/(1- (norm (u-v))/(norm (1-(cnj u)*v))))"
   by (simp add: assms(1) assms(2) h12 h15 h16 h17)
+
+lemma h19:    
+  assumes "norm u < 1" "norm v <1"
+  shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) = 
+        2 * artanh (norm ((u-v) / (1 - (cnj u)*v)))"
+  using assms
+  unfolding artanh_def
+  by (simp add: h18 norm_divide)
+
+definition m_dist :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" where
+ "m_dist u v =  2 * artanh (\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>)"
+
+definition blaschke where
+  "blaschke a z = (z - a) / (1 - cnj a * z)"
+
+lemma
+  fixes a z :: complex
+  shows "blaschke a z  = m_oplus' (m_ominus' a) z"
+  unfolding blaschke_def m_oplus'_def m_ominus'_def
+  by (simp add: minus_divide_left)
+
+lemma 
+  shows "m_dist u v = hexplicit1 (to_complex u) (to_complex v)"
+proof-
+  have "(\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>) =
+         (cmod ((to_complex u - to_complex v) / (1 - cnj (to_complex u) * (to_complex v))))"
+    by transfer (simp add: m_oplus'_def m_ominus'_def norm_divide norm_minus_commute)
+  then show ?thesis
+  unfolding m_dist_def hexplicit1_def
+  using h19 norm_lt_one norm_p.rep_eq by force
+qed
 
 end

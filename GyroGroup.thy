@@ -346,6 +346,10 @@ lemma gyro_equation_left:
   shows "x \<oplus> a = b \<longleftrightarrow> x = b \<ominus>\<^sub>c\<^sub>b a"
   by (metis cogyrominus gyr_def gyr_inv_3 gyro_equation_right gyrominus_def gyro_right_id gyr_left_loop)
 
+lemma oplus_ominus_cancel [simp]:
+  shows "y = x \<oplus> (\<ominus> x \<oplus> y)"
+  by (metis local.gyro_equation_right)
+
 text \<open>(2.39)\<close>
 lemma cogyro_right_cancel':
   shows "(b \<ominus>\<^sub>c\<^sub>b a) \<oplus> a = b"

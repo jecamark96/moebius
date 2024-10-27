@@ -39,6 +39,39 @@ lemma cmod_mix_cnj:
   shows "cmod ((1 + u*cnj v) / (1 + v*cnj u)) = 1"
   by (smt (verit, ccfv_threshold) assms(1) assms(2) complex_cnj_add complex_cnj_cnj complex_cnj_mult complex_cnj_one complex_mod_cnj den_not_zero divide_self_if mult.commute norm_divide norm_one)
 
+lemma cnj_mix_ex_real_k: 
+  assumes "v \<noteq> 0"
+  shows "x * cnj v = v * cnj x \<longleftrightarrow> (\<exists> (k::real). x = k * v)"
+proof-
+  have vx: "v = Re v + Im v * \<i>" "x = Re x + Im x * \<i>"
+    by (simp add: complex_eq mult.commute)+
+
+  have "x * cnj v = v * cnj x \<longleftrightarrow> (Re x + Im x * \<i>) * (Re v - Im v * \<i>) = (Re v + Im v * \<i>) * (Re x - Im x * \<i>)"
+    by (metis complex_cnj_add complex_cnj_complex_of_real complex_cnj_i complex_cnj_mult complex_eq complex_of_real_i diff_conv_add_uminus i_complex_of_real mult_minus_left)   
+  also have "\<dots> \<longleftrightarrow> (Re v * Im x - Re x * Im v) * \<i> =
+                    (- Re v * Im x + Re x * Im v) * \<i>"
+    by (simp add: field_simps)
+  also have "\<dots> \<longleftrightarrow> Re v * Im x = Re x * Im v"
+    by (smt (verit, best) complex_i_not_zero mult_minus_left mult_right_cancel of_real_eq_iff)
+  also have "\<dots> \<longleftrightarrow> (\<exists> (k::real). x = k * v)"
+  proof (cases "Im v = 0")
+    case True
+    then show ?thesis
+      using assms vx
+      by (smt (verit, best) Im_divide_of_real add.right_neutral calculation complex_cnj_complex_of_real complex_cnj_mult complex_eq mult.commute mult_eq_0_iff nonzero_mult_div_cancel_left of_real_0 times_divide_eq_right)
+  next
+    case False
+    then have "Re v * Im x = Re x * Im v \<longleftrightarrow> x = (Im x / Im v) * v"
+      using assms vx
+      by (smt (verit, ccfv_SIG) calculation complex_cnj_complex_of_real complex_cnj_mult complex_of_real_mult_Complex complex_surj mult.commute nonzero_mult_div_cancel_right times_divide_eq_left)
+    then show ?thesis
+      using assms vx
+      by (smt (verit, del_insts) calculation complex_cnj_complex_of_real complex_cnj_mult mult.assoc mult.commute)
+  qed
+  finally show ?thesis
+    .
+qed
+
 lemma two_inner_cnj:
   shows "2 * inner u v = cnj u * v + cnj v * u"
   by (smt (verit) cnj.simps(1) cnj.simps(2) cnj_add_mult_eq_Re inner_complex_def mult.commute mult_minus_left times_complex.simps(1))

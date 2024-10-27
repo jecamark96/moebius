@@ -1,6 +1,5 @@
 theory GyroVectorSpace
   imports GyroGroup "HOL-Analysis.Inner_Product" HOL.Real_Vector_Spaces 
-
 begin
 
 locale gyrodom' = 
@@ -69,9 +68,6 @@ abbreviation add_real (infixl "\<oplus>\<^sub>R" 100) where
 abbreviation mult_real (infix "\<otimes>\<^sub>R" 100) where
   "mult_real r a \<equiv> to_real (r \<otimes> of_real a)"
 
-thm gyrotriangle
-thm homogeneity
-
 lemma scale_minus1: 
   shows "(-1) \<otimes> a = \<ominus> a"
   by (metis add.right_inverse add_cancel_right_left gyrogroup_class.gyro_left_cancel' gyrogroup_class.gyro_right_id scale_1 scale_distrib)
@@ -92,6 +88,14 @@ text \<open>(6.3)\<close>
 lemma scale_minus: 
   shows "(-r) \<otimes> a = \<ominus> (r \<otimes> a)"
   by (metis minus_mult_commute mult_1 scale_assoc scale_minus1)
+
+lemma zero_otimes [simp]: 
+  shows "0 \<otimes> x = 0\<^sub>g"
+  by (metis add.inverse_neutral add.right_neutral local.gyro_rigth_inv scale_distrib scale_minus)
+
+lemma times_zero [simp]: 
+  shows "t \<otimes> 0\<^sub>g = 0\<^sub>g"
+  by (metis mult_zero_right scale_assoc zero_otimes)
 
 text \<open>Theorem 6.4 (6.4)\<close>
 lemma monodistributive:
@@ -221,37 +225,38 @@ lemma I6_40:
   shows "gyr ((r+s)\<otimes>a) b x = gyr (r\<otimes>a) (s\<otimes>a \<oplus> b) (gyr (s\<otimes>a) b x) "
   by (metis (mono_tags, opaque_lifting) comp_eq_elim gyroauto_id id_def local.gyr_nested_1 scale_distrib)
 
-definition colinear :: "'a => 'a => 'a => bool" where
-  "colinear x y z \<longleftrightarrow> (y = z \<or> (\<exists>t::real. (x = y \<oplus> t \<otimes> (\<ominus> y \<oplus> z))))"
+(* ---------------------------------------------------------------------------- *)
+definition collinear :: "'a => 'a => 'a => bool" where
+  "collinear x y z \<longleftrightarrow> (y = z \<or> (\<exists>t::real. (x = y \<oplus> t \<otimes> (\<ominus> y \<oplus> z))))"
 
-lemma colinear_aab:
-  shows "colinear a a b"
-  by (metis colinear_def local.gyro_right_id local.gyro_rigth_inv scale_distrib scale_minus)
+lemma collinear_aab:
+  shows "collinear a a b"
+  by (metis collinear_def local.gyro_right_id local.gyro_rigth_inv scale_distrib scale_minus)
 
-lemma colinear_bab:
-  shows "colinear b a b"
-  by (metis colinear_def local.gyro_equation_right scale_1)
+lemma collinear_bab:
+  shows "collinear b a b"
+  by (metis collinear_def local.gyro_equation_right scale_1)
 
 lemma T6_20:
-  assumes "colinear p1 a b" "colinear p2 a b" "a \<noteq> b" "p1 \<noteq> p2"
-  shows "\<forall>x. (colinear x p1 p2 \<longrightarrow> colinear x a b)"
+  assumes "collinear p1 a b" "collinear p2 a b" "a \<noteq> b" "p1 \<noteq> p2"
+  shows "\<forall>x. (collinear x p1 p2 \<longrightarrow> collinear x a b)"
 proof
   fix x
-  show "colinear x p1 p2 \<longrightarrow> colinear x a b"
+  show "collinear x p1 p2 \<longrightarrow> collinear x a b"
   proof-
     obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
-      using assms(1) colinear_def 
+      using assms(1) collinear_def 
       using assms(3) by auto
     moreover  obtain "t2" where "p2 =  a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
-      using assms(2) colinear_def
+      using assms(2) collinear_def
       using assms(3) by blast
     moreover
     {
-    assume "colinear x p1 p2"
-    then have "colinear x a b"
+    assume "collinear x p1 p2"
+    then have "collinear x a b"
     proof-
       obtain "t" where "x =  p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2)"
-        using \<open>colinear x p1 p2\<close> colinear_def 
+        using \<open>collinear x p1 p2\<close> collinear_def 
         using assms(4) by blast
       moreover have "x = ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b))  \<oplus> t \<otimes> (\<ominus> ( a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)) \<oplus> (a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)))"
         by (simp add: \<open>p1 = a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)\<close> \<open>p2 = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation)
@@ -267,7 +272,7 @@ proof
       moreover have "x =   a \<oplus> (t1 + t*(-t1 + t2)) \<otimes> (\<ominus> a \<oplus> b)"
           using calculation(6) scale_distrib by auto
       ultimately  show ?thesis 
-          using colinear_def by blast
+          using collinear_def by blast
     qed
     }
     ultimately show ?thesis 
@@ -277,24 +282,24 @@ qed
 
 
 lemma T6_20_1:
-   assumes "colinear p1 a b" "colinear p2 a b" "p1 \<noteq> p2"  "a \<noteq> b"
-   shows "\<forall>x. (colinear x a b \<longrightarrow> colinear x p1 p2)"
+   assumes "collinear p1 a b" "collinear p2 a b" "p1 \<noteq> p2"  "a \<noteq> b"
+   shows "\<forall>x. (collinear x a b \<longrightarrow> collinear x p1 p2)"
 proof
   fix x
-  show "colinear x a b \<longrightarrow> colinear x p1 p2"
+  show "collinear x a b \<longrightarrow> collinear x p1 p2"
   proof-
     obtain "t1" where "p1 =  a \<oplus> t1 \<otimes> (\<ominus> a \<oplus> b)"
-    using assms(1) colinear_def 
+    using assms(1) collinear_def 
     using assms(4) by blast
     moreover  obtain "t3" where "p2 =  a \<oplus> t3 \<otimes> (\<ominus> a \<oplus> b)"
-      using assms(2) colinear_def 
+      using assms(2) collinear_def 
       using assms(4) by blast
     moreover {
-      assume "colinear x a b"
-      then have "colinear x p1 p2" 
+      assume "collinear x a b"
+      then have "collinear x p1 p2" 
       proof-
           obtain "t2" where "x= a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)"
-            using \<open>colinear x a b\<close> colinear_def
+            using \<open>collinear x a b\<close> collinear_def
             using assms(4) by blast
           moreover have "t3\<noteq>t1 \<or> t3 = t1" by blast
           moreover {
@@ -326,7 +331,7 @@ proof
             moreover have "p1 \<oplus> t \<otimes> (\<ominus> p1 \<oplus> p2) = x"
               using \<open>x = a \<oplus> t2 \<otimes> (\<ominus> a \<oplus> b)\<close> calculation(8) by blast
             ultimately have ?thesis
-              using colinear_def by blast
+              using collinear_def by blast
           }
               
           ultimately show ?thesis by blast
@@ -337,31 +342,64 @@ proof
   qed
 qed
 
-lemma colinear_sym1:
-  assumes "colinear a b c"
-  shows "colinear b a c"
-  using T6_20_1 assms colinear_aab colinear_bab colinear_def by blast
+lemma collinear_sym1:
+  assumes "collinear a b c"
+  shows "collinear b a c"
+  using T6_20_1 assms collinear_aab collinear_bab collinear_def by blast
 
-lemma colinear_sym2:
-  assumes "colinear a b c"
-  shows "colinear a c b"
-  by (metis T6_20 assms colinear_aab colinear_bab)
+lemma collinear_sym2:
+  assumes "collinear a b c"
+  shows "collinear a c b"
+  by (metis T6_20 assms collinear_aab collinear_bab)
 
-lemma colinear_transitive:
-  assumes "colinear a b c" "colinear d b c" "b \<noteq> c"
-  shows "colinear a d b" 
-  by (metis T6_20 assms(1) assms(2) assms(3) colinear_bab colinear_sym1 colinear_sym2)
-    
+lemma collinear_transitive:
+  assumes "collinear a b c" "collinear d b c" "b \<noteq> c"
+  shows "collinear a d b" 
+  by (metis T6_20 assms(1) assms(2) assms(3) collinear_bab collinear_sym1 collinear_sym2)
+
+lemma collinear_translate':
+  shows "x = u \<oplus> t \<otimes> (\<ominus> u \<oplus> v) \<longleftrightarrow> 
+        (\<ominus> a \<oplus> x) = (\<ominus> a \<oplus> u) \<oplus> t \<otimes> (\<ominus> (\<ominus> a \<oplus> u) \<oplus> (\<ominus> a \<oplus> v))"
+  by (metis gyroauto_property gyrogroup_class.gyro_left_assoc local.gyro_equation_right)
+
+definition translate where
+  "translate a x = \<ominus> a \<oplus> x"
+
+lemma collinear_translate:
+  shows "collinear u v w \<longleftrightarrow> collinear (translate a u) (translate a v) (translate a w)"
+  unfolding collinear_def translate_def
+  by (metis collinear_translate' local.gyro_left_cancel')
+
 definition gyroline :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set" where
-  "gyroline a b = {x. colinear x a b}"
+  "gyroline a b = {x. collinear x a b}"
+
+
+definition between :: "'a => 'a => 'a => bool" where
+  "between x y z \<longleftrightarrow> (\<exists>t::real. 0 \<le> t \<and> t \<le> 1 \<and> y = x \<oplus> t \<otimes> (\<ominus> x \<oplus> z))"
+
+lemma between_xxy [simp]:
+  shows "between x x y"
+  unfolding between_def
+  by (rule_tac x=0 in exI) simp
+
+lemma between_xyy [simp]:
+  shows "between x y y"
+  unfolding between_def
+  by (rule_tac x=1 in exI) (simp add: scale_1)
+
+lemma between_xyx:
+  assumes "between x y x"
+  shows "y = x"
+  using assms
+  unfolding between_def
+  by auto
+
+lemma between_translate:
+  shows "between u v w \<longleftrightarrow> between (translate a u) (translate a v) (translate a w)"
+  unfolding between_def translate_def
+  using collinear_translate' 
+  by auto
 
 end
-
-locale A = 
-  fixes a :: int
-
-locale B = A + 
-  fixes b :: int
-
 
 end
