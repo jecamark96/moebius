@@ -2,262 +2,139 @@ theory hDistance
   imports MobiusGyroVectorSpace
 begin
 
-definition hexplicit1 :: "complex \<Rightarrow> complex \<Rightarrow> real" where 
-  "hexplicit1 u v = arcosh (1 + 2 * norm(u-v)^2 / ((1 - (norm u)^2) * (1 - (norm v)^2)))"
+abbreviation distance_m_expr :: "complex \<Rightarrow> complex \<Rightarrow> real" where
+  "distance_m_expr u v \<equiv> 1 + 2 * (cmod (u - v))\<^sup>2 / ((1 - (cmod u)\<^sup>2) * (1 - (cmod v)\<^sup>2))"
 
-lemmas arcosh_ln = arcosh_real_def
+definition distance_m :: "complex \<Rightarrow> complex \<Rightarrow> real" where 
+  "distance_m u v = arcosh (distance_m_expr u v)"
 
-lemma h1:
-  shows "(norm (1-(cnj u)*v))^2 = 1-(cnj u)*v - u*(cnj v) + (norm u)^2 * (norm v)^2"
+lemma arcosh_artanh_lemma:
+  shows "(cmod (1 - cnj u * v))\<^sup>2 - (cmod (u - v))\<^sup>2 = (1 - (cmod u)\<^sup>2) * (1 - (cmod v)\<^sup>2)"
 proof-
-  have "(norm (1-(cnj u)*v))^2 = (1-(cnj u)*v)*(cnj (1-(cnj u)*v))"
-    using complex_norm_square by blast
-  moreover have "(1-(cnj u)*v)*(cnj (1-(cnj u)*v)) = (1-(cnj u)*v)* (1-u*(cnj v))"
-    by simp
-  moreover have "(1-(cnj u)*v)* (1-u*(cnj v)) = 1-u*(cnj v)-(cnj u)*v + (cnj u)*v*u*(cnj v)"
-    by (simp add: left_diff_distrib' right_diff_distrib')
-  ultimately show ?thesis 
-    using complex_norm_square by auto
-qed
-lemma h2:
-  shows "(norm (u-v))^2 = (norm u)^2 - u*(cnj v) - v*(cnj u) + (norm v)^2"
-  by (metis complex_cnj_diff complex_norm_square diff_add_eq diff_diff_eq2 left_diff_distrib right_diff_distrib')
-
-lemma h3:
-  shows "(norm (1-(cnj u)*v))^2 - (norm (u-v))^2 = (1-(norm u)^2)*(1-(norm v)^2)"
-proof-
-  have "(norm (1-(cnj u)*v))^2 = 1-(cnj u)*v - u*(cnj v) + (norm u)^2 * (norm v)^2"
-    using h1 by blast
-  moreover have "(norm (u-v))^2 = (norm u)^2 - u*(cnj v) - v*(cnj u) + (norm v)^2"
-    using h2 by blast
-  moreover have "(norm (1-(cnj u)*v))^2 - (norm (u-v))^2 = 1+(norm u)^2 * (norm v)^2 - (norm u)^2 - (norm v)^2"
-        by (smt (verit, del_insts) Re_complex_of_real calculation(1) calculation(2) minus_complex.simps(1) mult.commute one_complex.simps(1) plus_complex.simps(1))
-  ultimately show ?thesis 
-    by (simp add: Rings.ring_distribs(4) mult.commute)
-qed
-
-lemma h4:
-  assumes "norm u < 1" "norm v < 1"
-  shows "1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) \<ge> 1"
-proof-
-  have "(norm (u-v))^2 \<ge>0"
-    using zero_le_power2 by blast
-  moreover have "(1-(norm u)^2) > 0"
-    using assms(1) real_sqrt_lt_1_iff by fastforce
-  moreover have "(1-(norm v)^2)>0"
-    using assms(2) real_sqrt_lt_1_iff by fastforce
-  moreover have "2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) \<ge>0"
-    using calculation(2) calculation(3) by auto
-  ultimately show ?thesis
-    by linarith
-qed
-
-lemma h5:
-  assumes "norm u < 1" "norm v <1"
-  shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) =
-    ln(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) + sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1))"
-proof-
-  let ?iz = "1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))"
-  have "?iz \<ge>1"
-    using assms(1) assms(2) h4 by blast
+  have "cor ((cmod (1 - cnj u * v))\<^sup>2 - (cmod (u - v))\<^sup>2) = cor ((1 - (cmod u)\<^sup>2) * (1 - (cmod v)\<^sup>2))"
+    unfolding of_real_diff of_real_mult complex_norm_square
+    by (simp add: field_simps)
   then show ?thesis
-    using   arcosh_ln[OF  `?iz\<ge>1`]
-    by fastforce
-qed 
+    using of_real_eq_iff by blast
+qed
 
-lemma h6:
-  assumes "norm u < 1" "norm v <1"
-  shows "sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1) = 
-    sqrt(4*(norm (u-v)^2/((1-(norm u)^2)*(1-(norm v)^2))) + 4*((norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)))^2)"
-  by (smt (verit, best) add_divide_distrib four_x_squared inner_real_def one_power2 power2_diff real_inner_1_right)
-
-lemma h7:
-  assumes "norm u < 1" "norm v < 1"
-  shows " sqrt(4*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) + 4*((norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)))^2) =
-    2*(norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2))*sqrt((1-(norm u)^2)*(1-(norm v)^2) + (norm(u-v))^2)"
+lemma distance_m_expr_ge_1:
+  fixes u v :: complex
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "distance_m_expr u v \<ge> 1"
 proof-
-  have "4*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) + 4*((norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)))^2=
-  4*(norm (u-v)^2) * (1/((1-(norm u)^2)*(1-(norm v)^2)) + ((norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2)))^2)"
+  have "(cmod (u-v))\<^sup>2 \<ge> 0"
+    using zero_le_power2 by blast
+  moreover
+  have "(1 - (cmod u)\<^sup>2) *(1 - (cmod v)\<^sup>2) > 0"
+    using assms
+    by (simp add: power_less_one_iff)
+  ultimately 
+  show ?thesis
+    by simp
+qed
+
+lemma arcosh_artanh:
+  fixes u v :: complex
+  assumes "cmod u <1" "cmod v < 1"
+  shows "arcosh (distance_m_expr u v) =
+         2 * artanh (cmod ((u-v) / (1 - (cnj u)*v)))"
+proof-
+  let ?u = "1 - (cmod u)\<^sup>2" and ?v = "1 - (cmod v)\<^sup>2" and ?uv = "(cmod (u - v))\<^sup>2"
+
+  have "arcosh (distance_m_expr u v) =
+        ln (distance_m_expr u v + sqrt ((distance_m_expr u v)\<^sup>2 - 1))"
+    using arcosh_real_def[OF distance_m_expr_ge_1[OF assms]]
+    by simp
+  also have "\<dots> = ln (((cmod (1 - cnj u * v))\<^sup>2 + 2 * cmod (1 - cnj u * v) * cmod (u - v) + ?uv) /
+                      (?u * ?v))"
   proof-
-    have "4*((norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)))^2 = 4*(norm (u-v))^2 * ((norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2)))^2"
-      by (simp add: power2_eq_square)
-    moreover have "4*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) = 4*(norm (u-v))^2 * 1/((1-(norm u)^2)*(1-(norm v)^2))"
-      by fastforce
-    ultimately show ?thesis 
-      by (smt (verit) inner_real_def inner_right_distrib real_inner_1_right times_divide_eq_right)
-  qed
-  moreover have "1/((1-(norm u)^2)*(1-(norm v)^2)) + ((norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2)))^2 =
-        ((1-(norm u)^2)*(1-(norm v)^2) + (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))^2"
-  proof-
-    have "((norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2)))^2 = ((norm (u-v))^2 /((1-(norm u)^2)*(1-(norm v)^2))^2)"
-      using power_divide by blast
-    moreover have "1/((1-(norm u)^2)*(1-(norm v)^2)) + ((norm (u-v))^2 /((1-(norm u)^2)*(1-(norm v)^2))^2) =
-        ((1-(norm u)^2)*(1-(norm v)^2) + (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))^2"
+    have "distance_m_expr u v = (?u * ?v + 2 * ?uv) / (?u * ?v)"
     proof-
-      have "((1-(norm u)^2)*(1-(norm v)^2))^2 = ((1-(norm u)^2)*(1-(norm v)^2)) *((1-(norm u)^2)*(1-(norm v)^2)) "
-        by (simp add: power2_eq_square)
+      have "?u \<noteq> 0" "?v \<noteq> 0"
+        using assms
+        by (metis abs_norm_cancel order_less_irrefl real_sqrt_abs real_sqrt_one right_minus_eq)+  
       then show ?thesis 
         by (simp add: add_divide_distrib)
     qed
-    ultimately show ?thesis 
-      by presburger
-  qed
-  moreover have "sqrt(4*(norm (u-v))^2*((1-(norm u)^2)*(1-(norm v)^2) + (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))^2) =
-        2*(norm (u-v))*sqrt((1-(norm u)^2)*(1-(norm v)^2) + (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))"
-    by (smt (verit, ccfv_SIG) assms(1) assms(2) four_x_squared mult_nonneg_nonneg norm_not_less_zero one_power2 power_mono real_root_divide real_root_mult real_sqrt_unique sqrt_def)
-      
-  ultimately show ?thesis 
-    by force
-qed
-
-lemma h8:
-  assumes "norm u < 1" "norm v <1"
-  shows " 2*(norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2))*sqrt((1-(norm u)^2)*(1-(norm v)^2) + (norm(u-v))^2) =
-    2*(norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2)) * (norm (1-(cnj u)*v))"
-  by (smt (verit, ccfv_SIG) cmod_def cmod_power2 h3)
-
-lemma h9:
-  assumes "norm u <1" "norm v <1"
-  shows "1 + 2*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) = ((1-(norm u)^2)*(1-(norm v)^2)+2*(norm (u-v))^2)/
-    ((1-(norm u)^2)*(1-(norm v)^2))"
-proof-
-  have "(1-(norm u)^2)\<noteq>0"
-    by (metis abs_norm_cancel assms(1) order_less_irrefl real_sqrt_abs real_sqrt_one right_minus_eq)
-  moreover have "(1-(norm v)^2)\<noteq>0"
-    by (metis abs_norm_cancel assms(2) order_less_irrefl real_sqrt_abs real_sqrt_one right_minus_eq)
-  ultimately show ?thesis 
-    by (simp add: add_divide_distrib)
-qed
-
-lemma h10:
-  assumes "norm u < 1" "norm v<1"
-  shows "((1-(norm u)^2)*(1-(norm v)^2)+2*(norm (u-v))^2)/
-    ((1-(norm u)^2)*(1-(norm v)^2)) = ((norm (1-(cnj u)*v))^2 + (norm (u-v)^2))/((1-(norm u)^2)*(1-(norm v)^2))"
-  by (smt (verit, ccfv_SIG) h3)
-
-
-lemma h11:
-  assumes "norm u <1" "norm v<1"
-  shows "sqrt((1-(norm u)^2)*(1-(norm v)^2) + (norm(u-v))^2) = (norm (1-(cnj u)*v))"
-  by (smt (verit, ccfv_threshold) cmod_def cmod_power2 h3)
-
-lemma h12:
-  assumes "norm u <1" "norm v < 1"
-  shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) = 
-        ln(((norm (1-(cnj u)*v))^2 + 2*(norm (1-(cnj u)*v))*(norm (u-v))+ (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2)))"
-proof-
-  have "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) =
-    ln(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) + sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1))"
-    using assms(1) assms(2) h5 by blast
-  moreover have "1 + 2*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) = ((1-(norm u)^2)*(1-(norm v)^2)+2*(norm (u-v))^2)/
-    ((1-(norm u)^2)*(1-(norm v)^2))"
-    using assms(1) assms(2) h9 by blast
-  moreover have "((1-(norm u)^2)*(1-(norm v)^2)+2*(norm (u-v))^2)/
-    ((1-(norm u)^2)*(1-(norm v)^2)) = ((norm (1-(cnj u)*v))^2 + (norm (u-v)^2))/((1-(norm u)^2)*(1-(norm v)^2))"
-    using assms(1) assms(2) h10 by blast
-  moreover have **:"sqrt(4*(norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)) + 4*((norm (u-v))^2/((1-(norm u)^2)*(1-(norm v)^2)))^2) =
-    2*(norm (u-v))/((1-(norm u)^2)*(1-(norm v)^2))*sqrt((1-(norm u)^2)*(1-(norm v)^2) + (norm(u-v))^2)"
-    using assms(1) assms(2) h7 by blast
-  moreover have "1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) + sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1) =
-    ((norm (1-(cnj u)*v))^2 + 2*(norm (1-(cnj u)*v))*(norm (u-v))+ (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))"
-  proof-
-    have "1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) = ((norm (1-(cnj u)*v))^2
-      + (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2))"
-      using calculation(2) calculation(3) by presburger
-    moreover have " sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1) =
-      (2*(norm (u-v)) * (norm (1-(cnj u)*v)))/((1-(norm u)^2)*(1-(norm v)^2))"
-      using ** h11
-      by (simp add: assms(1) assms(2) h6)
-    ultimately show ?thesis 
-      by (simp add: add_divide_distrib)
-  qed
-  moreover have "ln(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)) + sqrt((1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2)))^2-1)) = ln(
-    ((norm (1-(cnj u)*v))^2 + 2*(norm (1-(cnj u)*v))*(norm (u-v))+ (norm (u-v))^2)/((1-(norm u)^2)*(1-(norm v)^2)))"
-    using calculation(5) by presburger
-  ultimately show ?thesis
-    by linarith
-qed
-
-lemma h13:
-  assumes "norm u <1" "norm v <1"
-  shows "1 + (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (u-v)) + (norm (1-(cnj u)*v)))
-      /(norm(1 - (cnj u)*v))"
-  by (metis (no_types, opaque_lifting) add_diff_cancel_left' add_divide_distrib assms(1) assms(2) complex_mod_cnj diff_diff_eq2 diff_zero divide_self_if mult_closed_for_unit_disc norm_eq_zero norm_one order_less_irrefl)
-
-lemma h14:
-  assumes "norm u < 1" "norm v <1"
-  shows "1- (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (1-(cnj u)*v))-(norm (u-v)))/
-    (norm (1-(cnj u)*v))"
-  by (smt (verit, ccfv_SIG) add_divide_distrib assms(1) assms(2) h13)
-
-lemma h15:
-  assumes "norm u<1" "norm v <1"
-  shows "(1 + (norm (u-v))/(norm (1-(cnj u)*v)))/(1- (norm (u-v))/(norm (1-(cnj u)*v))) =
-    ((norm (u-v)) + (norm (1-(cnj u)*v)))/ ((norm (1-(cnj u)*v))-(norm (u-v)))"
-proof-
-  have "(norm (1-(cnj u)*v))\<noteq>0"
-        by (metis assms(1) assms(2) complex_mod_cnj eq_iff_diff_eq_0 mult_closed_for_unit_disc norm_eq_zero norm_one order_less_irrefl)
-      moreover have "1 + (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (u-v)) + (norm (1-(cnj u)*v)))
-      /(norm(1 - (cnj u)*v))"
-        using assms(1) assms(2) h13 by blast
-      moreover have "1- (norm (u-v))/(norm (1-(cnj u)*v)) = ((norm (1-(cnj u)*v))-(norm (u-v)))/
-    (norm (1-(cnj u)*v))"
-        using assms(1) assms(2) h14 by auto
-      moreover have "(1 + (norm (u-v))/(norm (1-(cnj u)*v)))/(1- (norm (u-v))/(norm (1-(cnj u)*v))) =
-     (((norm (u-v)) + (norm (1-(cnj u)*v)))
-      /(norm(1 - (cnj u)*v)))/(((norm (1-(cnj u)*v))-(norm (u-v)))/
-    (norm (1-(cnj u)*v)))"
-        using calculation(2) calculation(3) by presburger
-      ultimately show ?thesis
+    then have *: "distance_m_expr u v = 
+                  ((cmod (1 - cnj u * v))\<^sup>2 + (cmod (u - v))\<^sup>2) / (?u * ?v)"
+      using assms 
+      by (smt (verit, ccfv_SIG) arcosh_artanh_lemma)
+   
+    have "sqrt ((distance_m_expr u v)\<^sup>2 - 1) =
+          sqrt (4 * (?uv / (?u * ?v)) + 4 * (?uv / (?u * ?v))\<^sup>2)"
+      by (smt (verit, best) add_divide_distrib four_x_squared inner_real_def one_power2 power2_diff real_inner_1_right)
+    also have "\<dots> = sqrt (4 * ?uv * (1 / (?u * ?v) + (cmod (u - v) / (?u * ?v))\<^sup>2))" (is "?lhs = sqrt (4 * ?A * ?B)")
+      by (simp add: field_simps)
+    also have "\<dots> = sqrt (4 * ?uv * (?u * ?v + ?uv) / (?u * ?v)\<^sup>2)"
+    proof-
+      have "?B = (?u * ?v + ?uv) / (?u * ?v)\<^sup>2"
+        by (simp add: power_divide power2_eq_square add_divide_distrib)
+      then show ?thesis
         by simp
     qed
-
-lemma h16:
-  assumes "norm u < 1" "norm v <1"
-  shows " ((norm (u-v)) + (norm (1-(cnj u)*v)))/ ((norm (1-(cnj u)*v))-(norm (u-v))) =
-    ((norm (1-(cnj u)*v)) + (norm (u-v)))^2/((1-(norm u)^2)*(1-(norm v)^2))"
-proof-
-  let ?iz = "((norm (1-(cnj u)*v)) + (norm (u-v)))"
-  have " ((norm (u-v)) + (norm (1-(cnj u)*v)))/ ((norm (1-(cnj u)*v))-(norm (u-v))) =  ((norm (u-v)) + (norm (1-(cnj u)*v)))/ ((norm (1-(cnj u)*v))-(norm (u-v)))
-    * ?iz/?iz"
-    by fastforce
-  moreover have "((norm (u-v)) + (norm (1-(cnj u)*v))) *?iz = ((norm (1-(cnj u)*v)) + (norm (u-v)))^2"
-    by (simp add: power2_eq_square)
-  moreover have "((norm (1-(cnj u)*v))-(norm (u-v))) * ?iz = (1-(norm u)^2)*(1-(norm v)^2)"
-  proof-
-    have "((norm (1-(cnj u)*v))-(norm (u-v))) * ?iz = ((norm (1-(cnj u)*v))^2 - (norm (u-v))^2)"
-      by (simp add: power2_eq_square square_diff_square_factored)
-    moreover have "((norm (1-(cnj u)*v))^2 - (norm (u-v))^2) =  (1-(norm u)^2)*(1-(norm v)^2)"
-      using h3 by blast
-    ultimately show ?thesis 
-      by presburger
+    also have "\<dots> = 2 * cmod (u - v) * sqrt (?u * ?v + ?uv) / (?u * ?v)"
+      using assms
+      by (smt (verit, ccfv_SIG) four_x_squared mult_nonneg_nonneg norm_not_less_zero one_power2 power_mono real_root_divide real_root_mult real_sqrt_unique sqrt_def)
+    also have "... = 2 * cmod (u - v) / (?u * ?v) * sqrt (?u * ?v + ?uv)"
+      by simp
+    finally have **: "sqrt ((distance_m_expr u v)\<^sup>2 - 1) =  
+                      2 * cmod (u - v) * cmod (1 - cnj u * v) / (?u * ?v)"
+      by (smt (verit, del_insts) arcosh_artanh_lemma norm_ge_zero real_sqrt_abs times_divide_eq_left)
+    show ?thesis
+      using * **
+      by (smt (verit, best) add_divide_distrib power2_sum)
   qed
-  ultimately show ?thesis 
-    by simp
+  also have "\<dots> = ln ((1 + cmod (u - v) / cmod (1 - cnj u * v)) /
+                      (1 - cmod (u - v) / cmod (1 - cnj u * v)))" (is "?lhs = ln (?nom / ?den)")
+  proof-
+    have *: "?nom = (cmod (u - v) + cmod (1 - cnj u * v)) / cmod (1 - cnj u * v)"
+      using assms
+      by (metis (no_types, opaque_lifting) add_diff_cancel_left' add_divide_distrib complex_mod_cnj diff_diff_eq2 diff_zero divide_self_if mult_closed_for_unit_disc norm_eq_zero norm_one order_less_irrefl)
+    then have **: "?den = (cmod (1 - cnj u * v) - cmod (u - v)) / cmod (1 - cnj u * v)"
+      using assms
+      by (smt (verit, ccfv_SIG) add_divide_distrib)
+    have "?nom / ?den =
+          (cmod (u - v) + cmod (1 - cnj u * v)) / (cmod (1 - cnj u * v) - cmod (u - v))"
+      using * **
+      by force
+    also have "\<dots> = (cmod (1 - cnj u * v) + cmod (u - v))\<^sup>2 / (?u * ?v)" (is "?lhs = ?rhs")
+    proof-
+      let ?e = "cmod (1 - cnj u * v) + cmod (u - v)"
+      have "?lhs = ?lhs * ?e/?e"
+        by fastforce
+      moreover
+      have "(cmod (1 - cnj u * v) - cmod (u - v)) * ?e = ?u * ?v"
+        using arcosh_artanh_lemma
+        by (simp add: mult.commute power2_eq_square square_diff_square_factored)
+      ultimately
+      show ?thesis
+        by (simp add: power2_eq_square)
+    qed
+    finally
+    show ?thesis
+      by (simp add: power2_eq_square field_simps)
+  qed
+  finally show ?thesis
+    unfolding artanh_def
+    by (simp add: norm_divide)
 qed
 
-lemma h17:
-  assumes "norm u < 1" "norm v <1"
-  shows "((norm (1-(cnj u)*v)) + (norm (u-v)))^2 = ((norm (1-(cnj u)*v))^2 +
-    2*(norm (1-(cnj u)*v))*(norm (u-v)) + (norm (u-v))^2)"
-  by (simp add: power2_sum)
+definition distance_m_gyr :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" where
+ "distance_m_gyr u v = 2 * artanh (Mobius_gyrovector_space.distance u v)"
 
-lemma h18:    
-  assumes "norm u < 1" "norm v <1"
-  shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) = 
-ln((1 + (norm (u-v))/(norm (1-(cnj u)*v)))/(1- (norm (u-v))/(norm (1-(cnj u)*v))))"
-  by (simp add: assms(1) assms(2) h12 h15 h16 h17)
-
-lemma h19:    
-  assumes "norm u < 1" "norm v <1"
-  shows "arcosh(1 + 2*(norm (u-v))^2 / ((1-(norm u)^2)*(1-(norm v)^2))) = 
-        2 * artanh (norm ((u-v) / (1 - (cnj u)*v)))"
-  using assms
-  unfolding artanh_def
-  by (simp add: h18 norm_divide)
-
-definition m_dist :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" where
- "m_dist u v =  2 * artanh (\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>)"
+lemma distance_equiv:
+  shows "distance_m_gyr u v = distance_m (to_complex u) (to_complex v)"
+proof-
+  have "(\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>) =
+         (cmod ((to_complex u - to_complex v) / (1 - cnj (to_complex u) * (to_complex v))))"
+    by transfer (simp add: m_oplus'_def m_ominus'_def norm_divide norm_minus_commute)
+  then show ?thesis
+  unfolding distance_m_gyr_def distance_m_def Mobius_gyrovector_space.distance_def gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
+  using arcosh_artanh norm_lt_one norm_p.rep_eq
+  by force
+qed
 
 definition blaschke where
   "blaschke a z = (z - a) / (1 - cnj a * z)"
@@ -267,16 +144,5 @@ lemma
   shows "blaschke a z  = m_oplus' (m_ominus' a) z"
   unfolding blaschke_def m_oplus'_def m_ominus'_def
   by (simp add: minus_divide_left)
-
-lemma 
-  shows "m_dist u v = hexplicit1 (to_complex u) (to_complex v)"
-proof-
-  have "(\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>) =
-         (cmod ((to_complex u - to_complex v) / (1 - cnj (to_complex u) * (to_complex v))))"
-    by transfer (simp add: m_oplus'_def m_ominus'_def norm_divide norm_minus_commute)
-  then show ?thesis
-  unfolding m_dist_def hexplicit1_def
-  using h19 norm_lt_one norm_p.rep_eq by force
-qed
 
 end

@@ -400,6 +400,15 @@ lemma between_translate:
   using collinear_translate' 
   by auto
 
+definition distance where
+  "distance u v = (\<llangle>\<ominus> u \<oplus> v\<rrangle>)"
+
+lemma distance_translate:
+  shows "distance u v = distance (translate a u) (translate a v)"
+  unfolding distance_def translate_def
+  using local.gyro_translation_2a norm_gyr 
+  by presburger
+
 end
 
 end
