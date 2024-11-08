@@ -1,0 +1,870 @@
+\documentclass[a4paper]{article}
+
+%\documentclass[smallextended]{svjour3} 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage{url}
+\usepackage{pgf, tikz}
+\usepackage{mathrsfs}
+\usetikzlibrary{arrows, arrows.meta, decorations.pathmorphing, backgrounds, fit, positioning, shapes.symbols, shapes.geometric, chains}
+\usepackage[T1]{fontenc}
+\usepackage{csquotes}
+\usepackage{scalerel}
+\usepackage{float, subfig}
+\usepackage{booktabs}
+
+\usepackage{comment}
+
+\newcommand{\lbrakk}{\llbracket}
+\newcommand{\rbrakk}{\rrbracket}
+\newcommand{\tab}{\hspace{5mm}}
+\DeclareMathOperator{\arccosh}{arccosh}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\Real}{Re}
+\DeclareMathOperator{\Imag}{Im} 
+
+\newcommand{\C}[0]{\ensuremath{\mathbb{C}}}
+\newcommand{\CPone}[0]{\ensuremath{\C{}P^1}}
+\newcommand{\extC}[0]{\ensuremath{\overline{\C}}}
+
+\newcommand{\betweenSymbol}{\raisebox{0.4ex}{\ensuremath{\mathord{\includegraphics[width=0.7em]{Images/between_symbol.eps}}}}}
+
+\newcommand{\bT}[3]{{#1} \betweenSymbol {#2} \betweenSymbol {#3}}
+\newcommand{\congT}[2]{{#1} \mathbin{\equiv} {#2}}
+\newcommand{\imp}{\Rightarrow}
+
+\captionsetup[subfloat]{labelformat=empty}
+
+\newcommand{\smallfigs}[2]{\centering
+\scalebox{0.8}{\subfloat[]{#1}}
+\qquad
+\scalebox{0.8}{\subfloat[]{#2}}}
+
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+%\smartqed 
+
+\begin{document}
+\begin{abstract}
+  In this paper we describe an Isabelle/HOL formalization of
+  non-commu\-ta\-ti\-ve and non-associative algebraic structures
+  called \emph{gyrogroups} and \emph{gyrovector spaces}. These were
+  introduced by Abraham A. Ungar and have deep connections to
+  hyperbolic geometry and special relativity. Gyrovector spaces can be
+  used to define models of hyperbolic geometry. In contrast to other
+  models, gyrovector spaces have the advantage that all definitions
+  have remarkable syntactical similarities with normal Euclidean and
+  Cartesian geometry (e.g., points on line between $a$ and $b$ satisfy
+  the equation $a \oplus t\otimes(\ominus a \oplus b)$, while the
+  hyperbolic Pythagorean theorem is given by $a^2\oplus b^2 = c^2$,
+  where $\otimes$, $\oplus$, and $\ominus$ are gyro operations).
+
+  We first formally define gyrogroups and gyrovector spaces, and prove
+  their numerous properties. Then we formalize M\"obius and Einstein
+  models of these abstract structures and then formally prove that
+  these are equivalent to Poincar\'e and Klen-Beltrami models and
+  satisfy Tarski's geometry axioms for hyperbolic geometry,
+\end{abstract}
+
+\section{Introduction}
+
+Non-Euclidean geometries, including hyperbolic geometry, have been
+studied since the 19th century, and their properties are well
+understood. Applications of hyperbolic geometry in physics have also
+been extensively explored, with findings showing that hyperbolic
+geometry provides the mathematical foundation for the theory of
+special relativity, much as Euclidean geometry underpins classical
+Newtonian and Galilean mechanics.
+
+Analytic definitions of hyperbolic geometry are typically presented in
+the extended complex plane, relying heavily on linear algebra
+techniques (such as Hermitian matrices) and hyperbolic trigonometry
+\cite{schwerdtfeger}. In contrast to the Cartesian approach used in
+Euclidean geometry, hyperbolic geometry does not incorporate vectors
+in the same way. Euclidean geometry provides a natural framework for
+vectors: vector addition is associative and commutative, forming an
+Abelian group, and vectors can be scaled by real numbers, creating a
+vector space. The dot (inner) product and vector norm are easily
+defined, establishing the Euclidean metric,
+$d(A, B) = \vert\overrightarrow{AB}\vert$. However, these concepts are
+not as straightforward to define in the hyperbolic plane, resulting in
+analytic definitions of hyperbolic geometry that do not employ vector
+spaces. This creates an inherent asymmetry between the definitions of
+Euclidean and hyperbolic geometry.
+
+Ungar \cite{ungar-analytic} proposed an alternative and developed
+algebraic structures known as gyrogroups and gyrovector spaces,
+enabling the definition and use of ``vectors'' for the formalization
+of hyperbolic geometry. Although operations with these ``vectors'' do
+not form traditional vector spaces (vector addition, for example, is
+neither commutative nor associative) the elements, called gyrovectors,
+and their associated operations still satisfy enough algebraic
+properties to allow for a formalism of hyperbolic geometry that is
+syntactically astonishingly similar to the classical treatment of
+Euclidean geometry.
+
+Interestingly, these structures were first discovered through an
+examination of Einstein's velocity addition laws, which were then
+unified with classical Galilean velocity addition. This revealed a
+profound connection between the special theory of relativity and
+hyperbolic geometry. Experimentally discovered Thomas
+precession\cite{ungar-analytic} was found as a ,,missing link''
+between Einstein's velocity addition formula and the ordinary vector
+addition.
+
+In this paper we present a formalization of gyrovector spaces and
+their connections with hyperbolic geometry and special relativity,
+within the interactive theorem prover Isabelle/HOL. Machine-verified
+proofs are gaining popularity, and with recent advances in AI, it may
+only be a matter of time before they become the norm. Such proofs are
+particularly valuable in error-prone areas -- we argue that
+non-associative and non-commutative algebras fall into this
+category. Namely, human mathematicians, accustomed to the standard
+laws of groups and vector spaces, may make assumptions in
+pen-and-paper proofs that seem legitimate to those not specifically
+trained to think within non-commutative and non-associative
+structures. Additionally, since most gyrogroup and gyrovector space
+laws are expressed as equalities, automated provers, especially those
+based on term rewriting, can often find proofs that are shorter and
+more elegant than those produced by humans. We will support this claim
+by providing several examples.
+
+We follow the book \cite{ungar-analytic}, but filling in many
+important details that are missing in the book. This includes making
+the underlying notation more precise, but also providing some proofs
+missing in the book.
+
+The paper is structured as follows. First, we describe a formalization
+of gyrogroups (Section \ref{sec:gyrogroups}) and gyrovector spaces
+(Section \ref{sec:gyrovectorspaces}), defining these abstract
+structures and proving their important properties. In Section
+\ref{sec:mobiuseinstein}, we formally demonstrate that M\"obius
+transformations, traditionally used for defining hyperbolic geometry,
+give rise to gyrogroup and gyrovector space structures (formalizing
+the so-called M\"obius gyrovector spaces). We also formally prove that
+Einstein's velocity addition satisfies the same structure (formalizing
+the so-called Einstein gyrovector spaces). In Section
+\ref{sec:models}, we use gyrovector spaces to define hyperbolic
+geometry in a syntactically elegant manner. We then prove that these
+definitions yield models equivalent to the Poincar'e and
+Klein-Beltrami disks. Finally, in Section \ref{sec:conclusions}, we
+draw conclusions and propose possible directions for further work
+
+\subsection{Related work}
+
+Over the past decade, significant progress has been made in
+formalizing various geometries and their models using proof
+assistants.
+
+GeoCoq\footnote{https://geocoq.github.io/GeoCoq/}, developed by
+Narboux et al., is a formalization of geometry using the Coq proof
+assistant. It contains a formalization of a systematic development of
+Euclidean geometry based on Tarski's axioms
+\cite{tarski,narboux-tarski}. Magaud, Narboux and Schreck investigated
+how projective plane geometry can be formalized in a proof assistant
+\cite{coq-projective}. Narboux, Boutry and Braun used a proof
+assistant Coq to formaly prove that Tarski's axioms for plane neutral
+geometry can be derived from the corresponding Hilbert's
+axioms\cite{hilbert-to-tarski}. They have also mechanized the proof
+that Tarski's version of the parallel postulate is equivalent to the
+Playfair's postulate used by Hilbert\cite{coq-parallels} and proved
+that Hilbert's axioms for plane neutral geometry (excluding
+continuity) can be derived from the corresponding Tarski’s
+axioms\cite{tarski-to-hilbert}.
+
+Petrovi\'c and Mari\'c describe formalization of analytic geometry of
+the Cartesian plane in Isabelle/HOL \cite{adg-analytic}. Boutry, Braun
+and Narboux describe the formalization of the arithmetization of
+Euclidean plane geometry in the Coq proof assistant, developing
+analytic geometry of the Cartesian within the Tarski's axiom
+system\cite{aritmetization}.
+
+Makarios formalized Klein/Beltrami disc model of hyperbolic geometry
+in the projective space $\mathbb{R}P^2$ in
+Isabelle/HOL\cite{makarios}. Based on the work of Makarios, Harrison
+has shown the independence of Euclid's axiom in HOL-Light, and
+Coghetto formalized the Klein-Beltrami model within
+Mizar\cite{harrison2005hol,coghetto2018klein}. Mari\' c and Simi\' c
+formally addressed the geometry of complex numbers and presented a
+fully mechanically verified development within the theorem prover
+Isabelle/HOL\cite{amai-complexplane}. Simi\' c, Mari\' c and Boutry
+developed a formalization of the Poincar\'e disc model of hyperbolic
+geometry within the Isabelle/HOL proof
+assistant\cite{amai-poincare}. They showed that model is defined
+within the complex projective line $\mathbb{C}P^1$ and adheres to
+Tarski’s axioms, except for Euclid’s axiom, which it negates while
+satisfying the existence of limiting parallels. The formalization
+follows Schwerdfeger's book\cite{schwerdtfeger} based on linear
+algebra (points are represented by vectors of complex homogenous
+coordinates, circles and lines are represented by Hermitean matrices,
+and M\"obius transformations by non-degenerate matrices). Our paper
+builds upon this work, leveraging some of the established
+results. This connection is elaborated further in Section
+\ref{sec:models}.
+
+\subsection{Background}\label{sec:background}
+
+In this section we will describe
+Isabelle/HOL\footnote{https://isabelle.in.tum.de/} and its main
+features that are used for our formalization.
+
+Isabelle is a generic proof assistant that supports various logics,
+with the most popular being HOL (Higher-Order Logic). Users specify
+mathematical theories, defines new concepts, states their properties
+and provides proofs written in a specialized, declarative proof
+language called Isar\cite{isar}. These proofs are checked by the
+system, guaranteeing their correctness.
+
+Algebraic structures are formalized using
+locales\cite{isabelle-locales} and classes\cite{isabelle-classes}. In
+Isabelle/HOL, \emph{locales} are particularly useful for defining and
+reasoning about algebraic structures such as groups, rings, and vector
+spaces, where common assumptions (like associativity, identity
+elements, and distributivity) are essential across different proofs. A
+locale allows users to define a set of operations and assumptions that
+characterize an algebraic structure and then apply these assumptions
+across multiple contexts without repeating foundational setup. Within
+a locale, the \textbf{fixes} keyword is used to declare parameters,
+like specific operations or elements (e.g., a binary operation
+$\oplus$ and an identity element $e$ in a group). The \textbf{assumes}
+keyword is used to specify the properties or axioms these parameters
+must satisfy (e.g., associativity of $\oplus$ and the identity
+property of $0$). The \textbf{interpretation} command is used to
+instantiate a locale with specific parameters and assumptions (for
+example to show that integers form a group when neutral $e$ is
+interpreted by $0$ and the group operation $\oplus$ is interpreted by
+integer addition $+$), effectively importing theorems and definitions
+from the locale into a new context. This allows the user to apply the
+abstract properties and results of an algebraic structure to concrete
+examples, enabling seamless reuse of previously proven theorems under
+the given interpretation.
+
+Algebraic structures that have just a single operation are specified
+using \emph{type classes} (very similar to Haskell)
+\cite{isabelle-classes}. Classes are very similar to locales but the
+main difference is that classes are suitable for defining type-based
+properties and structures, while locales are more general and flexible
+for organizing proofs and theories with shared assumptions and
+parameters.
+
+The \emph{lifting/transfer package}\cite{isabelle-lifting-transfer} is
+used to transfer definitions and theorems from the raw type to the
+abstract type. In Isabelle/HOL, an abstract type is a type defined in
+terms of properties and behaviors rather than concrete
+representation. Examples of abstract types include subset types,
+quotient types, etc. Subset types are defined using \textbf{typedef}
+construction. For example, the set of points in the Poincar\'e disc
+can be defined as a subtype of complex numbers, containing the
+elements whose norm is less than 1. Two functions are automatically
+generated (assuming the concrete type is called $B$ and the abstract
+type is called $A$): $\mathit{Rep\_A}$ and $\mathit{Abs\_A}$. The role
+of $\mathit{Rep\_A}$ is to map an element of the new, abstract type to
+its representation in the underlying type (for example,
+$\mathit{Rep\_Poincare}$ maps a point of the Poincar\'e disc into its
+representing complex number). $\mathit{Abs\_A}$ is essentially the
+inverse function of $\mathit{Rep\_A}$ whose role is to map an element
+of the underlying type to an element of the new, abstract type,
+provided that the element satisfies the predicate defining the subset
+(for example, $\mathit{Abs\_Poincare}$ maps a complex number with norm
+less than one into a point of the Poincar\'e disc).
+
+Functions on the abstract type can be defined by first defining
+functions on the underlying representation type, and then lifting
+those definitions to the abstract type, by means of lifting/transfer
+package\cite{isabelle-lifting-transfer}. Such definition use the
+keyword \textbf{lift\_definition}. For example, functions that operate
+on points in the Poincar\'e disc can be defined by defining functions
+that operate on complex numbers, and then lifting them to the subtype.
+Proofs about such functions can be done by transfering them from the
+abstract type to the representation type.
+
+\section{Gyrogroups}\label{sec:gyrogroups}
+
+In this section we give a definition of a gyrogroup, a nonassociative
+group-like structure that was discovered in 1988. by Abraham
+A.~Ungar\cite{}. In the same way that groups serve as a bridge between
+associative algebra and Euclidean geometry, gyrogroups serve as a
+bridge between nonassociative algebra and hyperbolic geometry. They
+are the foundation on which analytic hyperbolic geometry rests.
+
+\begin{definition} \textbf{(Grupoid)} A structure $(G, \oplus)$ where $\oplus$ is a binary operation is a grupoid if $G$ is a non-empty set closed for $\oplus$.
+\end{definition}
+\begin{definition} \textbf{(Automorphism)} An
+automorphism of a groupoid $(G , \oplus)$ is a bijective self-map of $S$ , $ \phi: G \rightarrow G$ , which preserves its groupoid operation, that is,
+$\phi (a\oplus b) = \phi (a) \oplus \phi (b)$ for all $a, b\in G$.
+\end{definition}
+\begin{definition} \textbf{(Gyrogroups [])}  A grupoid $(G, \oplus)$ is a gyrogroup if its binary operation satisfy the following axioms.
+\begin{itemize}
+\item[(G1)] There is at least one element in $G$ called a left identity ($0$) that satisfies $0\oplus a = a$ for all $a\in G$
+\item[(G2)] For each element $a\in G$ there exists an element $\ominus a\in G$ called a left inverse such that $\ominus a \oplus a = 0$
+\item[(G3)] For any $a, b, c \in G$ there exists a unique element $gyr[a,b]c$ from $G$ such that a left gyroassociative law is obeyed. It means that:
+$$a\oplus (b \oplus c) = (a\oplus b) \oplus gyr[a,b]c$$
+\item[(G4)] The map $gyr[a, b] : G \rightarrow G$ given by $c \rightarrow gyr[a, b]c$ is an automorphism of the groupoid $(G, \oplus)$, that is,
+$$gyr[a, b] \in Aut(G, \oplus)$$
+and the automorphism $gyr[a, b]$ of $G$ is called the gyroautomorphism, or the gyration, of $G$ generated by $a$, $b \in G$. The operator $gyr : G \times G \rightarrow Aut(G, \oplus)$ is called the gyrator of $G$. \
+\item[(G5)] Finally, the gyroautomorphism $gyr[a, b]$ generated by any $a, b \in G$ possesses the left reduction property:
+$$gyr[a, b] = gyr[a\oplus b, b]$$ 
+\end{itemize}
+\end{definition}
+
+As a consequence of these axioms, it can easily be showed that there
+is an unique identity $0$ (both left and right) and that every element
+$a\in G$ has its own unique inverse (both left and right). The
+structure of a gyrogroup is a very rich structure, and many lemmas and
+theorems follows.
+
+Here is the example of one easy but not trivial lemma with a proof:
+
+\begin{lemma} \textbf{(General left cancellation law):} Let $(G,\oplus)$ be a gyrogroup. For any elements $a$, $b$, $c\in G$ we have: If $a\oplus b=a\oplus c$ then $b=c$.
+\end{lemma}
+\begin{proof} From $(G2)$ we know that there must exist an element $x$ such that $x\oplus a = 0$ where $0$ is a left identity. From $(G3)$ we conclude that $x\oplus (a\oplus b) = (x \oplus a) \oplus gyr[x,a]b$ which is also equal to $gyr[x,a]b$ since $0$ is a left identity. On the other hand, $x\oplus (a\oplus b)=x\oplus (a\oplus c)$ because $a\oplus b=a\oplus c$ is a condition of this lemma. Moreover, from $(G3)$ we also know that  $x\oplus (a\oplus c) = (x \oplus a) \oplus gyr[x,a]c = gyr[x,a]c$. So, finally, we have that $gyr[x,a]b=gyr[x,a]c$. From this equation the result follows very easy, since gyroautomorphisms are bijective functions.
+\end{proof}
+
+We have formalized the definition of a gyrogroup using class in Isabelle/HOL:
+\begin{small}
+{\tt
+\begin{tabbing}
+\hspace{5mm}\=\kill
+{\bf class} gyrogroup' =\\
+\> {\bf fixes} gyrozero :: "'a ("$0_g$")" 
+\\
+\> {\bf fixes} gyroplus :: "'a  $\Rightarrow$  'a  $\Rightarrow$  'a" (infixl "$\oplus$" 100)"\\
+\> {\bf fixes} gyroinv :: "'a $\Rightarrow$ 'a" ("$\ominus$")\\
+\> {\bf fixes} gyr :: "'a $\Rightarrow$ 'a $\Rightarrow$ 'a $\Rightarrow$ 'a" \\
+{\bf begin}\\[2mm]
+{\bf definition} gyroaut {\bf where}\\
+\>    "gyroaut f $\longleftrightarrow$ 
+       ($\forall$ a b. f (a $\oplus$ b) = f a $\oplus$ f b) $\land$ 
+       bij f"\\[2mm]
+{\bf end}\\
+
+
+{\bf class}  gyrogroup  =  gyrogroup'  +\\
+\> {\bf assumes} gyro\_left\_id [simp]: "\= $\bigwedge$ a. ($0_g$ $\oplus$ a = a)"\\
+\> {\bf assumes} gyro\_left\_inv [simp]: "\=$\ominus$ a $\oplus$ a = $0_g$"\\
+\> {\bf assumes} gyro\_left\_assoc: \\ \tab \tab "$\bigwedge$ a b z. a $\oplus$ (b $\oplus$ z) = (a $\oplus$ b) $\oplus$ (gyr a b z)"\\
+\> {\bf assumes} gyr\_left\_loop: "$\bigwedge$ a b. gyr a b = gyr (a $\oplus$ b) b"\\
+\> {\bf assumes} gyr\_gyroaut: "$\bigwedge$ a b. gyroaut (gyr a b)"\\
+
+\end{tabbing}
+}
+\end{small}
+
+
+
+Our particullar interest is in gyrocommutative gyrogroups, since, as we will see, some of them give a rise to gyrovector spaces.
+
+
+\begin{small}
+{\tt
+\begin{tabbing}
+\hspace{5mm}\=\kill
+{\bf class} gyrocommutative\_gyrogroup = gyrogroup + \\
+\> {\bf assumes}  gyro\_commute: "a $\oplus$ b = gyr a b (b $\oplus$ a)"
+\end{tabbing}
+}
+\end{small}
+
+- dati osnovnu definiciju žiro-grupe, prikazati formalizaciju u Isabelle/HOL.
+
+- navesti primer neke elementarne leme i dati dokaz
+
+- pronaći neku lemu koja zahvaljući sledgehammer-u ima mnogo kraći dokaz nego što je u knjizi 
+
+\section{Gyrovector spaces}\label{sec:gyrovectorspaces}
+
+
+\begin{definition} \textbf{(Real Inner Product Gyrovector Spaces[])} A real
+inner product gyrovector space $(G, \oplus, \otimes )$ (gyrovector space, in short) is a gyrocommutative gyrogroup $(G, \oplus)$ that obeys the following axioms:
+\begin{itemize}
+\item[(1)]  $G$ is a subset of a real inner product vector space $V$ called the carrier of $G$, $G \subset V$, from which it inherits its inner product, $\cdot$, and norm, $\lVert \cdot \rVert$ which are invariant under gyroautomorphisms, that is, $$gyr[u, v ] a \cdot gyr [ u , v]b = a \cdot b$$
+for all points $a, b, u, v \in G$.
+\item[(2)] $G$ admits a scalar multiplication, $\otimes$ , possessing the following properties. For all real numbers $r$, $r_1$, $r_2 \in \mathbb{R}$  and all points $a \in G$:\\[2mm]
+\begin{tabular}{cll}
+(V1) & $1\otimes a = a$ & \\[1mm]
+(V2) & $(r1 + r2) \otimes a = (r1 \otimes a) \oplus (r2 \otimes a)$ & Scalar Distributive Law\\[1mm]
+(V3) & $(r_1r_2)\otimes a = r_1 \otimes (r_2 \otimes a)$ & Scalar Associative Law\\[1mm]
+(V4) & $\frac{|r|\otimes a}{\lVert r \otimes a \rVert} = \frac{a}{\lVert a \rVert}$ & Scaling Property\\[1mm]
+(V5) & $gyr[u,v](r\otimes a) = r \otimes gyr[u,v]a$ & Gyroautomorphism Property\\[1mm]
+(V6) & $gyr[r_1\otimes v, r_2 \otimes v] = I$ & Identity Automorphism\\
+\end{tabular}
+
+\item[(3)] Real vector space structure ($\lVert G \rVert, \oplus, \otimes$) for the set $\lVert G \rVert$ of one-dimensional "vectors":
+$$\lVert G \rVert = \{\pm \lVert a \rVert:a\in G\}\subset\mathbb{R}$$
+with vector addition $\oplus$ and scalar multiplication $\otimes$, such that for all $r\in \mathbb{R}$ and $a, b \in G$,\\[2mm]
+\begin{tabular}{cll}
+(V7) & $\lVert r\otimes a \rVert = |r| \otimes \lVert a \rVert$ & Homogeneity Property\\[1mm]
+(V8) & $\lVert a \oplus b \rVert \leq \lVert a \rVert \oplus \lVert b \rVert$ & Gyrotriangle Inequality\\ 
+\end{tabular}
+\end{itemize}
+\end{definition}
+Since the use of operations $\otimes$ and $\oplus$ is ambigous in some axioms, it's not always clear from the context what their interpretation is. The formalization is what makes our definition simple to interpret and use. 
+The first critical place is axiom $V4$ because it contains a division, an operation which is not present in the structure $(G, \otimes, \oplus)$ at first sight. But if we look closer at our definition we can notice a very important fact which is that $G$ is a subset of a real inner product vector space. That means that we can multiply our vectors with scalars from the field (in this case the field is $\mathbb{R}$) and also with their inverses (which explains a division in axiom $V4$).
+
+\begin{small}
+{\tt
+\begin{tabbing}
+\hspace{5mm}\=\kill
+{\bf locale} gyrodom' =\\
+\> {\bf fixes} to\_dom :: "'a::gyrogroup $\Rightarrow$ 'b::$\{$real\_inner, real\_div\_algebra$\}$" 
+\\
+\> {\bf fixes} of\_dom :: "'b $\Rightarrow$ 'a"\\
+\> {\bf fixes} in\_dom :: "'b $\Rightarrow$ bool"\\
+\> {\bf assumes} to\_dom: "$\bigwedge$ b. in\_dom b $\Longrightarrow$ to\_dom (of\_dom b) = b"\\
+\> {\bf assumes}  of\_dom: "$\bigwedge$ a. of\_dom (to\_dom a) = a"\\
+\> {\bf assumes} to\_dom\_zero [simp]: "to\_dom $0_g$ = $0$"\\
+{\bf begin}\\[2mm]
+{\bf definition} gyronorm :: "'a $\Rightarrow$ real" ("$\langle$\_$\rangle$" [100] 100) {\bf where}\\
+\>    
+  "$\langle$a$\rangle$ = norm (to\_dom a)"\\
+ {\bf definition} gyroinner :: "'a $\Rightarrow$ 'a $\Rightarrow$ real" (infixl "$\cdot$" 100) {\bf where}\\
+\>    
+  "a $\cdot$ b = inner (to\_dom a) (to\_dom b)"\\[2mm]
+{\bf end}\\
+\end{tabbing}
+}
+\end{small}
+
+\begin{small}
+{\tt
+\begin{tabbing}
+\hspace{5mm}\=\kill
+{\bf locale} gyrovector\_space = 
+  gyrocommutative\_gyrogroup \\ "gyrozero :: 'a::gyrogroup" \\
+                            "gyroplus :: 'a $\Rightarrow$ 'a $\Rightarrow$ 'a"  \\
+                            "gyroinv :: 'a $\Rightarrow$ 'a"\\
+                            "gyr :: 'a $\Rightarrow$ 'a $\Rightarrow$ 'a $\Rightarrow$ 'a" + \\
+  gyrodom to\_dom for to\_dom :: \\ "'a::gyrogroup $\Rightarrow$ 'b::$\{$real\_inner, real\_div\_algebra$\}$" +\\
+\> {\bf fixes} scale ::  "real $\Rightarrow$ 'a $\Rightarrow$ 'a" (infixl "$\otimes$" 105)\\ 
+\> {\bf fixes} change:: "real$\Rightarrow$ 'a"\\
+\> {\bf fixes} change2:: "'a$\Rightarrow$ real"\\
+\> {\bf assumes} scale\_1: "$\bigwedge$ a. 1 $\otimes$ a = a"\\
+\> {\bf assumes} scale\_distrib:\\ \tab \tab "$\bigwedge$ r1 r2 a. (r1 + r2) $\otimes$ a = r1 $\otimes$ a $\oplus$ r2 $\otimes$ a"\\
+\> {\bf assumes} scale\_assoc: "$\bigwedge$ r1 r2 a. (r1 * r2) $\otimes$ a = r1 $\otimes$ (r2 $\otimes$ a)"\\
+\> {\bf assumes} scale\_prop1: "$\bigwedge$ r a. (r$\neq$ 0 $\longrightarrow$ \\(to\_dom (abs r $\otimes$ a) $/_R$ $\langle$r $\otimes$ a$\rangle$) = ((to\_dom a) $/_R$ $\langle$a$\rangle$))"\\ 
+\> {\bf assumes} gyroauto\_property: \\ \tab \tab "$\bigwedge$ u v r a. gyr u v (r $\otimes$ a) = r $\otimes$ (gyr u v a)"\\
+\> {\bf assumes} gyroauto\_id: "$\bigwedge$ r1 r2 v. gyr (r1 $\otimes$ v) (r2 $\otimes$ v) = id"\\
+\> {\bf assumes} homogeneity: \\ \tab \tab"$\bigwedge$ r a.  ($\langle$r $\otimes$ a$\rangle$) =  (change2 ((abs r) $\otimes$ (change ($\langle$a$\rangle$))))"\\
+\> {\bf assumes} gyrotriangle: \\ \tab \tab "$\bigwedge$ a b. $\langle$(a $\oplus$ b)$\rangle$ $\leq$ change2 ((change ($\langle$a$\rangle$)) $\oplus$ (change ($\langle$b$\rangle$)))"\\
+\end{tabbing}
+}
+\end{small}
+
+In axioms $V7$ and $V8$ at first sight we have real numbers as the arguments of $\oplus$ and $\otimes$, but that's not fully correct. In these axioms these real numbers are treated as elements of $G$. There is a very natural way to do that. Since $n$-dimensional real inner product spaces are isomorphic to $\mathbb{R}^n$ we can easily transform a real number into a vector by adding some zeros. Of course, there may be some additional conditions we need to meet. For example, one of them could be a limitation of a norm, but that's not a problem because if the norm of real is limited,  the norm of its coresponding vector is also going to be limited. In the formalization of the general case we don't care how the transforming of a real number into an element of $G$ is done, we just fix a function which does that ($change$) and we leave dealing with a signature of that function in interpretations.
+
+
+In our formalization we have the first locale gyrodom' that is a base for a definition of a gyrovector space. We fix three functions that need to be presenting embedding of $(G, \oplus, \otimes)$ into $V$: 
+\begin{itemize}
+\item to\_dom - takes an element from $G$ and maps it into its representation in $V$
+\item of\_dom - takes an element from $V$ and maps it into its representation in $G$ (if there is one)
+\item in\_dom - checks if the element from $V$ is also in $G$
+\end{itemize}
+The conditions that must be met for these functions are obvious. The functions $of\_dom$ and $to\_dom$ are kind of inverse functions. And the identity element in $G$ must be the identity element in $V$.
+
+- deti definiciju žirovektorskog prostora
+
+- definisati kako je na papiru notacija višeznačna i pokazati kako je to pitanje razrešeno u formalizaciji
+
+- navesti primer neke leme
+
+\section{M\"obius and Einstein gyrovector spaces}\label{sec:mobiuseinstein}
+
+  
+According to the Einstein's theory of relativity, as an object's speed approaches the speed of light, its relativistic mass increases towards infinity, requiring infinite energy to accelerate further. Therefore, it is impossible for an object to move at or above the speed of light. While Newtonian velocities are represented by vectors in $\mathbb{R}^3$, Einstein velocities are represented by vectors within a ball of radius $c$ where $c$ is the speed of light. 
+
+Einstein's addition law which describes how velocities combine in
+special relativity, lead to rich nonassociative algebraic structures,
+called gyrovector spaces. Ungar made Einstein's definitions more
+general, allowing us to observe a ball of any real inner product
+space. Without losing of the generality we can observe a unit ball. It
+turns out that the Einstein gyrovector spaces are isomorphic to the
+M\" obius gyrovector spaces and form a setting for a model of
+hyperbolic geometry. Specially, we have formally proved our theorems
+in the case when the ball is in $R^2$-isomorphic space, the complex
+plane, but many of the proofs are correct in the general case and they
+need just a slight modifications.
+
+The general proof of connection formula between M\" obius and Einstein addition is given. As we know, this is the first proof of this theorem in the literature. It is not hard, but it's tehnically challenging and it has some computational tricks. 
+
+\begin{definition}\textbf{(M\" obius addition in the ball[])}: Let $V$ be a real inner product vector space and let $V_1 = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. M\" obius addition $\oplus_m$ is a binary operation defined in $V$ as:
+$$u \oplus_m v = \frac{(1+2uv+\norm{v}^2)u+(1-\norm{u}^2)v}{1+2uv+\norm{u}^2\norm{v}^2}$$ 
+\end{definition}
+
+Transforming this expression for $V=R^2$ and using the fact that $2uv = \overline{u}v+\overline{v}u$ is correct in complex plane, we get a simplier expression for M\" obius addition:
+$$u\oplus_m v = \frac{u+v}{1+\overline{u}v}$$
+
+M\" obius gyrogroup $(V_1, \oplus_m)$ admits scalar multiplication $\otimes_m$, turning them into M\" obius gyrovector space $(V_1, \oplus_m, \otimes_m)$[]. 
+\begin{definition}\textbf{(M\" obius Scalar Multiplication[])}: Let $(V_1, \oplus_m)$ be a M\" obius gyrogroup. The M\" obius scalar multiplication $r\otimes_m v = v\otimes_m r$ in $V_1$ is given by the equation:
+$$r\otimes_m v = \frac{(1+\norm{v})^r - (1-\norm{v})^r)}{(1+\norm{v})^r + (1-\norm{v})^r)}\cdot\frac{v}{\norm{v}}$$
+where $r\in \mathbb{R}$, $v\in V_1$, $v\neq 0$ and $r\otimes_m 0 = 0$.
+\end{definition}
+
+A very useful fact in proving that $(V_1, \oplus_m, \otimes_m)$ is truly a gyrovector space was the fact that $r\oplus_m v = tanh(r\hspace{0.5mm}tanh^{-1}\norm{v})\frac{v}{\norm{v}}$. This fact is also proved in our formalization.
+
+
+As we explained in subsection \ref{sec:background} we used setup\_lifting and typedef commands to form our abstract type PoincareDisc. Its a subset of the existing type called complex and it represents a disc in complex plane.
+
+\begin{small}
+{\tt
+\begin{tabbing}
+\hspace{5mm}\=\kill
+{\bf abbreviation} "cor $\equiv$ complex\_of\_real"\\
+{\bf typedef} PoincareDisc = "{z::complex. cmod z < 1}"\\
+ \hspace{0.5cm} by (rule\_tac x=0 in exI, auto)\\
+{\bf setup\_lifting} type\_definition\_PoincareDisc \\
+\end{tabbing}
+}
+\end{small}
+After typedef command we needed to prove that PoincareDisc is not empty type and we did that by calling sledgehammer who suggested applying of exI rule tactic in Isabelle/HOL.
+
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf definition} m\_oplus' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\tab "m\_oplus' a z = (a + z) / (1 + (cnj a) *z)"\\
+
+{\bf lift\_definition} m\_oplus:: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
+\tab (infixl "$\oplus_m$" 100) {\bf is} $\ldots$
+\end{tabbing}
+\end{footnotesize}
+}
+
+First we define our $\oplus_m$ and $\otimes_m$ operation on complex numbers and then we transfer these definitions to PoincareDisc. To be able to do that, we needed to prove that $\oplus_m$ and $\otimes_m$ are closed operations in PoincareDisc.
+
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf definition}  m\_otimes'\_k  :: "real $\Rightarrow$ complex $\Rightarrow$ real"{\bf where}\\
+\tab "m\_otimes'\_k r z = ((1 + cmod z) powr r - (1 - cmod z) powr r) /\\
+\tab
+                     ((1 + cmod z) powr r + (1 - cmod z) powr r)"\\ 
+{\bf definition} m\_otimes' :: "real $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\"m\_otimes' r z = 
+ (if z = 0 then 0 else cor (m\_otimes'\_k r z) * (z / cmod z))"\\
+{\bf lift\_definition} m\_otimes:: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
+\tab (infixl "$\otimes_m$" 105) {\bf is} $\ldots$
+\end{tabbing}
+\end{footnotesize}
+}
+
+We proved that that the identity and inverses defined on the following way are well defined:
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf definition} m\_ominus'  :: "complex $\Rightarrow$ complex" {\bf where}\\
+\tab  "m\_ominus' z = - z"  \\
+{\bf lift\_definition} m\_ominus :: "PoincareDisc $\Rightarrow$ PoincareDisc" \\
+\tab ("$\ominus_m$") {\bf is} m\_ominus' $\ldots$\\
+{\bf definition}  m\_ozero'  :: "complex" {\bf where}\\
+\tab "m\_ozero' = 0"   \\
+{\bf lift\_definition} m\_ozero :: "PoincareDisc" \\
+\tab ("$0_m$") {\bf is} m\_ozero' $\ldots$\\
+\end{tabbing}
+\end{footnotesize}
+}
+
+Surely, the most interesting is gyroautomorphism:
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf definition} m\_gyr'  :: "complex $\Rightarrow$ complex  $\Rightarrow$ complex  $\Rightarrow$ complex" {\bf where}\\
+\tab  "m\_gyr' a b z = ((1 + a * cnj b) / (1 + cnj a * b)) * z"\\
+{\bf lift\_definition} m\_gyr::"PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\ \tab{\bf is} m\_gyr' $\ldots$\\
+
+\end{tabbing}
+\end{footnotesize}
+}
+
+We didn't find the proof that $(V_1,\oplus_m,\otimes_m)$ is a gyrovector space in the literature. Some fragments were presented in the books, but mostly, axioms were left to students to check as exercises. So, one of the benefits of our paper is that now we do have a proof on one place (and more important we have formally verified machine proof).
+
+Our proof would be much harder (or almost impossible) if we didn't use the Lorentz factor, a crucial concept in the theory of relativity, named after the Dutch physicist Hendrik Lorentz. It describes how time, length, and relativistic mass change for an object moving relative to an observer. The Lorentz factor ($\gamma$) is given by the equation:
+$$\gamma_u = \frac{1}{\sqrt{1-\frac{\norm{u}^2}{c^2}}}$$
+where $c$ is the speed of the light in vacuum. Since we have choosen to observe a unit disc in complex plane (without loss of generality), our Lorentz factor ($\gamma$) have $1$ instead of $c$, so the equation is:
+$$\gamma_u =\frac{1}{\sqrt{1-\norm{u}^2}}$$
+
+In some moment of proving, we wanted to use a special property of Lorentz factor which is a fact that Lorentz factor is complex if the norm of $u$ is bigger than $1$ and real if the norm is smaller than $1$ and vice versa. However, that wasn't possible in Isabelle/HOL since functions who define power ($sqrt$, $pow$, etc.) are defined using approximations.
+
+We overcame that problem by defining the Lorentz factor on the following way:
+
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf definition} gamma\_factor :: "complex $\Rightarrow$ real  $\Rightarrow$ complex  $\Rightarrow$ complex" {\bf where}\\
+\tab  "gamma\_factor u = (if ((norm u)$^\wedge$2<1) then (1/sqrt(1-(norm u)*(norm u))) else 0)"
+
+\end{tabbing}
+\end{footnotesize}
+\tt}
+
+For real values, gamma\_factor cannot be zero, so it's easy to see that if gamma\_factor is zero, that's because its value was complex, since the norm of the vector was greater than 1 (this is formally proved in our work).
+
+If we have a trivial space (an empty space or a space with only one element), then everything is correct in such a space. Therefore, we have initially proven that our space is not trivial and its gyroautomorphisms are not constant functions.
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} poincare\_disc\_two\_elems:\\
+{\bf shows} \="$\exists$ z1 z2::PoincareDisc.z1 $\neq$ z2"\\[1mm]
+{\bf lemma} m\_gyr\_not\_degenerate:\\
+{\bf shows} \="$\exists$ z1 z2. m\_gyr a b z1 $\neq$ m\_gyr a b z2"\\
+\end{tabbing}
+\end{footnotesize}
+}
+
+Most of the axioms were more-less straightforward to prove, but some of them weren't. The example of such an axiom is a gyrotriangle inequality. We needed to prove that $\norm{a\oplus_m b}_m \leq \norm{a}_m \oplus_m \norm{b}_m$ and we did that using Lorentz factors and their properties.
+
+First we have lemma who claims that gamma\_factor is a monotone increasing function (so its inverse function).
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} gamma\_factor\_increase\_revert:\\
+{\bf fixes} t1::"real"\\
+{\bf fixes} t2::"real"\\
+{\bf assumes}\="t1<1" "t2$\geq$ 0" "t2<1" "t1$\geq$ 0" "gamma\_factor t1 > gamma\_factor t2"\\
+{\bf shows} \="t1>t2"\\[1mm]
+
+\end{tabbing}
+\end{footnotesize}
+}
+
+After that we have used the following lemma 
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} gamma\_factor\_eq1:\\
+{\bf shows} \="gamma\_factor ($\langle$  a  $\oplus_m$ b $\rangle_m$) =\\
+\tab (gamma\_factor (Rep\_PoincareDisc a))* (gamma\_factor (Rep\_PoincareDisc b))*\\ \tab(cmod(1+(cnj (Rep\_PoincareDisc a))*(Rep\_PoincareDisc b)))\\
+\end{tabbing}
+\end{footnotesize}
+}
+
+to prove:
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} gamma\_factor\_ineq1:\\
+{\bf shows} \="(gamma\_factor ($\langle$  a  $\oplus_m$ b $\rangle_m$ )) $\leq$\\
+\tab (gamma\_factor (Rep\_PoincareDisc ((Abs\_PoincareDisc (cor ($\langle$ a$\rangle_m$)))  $\oplus_m$ \\
+\tab(Abs\_PoincareDisc (cor ($\langle$ b$\rangle_m$))) )))"\\[1mm]
+
+\end{tabbing}
+\end{footnotesize}
+}
+
+and finalize our result.
+
+
+
+\begin{definition}\textbf{(Einstein addition in the ball[])}: Let $V$ be a real inner product vector space and let $V_1 = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. Einstein addition $\oplus_E$ is a binary operation defined in $V$ as:
+$$u \oplus_E v = \frac{1}{1+u\cdot v}\Big\{u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u\cdot v)u\Big\}$$ 
+where $\gamma_u$ is Lorentz factor (called gamma factor) and $\cdot$ and $\norm{\cdot}$ are the inner product and norm that the ball $V_1$ inherits from its space $V$. 
+\end{definition}
+
+Einstein multiplication $\otimes_E$ is defined on the same way as M\" obius multiplication $\otimes_m$.
+
+\subsection{Gyrovector space isomorphism}
+We begin this subsection with the following definition.
+
+\begin{definition} Two gyrovector spaces $(G_1, \oplus_1, \otimes_1)$ and $(G_2, \oplus_2, \otimes_2)$  are isomorphic if there exists a bijective map $\phi: G_1 \rightarrow G_2$ such that the following conditions are satisfied:
+\begin{itemize}
+    \item $\phi(u\oplus_1 v) = \phi(u)\oplus_2 \phi(v)$
+    \item $\phi(r\otimes_1 v) = r\otimes_2 \phi(v)$
+    \item $\frac{\phi(u)}{\parallel \phi(u) \parallel}\cdot \frac{\phi(v)}{\parallel \phi(v)\parallel} = \frac{u}{\parallel u \parallel}\cdot \frac{v}{\parallel v \parallel}$
+\end{itemize}
+\end{definition}
+Nonformally, it means that $\phi$ preserves gyrovector space operations and keeps the inner product of the unit vectors invariant.
+This definition proved to be very useful, because if we can formally prove that some triple is a gyrovector space, and we find a map (with the properties from def 4.1) to another triple we can easily prove that that triple is also a gyrovector space. 
+
+\begin{lemma}$$\frac{1}{2}\otimes_m u = \frac{\gamma_u}{\gamma_u + 1} u$$
+\end{lemma}
+
+\begin{lemma}$$\gamma_{u\oplus_e v} = \gamma_u\gamma_v(1+u\cdot v)$$
+\end{lemma}
+\begin{theorem}Let $G_e=(V_c, \oplus_e, \otimes_e)$ and $G_m=(V_c, \oplus_m, \otimes_m)$ be respectively, the Einstein and the Mobius gyrovector spaces of the same ball $V_c$ of a same real inner product space $V$.
+The following formulas are correct:
+$$u\oplus_e v = 2\otimes_m (\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v)$$
+\end{theorem}
+\begin{proof}From lemma we have:
+$$\frac{1}{2}\otimes_m u = \frac{\gamma_u}{\gamma_u + 1} u$$
+Similary for vector v. Using the definition of $\otimes_m$ for $\frac{1}{2}\otimes_m u$ and $\frac{1}{2}\otimes_m v$ we conclude that:
+\begin{multline}
+$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v = \Big(1 + 2\cdot\frac{\gamma_u}{1+\gamma_u}\cdot\frac{\gamma_v}{1+\gamma_v}(u\cdot v) + \norm{\frac{\gamma_v}{\gamma_v+1}v}^2\Big) \cdot \frac{\gamma_u}{\gamma_u + 1}u + \\ + \frac{\Big(1-\norm{\frac{\gamma_u}{1+\gamma_u}}^2\cdot \frac{\gamma_v}{1+\gamma_v}v\Big)}{1+2\frac{\gamma_u}{1+\gamma_u}u \cdot \frac{\gamma_v}{1+\gamma_v}v + \norm{\frac{\gamma_u}{\gamma_u+1}u}^2 + \norm{\frac{\gamma_v}{1+\gamma_v}v}^2} $$
+\end{multline}
+On the other hand, $\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_{u \otimes_e v}}{\gamma_{u \otimes_e v} + 1}(u \otimes_e v)$. From the lemma and the definition of Einstein addition, we can conclude that:
+$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_u \gamma_v (1+u\cdot v)}{\gamma_u \gamma_v (1+u\cdot v) + 1}\Big\{\frac{1}{1+u\cdot v}\Big( u +\frac{1}{\gamma_u}v + \frac{\gamma_u}{\gamma_u + 1}(u\cdot v)\cdot u \Big)\Big\}$$
+We want to prove that the left side is equal to the right side. So, we will start with the left side and use a few transformations to get the right side.
+First, we are going to notice that $$\norm{v}^2 = \frac{\gamma_v^2-1}{\gamma_v^2}$$ which is very easy to verify using the definition of gamma factor. Further, we can simplify our expression on the following way:
+$$\norm{\frac{\gamma_v}{\gamma_v+1}v}^2 =\frac{\gamma_v^2}{(1+\gamma_v)^2}\cdot\norm{v}^2 = \frac{\gamma_v-1}{\gamma_v+1}$$
+Our expression transforms into:
+$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v = \frac{\Big(1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v) + \frac{\gamma_v -1}{\gamma_v+1}\Big)\cdot \frac{\gamma_u}{1+\gamma_u}u + \Big(1-\frac{\gamma_u-1}{\gamma_u+1}\Big)\cdot \frac{\gamma_v}{\gamma_v+1}v}{1 + \frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot\frac{\gamma_v-1}{\gamma_v+1}}$$
+
+We simplify our expression more using the following equations:
+$$1+\frac{\gamma_v-1}{\gamma_v+1}=\frac{2\gamma_v}{\gamma_v+1}$$
+$$1-\frac{\gamma_u-1}{\gamma_u+1}=\frac{2}{\gamma_u+1}$$
+
+so we get:
+$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v =\frac{\Big( \frac{2\gamma_v}{1+\gamma_v}+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)\Big)\cdot\frac{\gamma_u}{1+\gamma_u}u + \frac{2}{1+\gamma_u}\cdot\frac{\gamma_v}{1+\gamma_v}v}{1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot \frac{\gamma_v-1}{\gamma_v+1}}$$
+
+Also, we have that:
+$$1+\frac{\gamma_u-1}{\gamma_u+1}\cdot \frac{\gamma_v-1}{\gamma_v+1}= \frac{2(1+\gamma_u\gamma_v)}{(1+\gamma_u)(1+\gamma_v)}$$
+
+Now, we can reduce to a common denominator and get:
+$$1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot \frac{\gamma_v-1}{\gamma_v+1} = \frac{2\gamma_u\gamma_v(1+u\cdot v) + 2}{(1+\gamma_u)(1+\gamma_v)}$$ 
+
+On the other side, the numerator of the fraction representing $\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v$ is equal to:
+$$2\gamma_u\gamma_v\Big(u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u \cdot v)u\Big)$$
+
+Putting this together, we get our formula.
+
+\end{proof}
+
+This wasn't enough to prove that structure $(V_1, \oplus_e, \otimes_e)$ is a gyrovector space. We needed to prove how their gyrations are connected so we formulated and proved the following lemmas:
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} e\_gyr\_m\_gyr:\\
+{\bf shows} \="(1/2) $\otimes_E$ e\_gyr u v w = m\_gyr ((1/2) $\otimes_E$ u) ((1/2) $\otimes_E$ v) ((1/2) $\otimes_E$ w) "\\
+{\bf lemma} m\_gyr\_e\_gyr:\\
+{\bf shows} \="2 $\otimes_E$ m\_gyr u v w = e\_gyr (2 $\otimes_E$ u) (2 $\otimes_E$ v) (2 $\otimes_E$ w)"\\
+\end{tabbing}
+\end{footnotesize}
+}
+
+The proof of the second followed immediately from the first one.
+
+We made an effort to formally prove the connection between M\" obius and Einstein structures in complex plane. The benefits are numerous; we were able to prove that Einstein structure $(V_1,\oplus_E, \otimes_E)$ is a gyrovector space without unfolding the definitions of $\oplus_E$ and $\otimes_E$ and dealing with lots of hard calculations.
+
+
+Here is the example of one of the lemma who has a short proof thanks to the connection formula we have proved before:
+
+{\tt
+\begin{footnotesize}
+\begin{tabbing}
+{\bf lemma} e\_gyro\_left\_assoc:\\
+{\bf shows} \="a $\oplus_E$ (b $\oplus_E$ z) = (a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z "\\
+{\bf proof-}\\
+\tab {\bf have} "(1/2) $\otimes_E$ (a $\oplus_E$ (b $\oplus_E$ z)) = ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ (b $\oplus_E$ z) )" 
+\\ \tab \tab by $\ldots$\\
+
+\tab {\bf moreover have} " ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ (b $\oplus_E$ z)) = \\ \tab \tab ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ b $\oplus_m$ (1/2) $\otimes_E$ z)" 
+\\ \tab \tab by $\ldots$\\
+
+\tab {\bf moreover have} "((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ b $\oplus_m$ (1/2) $\otimes_E$ z) = \\ \tab \tab ((1/2) $\otimes_E$ a $\oplus_m$ (1/2) $\otimes_E$ b) $\oplus_m$ \\ \tab \tab m\_gyr ((1/2) $\otimes_E$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_E$ z)" 
+\\ \tab \tab by $\ldots$\\
+
+
+\tab {\bf moreover have} "(1/2) $\otimes_E$ ((a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z) \\ \tab \tab = (1/2)  $\otimes_E$ (a $\oplus_E$ b) $\oplus_m$ (1/2)  $\otimes_E$ e\_gyr a b z " 
+\\ \tab \tab by $\ldots$\\
+
+\tab {\bf moreover have} "(1/2)  $\otimes_E$ (a $\oplus_E$ b) $\oplus_m$ (1/2)  $\otimes_E$ e\_gyr a b z \\ \tab \tab= ((1/2)  $\otimes_E$ a  $\oplus_m$ (1/2)  $\otimes_E$ b)  $\oplus_m$  \\ \tab \tab m\_gyr ((1/2) $\otimes_E$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_E$ z)" 
+\\ \tab \tab by $\ldots$\\
+
+\tab {\bf moreover have} "(1/2) $\otimes_E$ (a $\oplus_E$ (b $\oplus_E$ z)) = \\ \tab \tab (1/2)  $\otimes_E$ ((a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z)" 
+\\ \tab \tab by $\ldots$\\
+
+\tab {\bf ultimately show} "?thesis"\\
+\tab \tab by $\ldots$\\
+{\bf qed}\\
+\end{tabbing}
+\end{footnotesize}
+}
+
+
+
+
+
+
+
+
+
+- definisati ova dva konkretna prostora i ukratko opisati kako je
+formalno dokazano da oni zadovoljavaju aksiome (ako je nešto
+originalno urađeno tj. nema kond Ungara to posebno naglasiti)
+
+- diskutovati onu vezu sa jednom polovinom i dva i diskutovati kako je to olakšalo dokaz (nadam se da jeste)
+
+\section{Modelling hyperbolic geometry}\label{sec:models}
+
+In this section we are going to explain how to show that our new gyrodefinitions are formaly equivalent to our old definitions used in paper [].
+
+One of the models used to represent hyperbolic geometry is the Poincar\'{e} disk model. We named our type PoincareDisc on purpose, to highlight the equivalence between definitions from this paper and [].
+
+Basic objects in the Poincare model of the hyperbolic plane are h-points and h-lines. H-points are points of the extended complex plane that lie within the unit disc. From the following definition:
+\begin{definition}\textbf{(Point in M\" obius gyrovector space)} Any element of M\" obius gyrovector space is a point in that space.
+\end{definition}
+
+We can conclude that the definition of a point in M\" obius gyrovector space coincides with the definition of a h-point.
+
+By the characterization of h-lines, we know that h-lines are Euclidean circles if they don't contain the center of a unit disk (complex $0$). Otherwise they are Euclidean lines.
+
+We want to prove that gyrocollinearity in M\" obius gyrovector space implies h-collinearity and vice versa. Also, we are interested in proving that the order of points is unchanged (h-betweenness is equivalent to gyro-betweeness).
+
+First, lets give some definitions:
+
+\begin{definition}\textbf{(Gyrocollinearity in M\" obius gyrovector space)}: Three points $u$, $v$ and $x$ in M\" obius gyrovector space are gyrocollinear if there exists a real number $t$ such that:
+$$x = u\oplus_m t \otimes_m (\ominus_m u \oplus_m v)$$
+\end{definition}
+
+\begin{definition}\textbf{(Betweenness in M\" obius gyrovector space):} Point $x$ is between two points $u$ and $v$ if $x$, $u$ and $v$ are gyrocollinear with coefficient $t$ between 0 and 1.
+\end{definition}
+
+In our formalization, we didn't start from these definitions, but we have proved that they are correct.
+
+Consider three gyrocollinear points $u$, $v$ and $x$. There exists some real number $t$ such that $$x=u\oplus_m t\otimes_m (\ominus_m u \oplus_m v)$$
+Without losing of generality we can assume that $u=0$. If $u$ is not $0$ we can use the following M\" obius transformation:
+$$f_u(z) = \frac{z-u}{1-\overline{u}z}=\ominus_m u \oplus_m z$$ to provide that $u=0$. The function $f_u(z)$ is obviously closed on ball $V_1$.
+Another very important property of $f_u(z)$ is that it keeps a gyrocollinearity.
+
+\begin{theorem}
+Three points $x$, $u$ and $v$ are gyrocollinear iff $f_a(x)$, $f_a(u)$ and $f_a(v)$ are gyrocollinear.
+\end{theorem}
+\begin{proof} Since three points $x$, $u$ and $v$ are gyrocollinear, there exists a real number $t$ such that $x=u\oplus_m t\otimes_m (\ominus_m u \oplus_m v)$. We can prove that this formula is equivalent to $$(\ominus_m a \oplus_m x) = (\ominus_m a \oplus_m u) \oplus_m t \otimes_m (\ominus_m (\ominus_m a \oplus_m u) \oplus_m (\ominus_m a \oplus_m v))$$
+using the following equalities:
+\begin{align*} 
+(\ominus_m a \oplus_m u) &=  \ominus_m a \oplus_m (u\oplus_m t \otimes_m (\ominus_m u \oplus_m v)) \\ 
+ &=  (\ominus_m a \oplus_m u) \oplus_m m\_gyr (\ominus_m a, u, t\otimes_m (\ominus_m u \oplus_m v))\\
+ &= (\ominus_m a \oplus_m u) \oplus_m t \otimes_m m\_gyr(\ominus_m a, u, \ominus_m u \oplus_m v)\\
+ &= (\ominus_m a \oplus_m u) \oplus_m t \otimes_m (\ominus_m (\ominus_m a \oplus_m u) \oplus_m (\ominus_m a \oplus_m v))
+\end{align*}
+\end{proof}
+
+So, we can conclude that transforming our unit disk in a way that $u$ becomes zero, doesn't change gyrocollinearity of our points and we can continue our work assuming that $u$ is zero.
+
+If $u$ is zero, then $x=t\otimes_m v$ which is equal to tanh(t$\cdot$ artanh($\norm{v}$))$\frac{v}{\norm{v}}$ like we have formally proved in our work. 
+
+The argument of a complex number $x$ is equal to the argument of a complex number $z$. This follows from the fact that the argument of a purely real number is zero, and $\frac{tanh(t\cdot artanh(\norm{v}))}{\norm{v}}$ is truly a purely real number. The complex argument of a product of purely real number and complex number is the sum of their arguments. So, $arg(a\cdot z)$, where $a$ is a purely real number and $z$ is a complex number, is $arg(a)+arg(z) = arg(z)$.  
+
+Further, the fact that $x$ and $v$ have same argument means that they are also h-collinear. Also, $u$ is h-collinear with them, because we get $u$ putting $t=0$.
+
+If $x$ is between $u=0$ and $v$, then $0\leq t \leq 1$, so we have:
+$$\frac{\norm{x}}{\norm{v}} = \frac{tanh(t\cdot artanh(\norm{v})}{\norm{v}}\leq \frac{tanh(artanh(\norm{v}))}{\norm{v}}=1$$
+
+This inequality is true because $tanh$ is strictly increasing for all real numbers. It follows that $\norm{x} \leq \norm{v}$ and $x$ is h-between $u=0$ and $v$.
+
+
+- Definisati osnovne pojmove Poincare-ovg diska u Mebijusovom žirovektorskom prostoru (tačke, prave, između, rastojanje, podudarno, Mebijusove transformacije)
+
+- Diskutovati kako je dokazano da su osnovni pojmovi invarijantni u odnosu na Mebijustove transformacije
+
+- Diskutovati kako je to pomoglo da se uspostavi formalna ekivalentnost između ovih žiro-definicija i starih Poincare definicija
+
+\section{Conclusions and further work}\label{sec:conclusions}
+
+\bibliographystyle{plain}
+\bibliography{gyro} % name your BibTeX data base
+
+\end{document}
