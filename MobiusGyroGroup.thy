@@ -241,8 +241,8 @@ next
     using m_gyr_left_loop by auto
 next
   fix a b
-  show "gyrogroup'.gyroaut (\<oplus>\<^sub>m) (m_gyr a b)"
-    unfolding gyrogroup'.gyroaut_def
+  show "gyrogroupoid.gyroaut (\<oplus>\<^sub>m) (m_gyr a b)"
+    unfolding gyrogroupoid.gyroaut_def
   proof safe
     fix a' b'
     show "m_gyr a b (a' \<oplus>\<^sub>m b') = m_gyr a b a' \<oplus>\<^sub>m m_gyr a b b'"
@@ -260,21 +260,21 @@ proof
     using m_gyro_commute by blast
 qed
 
-instantiation PoincareDisc :: gyrogroup'
+instantiation PoincareDisc :: gyrogroupoid
 begin
 definition gyrozero_PoincareDisc where
  "gyrozero_PoincareDisc = m_ozero"
 definition gyroplus_PoincareDisc where
  "gyroplus_PoincareDisc = m_oplus"
-definition gyroinv_PoincareDisc where
- "gyroinv_PoincareDisc = m_ominus"
-definition gyr_PoincareDisc where
- "gyr_PoincareDisc = m_gyr"
 instance ..
 end
 
 instantiation PoincareDisc :: gyrogroup
 begin
+definition gyroinv_PoincareDisc where
+ "gyroinv_PoincareDisc = m_ominus"
+definition gyr_PoincareDisc where
+ "gyr_PoincareDisc = m_gyr"
 instance proof
   fix a :: PoincareDisc
   show "0\<^sub>g \<oplus> a = a"
@@ -306,5 +306,85 @@ instance proof
     using gyr_PoincareDisc_def gyroplus_PoincareDisc_def m_gyro_commute by auto
 qed
 end
+
+(* ------------------------------------------------------------------- *)
+
+definition m_gyr_alternative :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" where
+  "m_gyr_alternative u v w = \<ominus>\<^sub>m (u \<oplus>\<^sub>m v) \<oplus>\<^sub>m (u \<oplus>\<^sub>m (v \<oplus>\<^sub>m w))"
+
+lemma m_gyr_alternative_m_gyr:
+  shows "m_gyr_alternative u v w = m_gyr u v w"
+  by (simp add: Mobius_gyrogroup.gyr_def m_gyr_alternative_def)
+
+definition m_oplus'_alternative :: "complex \<Rightarrow> complex \<Rightarrow> complex" where 
+  "m_oplus'_alternative u v =
+      ((1 + 2*inner u v + (norm v)^2) *\<^sub>R u + (1 - (norm u)^2) *\<^sub>R v) /
+       (1 + 2*inner u v + (norm u)^2 * (norm v)^2)"
+
+lemma m_oplus'_alternative:
+  assumes "cmod u < 1" "cmod v < 1"
+  shows "m_oplus'_alternative u v = m_oplus' u v"
+proof-
+  have *: "2 * inner u v = cnj u * v + cnj v * u"
+    using two_inner_cnj
+    by auto
+  
+  have "(1 + 2*inner u v + (norm v)^2) * u =
+        (1 + cnj u *v + cnj v * u + (norm v)^2) * u"
+    using *
+    by auto
+
+  moreover
+
+  have "1 + 2*inner u v + (norm u)^2 * (norm v)^2 = 
+        1 + cnj u * v + cnj v * u + (norm u)^2 * (norm v)^2"
+    using *
+    by auto
+
+  moreover
+
+  have "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1 - (norm u)^2) * v =
+        (1 + cnj v * u) * (u + v)"
+  proof-
+    have *: "(1 + cnj u * v + cnj v * u + (norm v)^2) * u = 
+             u + (norm u)^2 * v + cnj v * u^2 + (norm v)^2 * u"
+      by (smt (verit, del_insts) ab_semigroup_mult_class.mult_ac(1) comm_semiring_class.distrib complex_norm_square mult.commute mult_cancel_right1 power2_eq_square)
+    have **: "(1 + cnj v * u) * (u + v) = u + cnj v * u * u + v + cnj v * u * v"
+      by (simp add: distrib_left ring_class.ring_distribs(2))
+    have "u + cnj u * v *u + v + cnj u* v * v = u + cnj u * v^2 + (norm u)^2 * v + v"
+      by (simp add: cnj_cmod mult.commute power2_eq_square)
+    have ***: "(1 - (norm u)^2) * v = v - (norm u)^2 * v"
+      by (simp add: mult.commute right_diff_distrib')
+    have "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1 - (norm u)^2) * v =
+          u + (norm u)^2 * v + (cnj v) * u^2 + (norm v)^2 * u + v - (norm u)^2 * v"
+      using * ***
+      by force
+    have ****: "(1 + cnj u * v + cnj v * u + (norm v)^2) * u + (1-(norm u)^2) * v =
+                u + cnj v *u^2 + (norm v)^2 * u + v"
+      using * *** 
+      by auto
+
+    have "(1 + cnj v * u) * (u+v) = u + (norm v)^2 *u + v + cnj v * u^2"
+      using **
+      by (simp add: cnj_cmod mult.commute power2_eq_square)
+
+    then show ?thesis
+      using ****
+      by auto
+  qed
+
+  moreover have "1 + cnj u * v + cnj v *u + (norm u)^2 * (norm v)^2  =
+                (1 + cnj u * v) * (1 + cnj v * u)"
+    by (smt (verit, del_insts) cnj_cmod comm_semiring_class.distrib complex_cnj_cnj complex_cnj_mult complex_mod_cnj is_num_normalize(1) mult.commute mult_numeral_1 norm_mult numeral_One power_mult_distrib)
+  
+  ultimately
+  show ?thesis 
+    using assms
+    unfolding m_oplus'_alternative_def m_oplus'_def
+    by (metis (no_types, lifting) den_not_zero divide_divide_eq_left' nonzero_mult_div_cancel_left scaleR_conv_of_real)
+qed
+
+lift_definition m_oplus_alternative :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" is m_oplus'_alternative
+  by (simp add: m_oplus'_alternative m_oplus'_in_disc)
 
 end

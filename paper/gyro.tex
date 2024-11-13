@@ -129,7 +129,9 @@ addition.
 
 In this paper we present a formalization of gyrovector spaces and
 their connections with hyperbolic geometry and special relativity,
-within the interactive theorem prover Isabelle/HOL. Machine-verified
+within the interactive theorem prover Isabelle/HOL.\footnote{The full
+  formalization is available on
+  \url{https://github.com/jecamark96/moebius}}. Machine-verified
 proofs are gaining popularity, and with recent advances in AI, it may
 only be a matter of time before they become the norm. Such proofs are
 particularly valuable in error-prone areas -- we argue that
@@ -770,8 +772,6 @@ previously proven lemmas about gyrovector spaces).
 \end{small}
 
 
-
-
 \section{Instances of gyrovector spaces}\label{sec:mobiuseinstein}
 
 So far gyrogroups and gyrovector spaces have been presented as
@@ -782,7 +782,7 @@ from the realm of relativistic physics. In order to define these
 spaces we must define the operations $\oplus$ and $\otimes$.
 
 
-\subsection{M\"obius gyrogroup}
+\subsection{M\"obius gyrogroup}\label{sec:mobiusgyrogroup}
 
 M\"obius gyrovector space comes from the Poincar\'e disc model of
 hyperbolic geometry. In \cite{amai-poincare} it was formally proved
@@ -793,7 +793,7 @@ $$z \mapsto e^{i\theta} \frac{a+z}{1+\overline{a}z}.$$
 
 This inspires the following definition of addition.
 
-\begin{definition}\textbf{(M\" obius addition in the Poincar\'e disc)}: Let 
+\begin{definition}\textbf{(M\" obius addition in the Poincar\'e disc, Definition 3.125 in \cite{ungar-analytic})}: Let 
   $V_1 = \{z\in \mathbb{C}: \norm{z} < 1\}$ be a unit disc in
   $\mathbb{C}$. M\" obius addition $\oplus_m$ is a binary operation
   defined in $V_1$ as:
@@ -807,39 +807,59 @@ that maps $-a$ to zero\footnote{Such translations are sometimes called
 disc for the angle $\theta$ and each direct isometry is a translation
 followed by a rotation.
 
-Note that M\"obius addition can be naturally generalized from the
-Poincar\'e disc (unit disc in $\mathbb{C}$) to a unit ball in any
-finite dimension real inner product vector space $V$ (all of those
-are isomorphic to $\mathbb{R}^n$). However, we did not consider this
-in our formalization.
+Recall that gyration function is necessary to fix the associativity
+and commutativity. Therefore, in the case of M\"obius gyrogroup,
+gyration is defined by
 
-\begin{definition}\textbf{(M\" obius addition in the unit ball of $\mathbb{R}^n$)}: Let $V$
+$$gyr_m[a, b] z = \frac{a\oplus_m b}{b\oplus_m a}z = \frac{1 + a\overline{b}}{1+\overline{a}b}z.$$
+
+The unit disc in $\mathbb{C}$ (the Poincar\'e disc) equipped with the
+M\"obius addition and this gyration forms a gyrocommutative gyrogroup.
+
+
+Note that M\"obius addition can be naturally generalized from the unit
+disc in $\mathbb{C}$ to a unit ball in any finite dimension real inner
+product vector space $V$ (all of those are isomorphic to
+$\mathbb{R}^n$). However, we did not consider this in our
+formalization.
+
+\begin{definition}\textbf{(M\" obius addition in the ball of $V$)}: Let $V$
   be a real inner product vector space, let
-  $V_{s} = \{v\in V: \norm{v}<s\}$ be a ball in $V$ and
-  $V_{s=1} = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. M\" obius
-  addition $\oplus_m$ is a binary operation defined in $V_{s=1}$ as:
+  $V_{s} = \{v\in V: \norm{v}<s\}$ be a ball in $V$. M\" obius
+  addition $\oplus_m$ is a binary operation defined in $V_s$ as:
   
-$$u \oplus_m v = \frac{(1+2uv+\norm{v}^2)u+(1-\norm{u}^2)v}{1+2uv+\norm{u}^2\norm{v}^2}$$ 
+$$u \oplus_m v = \frac{(1+\frac{2}{s^2}uv+\frac{1}{s^2}\norm{v}^2)u+(1-\frac{1}{s^2}\norm{u}^2)v}{1+\frac{2}{s^2}uv+\frac{1}{s^4}\norm{u}^2\norm{v}^2}$$ 
 \end{definition}
 
-In our formalization we first defined the set of points in the
-Poincar\'e disc as a subtype of complex numbers, and then we used the
-lifting/transfer package to define functions operating on the
-Poincar\'e disc by first defining them on the representation type
-$\mathbb{C}$.
+
+\subsubsection{Isabelle/HOL formalization}
+
+In our formalization we first defined the set $\mathbb{P}$ of points
+in the Poincar\'e disc as a subtype of complex numbers $\mathbb{C}$.
+Therefore we consider real inner product space $V=\mathbb{C}$ and the
+gyrogroup domain $G=\mathbb{P}$.\footnote{Note that we introduced the
+  notation $\mathbb{P}$ for the same set that is denoted by $V_1$ in
+  \cite{ungar-analytic}.}
 
 \begin{small}
 {\tt
 \begin{tabbing}
 \hspace{5mm}\=\kill
 {\bf typedef} PoincareDisc = "\{z::complex. cmod z < 1\}"\\
-{\bf setup\_lifting} type\_definition\_PoincareDisc\\
+{\bf setup\_lifting} type\_definition\_PoincareDisc
 \end{tabbing}
 }
 \end{small}
 
-Norm and inner product are naturally lifted from $\mathbb{C}$ to the
-Poincar\'e disc.
+This lifting introduces the function \texttt{of\_complex} and
+\texttt{to\_complex} that converts between $\mathbb{C}$ and
+$\mathbb{P}$.
+
+Then we used the lifting/transfer package to define functions
+operating on the Poincar\'e disc $\mathbb{P}$ by first defining them
+on the representation type $\mathbb{C}$. For example, inner product
+and norm are naturally lifted from $\mathbb{C}$ to the Poincar\'e disc
+(and the notation $\cdot$ and $\llangle\_\rrangle$ is introduced).
 
 \begin{small}
 {\tt
@@ -852,11 +872,10 @@ Poincar\'e disc.
 }
 \end{small}
 
-
 We define the M\"obius addition by the following sequence of
 definitions (first we define it on the representation type
-$\mathbb{C}$ and then we lift it to the abstract type of points of the
-Poincar\'e disc).
+$\mathbb{C}$ and then we lift it to the abstract type $\mathbb{P}$ of
+points of the Poincar\'e disc).
 
 {\tt
 \begin{small}
@@ -880,25 +899,21 @@ arguments are in the unit disc.
 \begin{tabbing}
 \hspace{5mm}\=\kill
 {\bf lemma} m\_oplus'\_in\_disc:\\
+\>  {\bf fixes} u v :: complex\\
 \>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
 \>  {\bf shows} "cmod (m\_oplus' u v) < 1"
 \end{tabbing}
 \end{small}
 }
 
-Our proof of this lemma is not trivial, but is quite technical and
-non-interesting. Note that such proofs are usually missing from the
-literature (they are not even mentioned in \cite{ungar-analytic}), but
-the formalization reveals that many such important properties must be
-proved.
+\noindent The proof of this lemma is not trivial, but is quite
+technical and non-interesting. Note that such proofs are usually
+missing from the literature (they are not even mentioned in
+\cite{ungar-analytic}), but the process of formalization reveals all
+the properties that must be proved in order to have a fully formalized
+theory.
 
-Recall that gyration function is necessary to fix the associativity
-and commutativity. Therefore, in the case of M\"obius gyrogroup,
-gyration is defined by
-
-$$gyr_m[a, b] z = \frac{a\oplus_m b}{b\oplus_m a}z = \frac{1 + a\overline{b}}{1+\overline{a}b}z.$$
-
-We formalize it by the next sequence of definitions.
+We formalize the gyration by the next sequence of definitions.
 
 {\tt
 \begin{small}
@@ -921,6 +936,7 @@ disc (which is easy, since $|1+a\overline{b}| = |1+\overline{a}b|$).
 \begin{tabbing}
 \hspace{5mm}\=\kill
 {\bf lemma} m\_gyr'\_in\_disc:\\
+\>  {\bf fixes} a b z :: complex\\
 \>  {\bf assumes} "cmod a < 1" "cmod b < 1" "cmod z < 1"\\
 \>  {\bf shows} "cmod (m\_gyr' a b z) < 1"
 \end{tabbing}
@@ -928,45 +944,69 @@ disc (which is easy, since $|1+a\overline{b}| = |1+\overline{a}b|$).
 }
 
 One of the central results of our formalization is that with such
-gyration, $(V, \oplus)$ is a gyrocommutative gyrogroup, i.e., that
-$\oplus_m$ satisfies all axioms of gyrogroup and the axiom of
-gyrocommutativity (this last proof is very easy, since gyration is
+gyration, $(\mathbb{P}, \oplus_m)$ is a gyrocommutative gyrogroup,
+i.e., that $\oplus_m$ satisfies all axioms of gyrogroup and the axiom
+of gyrocommutativity (this last proof is very easy, since gyration is
 defined so that the gyrcommutativity holds). Again, these proofs are
-not present in the literature (at one point Ungar comments
-,,$(V, \oplus_m)$ turns out to be a gyrocommutative gyrogroup, as one
-can readily check by computer algebra''). They are quite technical and
-indeed reduce to algebraic manipulations with complex numbers, but, in
-order to formalize them we had to make all the computation steps
-explicit (the are available in our formalization, but we do not print
-them in the paper).
+not present in the literature (at one point Ungar comments ,,this
+space turns out to be a gyrocommutative gyrogroup, as one can readily
+check by computer algebra''). They are quite technical and indeed
+reduce to algebraic manipulations with complex numbers, but, in order
+to formalize them we had to make all the computation steps explicit
+(the are available in our formalization, but we do not print them in
+the paper).
 
+As it is often the case, it turns out that it is usefull to have
+alternative definitions of the same notion, so we formalized (and
+later used) an alternative definition of M\"obius addition (and, of
+course, proved that it is equivalent to the original one).
+
+{\tt
+\begin{small}
+\begin{tabbing}
+\hspace{5mm}\=\hspace{5mm}\=\kill
+{\bf definition} m\_oplus'\_alternative :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where} \\
+\>  "m\_oplus'\_alternative u v =\\
+\>\>      ((1 + 2*inner u v + (norm v)$^2$) $*_R$ u + (1 - (norm u)$^2$) $*_R$ v) / \\
+\>\>       (1 + 2*inner u v + (norm u)$^2$ * (norm v)$^2$)"\\
+{\bf lift\_definition} m\_oplus\_alternative ::\\
+\> "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" {\bf is} m\_oplus'\_alternative
+\end{tabbing}
+\end{small}
+}
 
 \subsection{M\"obius gyrovector space}
 
-M\" obius gyrogroup $(V, \oplus_m)$ admits scalar multiplication
-$\otimes_m$, turning it into the M\" obius gyrovector space
-$(V_1, \oplus_m, \otimes_m)$.
+In \cite{ungar-analytic} Ungar shows that M\" obius gyrogroup
+$(V_1, \oplus_m)$ admits scalar multiplication $\otimes_m$, turning it
+into the M\" obius gyrovector space $(V_1, \oplus_m, \otimes_m)$.
 
 \begin{definition}\textbf{(M\" obius Scalar Multiplication)}: Let
   $(V_1, \oplus_m)$ be a M\" obius gyrogroup. For $r \in \mathbb{R}$,
-  $v \in V_1$, and $v \neq 0$, the M\" obius scalar
-  multiplication\footnote{In section \ref{einstein_gvs} we shall see
-    that the definition of scalar multiplication is exactly the same
-    in the Einstein gyrovector space, so instead of $\otimes_m$ and
-    $\otimes_e$ we denote this operation by $\otimes_{me}$}
-  $r\otimes_{me} v$ is in $V_1$ and is given by the equation:
-  
-  $$r\otimes_{me} v = \frac{(1+\norm{v})^r - (1-\norm{v})^r}{(1+\norm{v})^r + (1-\norm{v})^r}\cdot\frac{v}{\norm{v}}.$$
+  $v \in V_1$, and $v \neq 0$, the M\" obius scalar multiplication
+  $r\otimes_{m} v$ is in $V_1$ and is given by the equation:
+
+  \begin{equation}
+   \label{eq:otimes}
+    r\otimes_{m} v = \frac{(1+\norm{v})^r - (1-\norm{v})^r}{(1+\norm{v})^r + (1-\norm{v})^r}\cdot\frac{v}{\norm{v}}.
+  \end{equation}
   
 
-\noindent For $v=0$, it holds that $r\otimes_{me} 0 = 0$.
+  \noindent For $v=0$, it holds that $r\otimes_{m} 0 = 0$.
 \end{definition}
 
 This formula is derived by generalizing the expressions for
 $2\otimes v = v \oplus v$, $3\otimes v = v \oplus v \oplus v$ etc.
 
+\subsubsection{Isabelle/HOL formalization}
+
 As expected, first we define our $\otimes_m$ operation on complex
-numbers and then we lift this definition to the Poincar\'e disc.
+numbers and then we lift this definition to the Poincar\'e
+disc.\footnote{In section \ref{einstein_gvs} we shall see that the
+  definition of scalar multiplication is exactly the same in the
+  Einstein gyrovector space, so we denote this operation, by
+  $\otimes_m$, $\otimes_e$ and by $\otimes_{me}$, depending on the
+  context.}
 
 {\tt
 \begin{small}
@@ -982,13 +1022,14 @@ numbers and then we lift this definition to the Poincar\'e disc.
 \end{small}
 }
 
-We didn't find the proof that $(V_1, \oplus_m, \otimes_{me})$ is a
-gyrovector space in the literature (only some fragments were presented
-in the books\cite{ungar-analytic}). So, another contribution of our
+We did not find an explicit proof that
+$(\mathbb{P}, \oplus_m, \otimes_{me})$ is a gyrovector space in the
+literature (only some fragments were presented in the
+books\cite{ungar-analytic}). So, another contribution of our
 formalization is that this proof is given explicitly (and
 additionally, its correctness is machine checked).
 
-Very important characterization of $\otimes$ uses hyperbolic
+Very important characterization of $\otimes_{me}$ uses hyperbolic
 trigonometric functions (instead of power function used in the
 original definition).
 
@@ -996,7 +1037,8 @@ original definition).
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf lemma} otimes'\_k\_tanh:\\
+{\bf lemma} me\_otimes'\_k\_tanh:\\
+\>  {\bf fixes} r :: real {\bf and} z :: complex\\
 \>  {\bf assumes} "cmod z < 1"\\
 \>  {\bf shows} "me\_otimes'\_k r z = tanh (r * artanh (cmod z))"
 \end{tabbing}
@@ -1018,8 +1060,8 @@ $$\gamma_u = \frac{1}{\sqrt{1-\frac{\norm{u}^2}{c^2}}}$$
 A special property of Lorentz factor is that Lorentz factor is complex
 if the norm of $u$ is bigger than $1$ and real if the norm is smaller
 than $1$ and vice versa. However, we could not use this in
-Isabelle/HOL since functions which define power ($sqrt$, $pow$, etc.)
-are always real valued.
+Isabelle/HOL since functions which define power (\texttt{sqrt},
+\texttt{pow}, etc.)  are always real valued.
 
 We defined the Lorentz $\gamma$-factor in the following way (assuming
 without loss of generality that $c=1$):
@@ -1039,9 +1081,9 @@ without loss of generality that $c=1$):
 \tt}
 
 
-Most gyrovector space axioms were rather straightforward to prove, but
-there were exceptions. The hardest axiom to prove was the gyrotriangle
-inequality. We needed to prove that
+Most gyrovector space axioms were non-trivial, but rather
+straightforward to prove, but there were exceptions. The hardest axiom
+to prove was the gyrotriangle inequality. We needed to prove that
 $\norm{a\oplus_m b} \leq \norm{a} \oplus_m \norm{b}$ and we did that
 using Lorentz factors and their properties.
 
@@ -1071,6 +1113,7 @@ of their $\gamma$-factors.
 \begin{tabbing}
 \tab\=\tab\=\kill
 {\bf lemma} gamma\_factor\_norm\_sum:\\
+\>  {\bf fixes} a b :: PoincareDisc\\
 \>  {\bf shows} "\=$\gamma$ $\llangle$a $\oplus_m$ b$\rrangle$ =\\
 \>\>$\gamma_p$ a * $\gamma_p$ b * cmod (1 + cnj (to\_complex a) * (to\_complex b))"
 \end{tabbing}
@@ -1085,6 +1128,7 @@ $\gamma$-factors.
 \begin{tabbing}
 \tab\=\tab\=\kill
 {\bf lemma} gamma\_factor\_triangle\_inequality:\\
+\>  {\bf fixes} a b :: PoincareDisc\\
 \>  {\bf shows} "$\gamma$ $\llangle$a $\oplus_m$ b$\rrangle$ $\leq$ $\gamma_p$ ((of\_complex $\llangle a\rrangle$) $\oplus_m$ (of\_complex $\llangle$b$\rrangle$))"
 \end{tabbing}
 \end{small}
@@ -1093,13 +1137,13 @@ $\gamma$-factors.
 \noindent The triangle inequality holds from this by the monotonicity
 of the inverse $\gamma$-factor.
 
-Proof of those lemmas are available in our formalization. They are
-non-trivial and rely on algebraic manipulations of expressions
-(equalities and inequalities) over complex numbers.
+Proof of these and other related lemmas are available in our
+formalization. They are non-trivial and rely on algebraic
+manipulations of expressions (equalities and inequalities) over
+complex numbers.
 
-\subsection{Einstein gyrovector space}
+\subsection{Einstein gyrogroup and gyrovector space}
 \label{einstein_gvs}
-
   
 According to the Einstein's theory of relativity, as an object's speed
 approaches the speed of light, its relativistic mass increases towards
@@ -1107,156 +1151,341 @@ infinity, requiring infinite energy to accelerate further. Therefore,
 it is impossible for an object to move at or above the speed of
 light. While Newtonian velocities are represented by vectors in
 $\mathbb{R}^3$, Einstein velocities are represented by vectors within
-a ball of radius $c$ where $c$ is the speed of light.
+a ball of radius $c$ where $c$ is the speed of light. In our
+formalization we represented velocities by points of a unit ball
+(setting $c=1$) in 2d space (unit disc). Most of the theorems that we
+formally proved in this special case can be easily generalized to
+higher dimensions and different values of the constant $c$ (the speed
+of light, i.e., the radius of the admissible velocity ball).
 
-Einstein's addition law which describes how velocities combine in
-special relativity, lead to rich nonassociative algebraic structures,
-called gyrovector spaces. Ungar made Einstein's definitions more
-general, allowing us to observe a ball of any real inner product
-space. Without losing of the generality we can observe a unit ball. It
-turns out that the Einstein gyrovector spaces are isomorphic to the
-M\" obius gyrovector spaces and form a setting for a model of
-hyperbolic geometry. Specially, we have formally proved our theorems
-in the case when the ball is in $R^2$-isomorphic space, the complex
-plane, but many of the proofs are correct in the general case and they
-need just a slight modifications.
+In classic Newtownian physics, velocities are combined by the vector
+addition in an ordinary vector space. Einstein's addition law, which
+describes how velocities combine in special relativity, leads to rich
+nonassociative algebraic structures --- gyrovector spaces. We formally
+define Einstein's velocity addition law, the corresponding Thomas
+gyration, and the Einstein scalar multiplication, and then we proved
+that they satisfy the axioms of gyrovector space.
 
-The general proof of connection formula between M\" obius and Einstein
-addition is given. As we know, this is the first proof of this theorem
-in the literature. It is not hard, but it's tehnically challenging and
-it has some computational tricks.
+As we shall see, it turns out that the Einstein gyrovector spaces are
+isomorphic to the M\" obius gyrovector spaces (described in previous
+section), and that relativistic physics is set in hyperbolic
+gometry. We formalized this connection between M\" obius and Einstein
+gyrovector spaces. As we know, this is the first explicit proof of
+this theorem in the literature. It is not hard, but it's tehnically
+very challenging and involves many computational tricks.
 
+Let us first define Einstein's velocity addition $\oplus_e$.
 
+\begin{definition}\textbf{(Einstein addition in the ball, Definition 3.39 in \cite{ungar-analytic})}
+  \label{def:einsteinaddition}
 
-
-\begin{definition}\textbf{(Einstein addition in the ball[])}: Let $V$ be a real inner product vector space and let $V_1 = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. Einstein addition $\oplus_E$ is a binary operation defined in $V$ as:
-$$u \oplus_E v = \frac{1}{1+u\cdot v}\Big\{u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u\cdot v)u\Big\}$$ 
-where $\gamma_u$ is Lorentz factor (called gamma factor) and $\cdot$ and $\norm{\cdot}$ are the inner product and norm that the ball $V_1$ inherits from its space $V$. 
+  Let $V$ be a real inner product vector space and let
+  $V_1 = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. Einstein
+  addition $\oplus_e$ is a binary operation defined in $V$ as:
+  
+  $$u \oplus_e v = \frac{1}{1+u\cdot v}\Big\{u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u\cdot v)u\Big\}$$
+  
+  \noindent where $\gamma_u$ is the Lorentz $\gamma$-factor and
+  $\cdot$ and $\norm{\cdot}$ are the inner product and norm that the
+  ball $V_1$ inherits from its space $V$.
 \end{definition}
 
-Einstein multiplication $\otimes_E$ is defined on the same way as M\" obius multiplication $\otimes_m$.
+Einstein scalar multiplication $\otimes_{e}$ is defined in the same
+way as in the M\"obius case (Equation \ref{eq:otimes}).
+
+\subsubsection{Isabelle/HOL formalization}
+
+Einstein addition in $\mathbb{P}$ is formally defined by the following
+definitions.
+
+{\tt
+\begin{small}
+\begin{tabbing}
+\tab\=\tab\=\kill
+{\bf definition} e\_oplus' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\>  "e\_oplus' u v = \\
+\>\>(1 / (1 + inner u v)) $*_R$\\
+\>\>(u + (1 / $\gamma$ u) $*_R$ v + (($\gamma$ u / (1 + $\gamma$ u)) * (inner u v)) $*_R$ u)"\\
+{\bf lift\_definition} e\_oplus :: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc"\\
+\> (infixl "$\oplus_e$" 100) is e\_oplus'
+\end{tabbing}
+\end{small}
+}
+
+To lift this definition from complex numbers to Poincar\'e disc, one
+must prove that the Poincar\'e disc is closed under this operation.
+
+{\tt
+\begin{small}
+\begin{tabbing}
+\tab\=\tab\=\kill
+{\bf lemma} e\_oplus'\_in\_unit\_disc:\\
+\>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
+\>  {\bf shows} "cmod (e\_oplus' u v) < 1"
+\end{tabbing}
+\end{small}
+}
+
+Given the complexity of the expression in the definition of Einstein
+addition, this proof is not trivial. We managed to prove it using
+$\gamma$-factors. The following lemma expresses the $\gamma$-factor of
+the Einstein sum of two points in terms of their $\gamma$-factors.
+
+\begin{lemma}\label{lemma:gammaeinstein}
+  For all points $u$ and $v$ in the unit disc $\mathbb{P}$ it holds:
+  $$\gamma_{u\oplus_e v} = \gamma_u\gamma_v(1+u\cdot v)$$
+\end{lemma}
+
+\noindent It is formalized as follows (the formalization gives the
+statement on the representation type $\mathbb{C}$):
+
+{\tt
+\begin{small}
+\begin{tabbing}
+\tab\=\tab\=\kill
+{\bf lemma} gamma\_factor\_e\_oplus':\\
+\>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
+\>  {\bf shows} "$\gamma$ (e\_oplus' u v) = ($\gamma$ u) * ($\gamma$ v) * (1 + inner u v)"
+\end{tabbing}
+\end{small}
+}
+
+\noindent This proof is not hard, but is technically involved. Since
+\texttt{$\gamma$ (e\_oplus' u v) = 1 / sqrt(1 - (cmod (e\_oplus' u
+  v))$^2$)}, and \texttt{($\gamma$ u) * ($\gamma$ v) * (1 + inner u
+  v)} is a positive real number, so must be \texttt{sqrt(1 - (cmod
+  (e\_oplus' u v))$^2$)}. This is possible only if the radicand is
+non-negative, implying that \texttt{cmod (e\_oplus' u v)} is less than
+1.
+
+Again, details of such proofs are not present in the literature. Ungar
+just gives a brief comment: ,,Like M\"obius addition in the ball, one
+can show by computer algebra that Einstein addition in the ball is a
+gyrocommutative gyrogroup operation''. This would be very challenging
+to do in an interactive theorem prover, so we decided to take a
+different approach.
+
+
 
 \subsection{Gyrovector space isomorphism}
-We begin this subsection with the following definition.
 
-\begin{definition} Two gyrovector spaces $(G_1, \oplus_1, \otimes_1)$ and $(G_2, \oplus_2, \otimes_2)$  are isomorphic if there exists a bijective map $\phi: G_1 \rightarrow G_2$ such that the following conditions are satisfied:
+Instead of directly proving that the Einstein space
+$(V_1, \oplus_e, \otimes_{e})$ is a gyrovector space, for which we
+think would be very technically challenging to do in an interactive
+theorem prover, we showed that this structure is isomorphic to
+M\"obius gyrovector space $(V_1, \oplus_m, \otimes_{m})$, and
+therefore must satisfy axioms of gyrovector space.
+
+We begin with the following definition.
+
+\begin{definition}
+  Two gyrovector spaces $(G_1, \oplus_1, \otimes_1)$ and
+  $(G_2, \oplus_2, \otimes_2)$ are \emph{isomorphic} if there exists a
+  bijective map $\phi: G_1 \rightarrow G_2$ such that the following
+  conditions are satisfied:
 \begin{itemize}
     \item $\phi(u\oplus_1 v) = \phi(u)\oplus_2 \phi(v)$
     \item $\phi(r\otimes_1 v) = r\otimes_2 \phi(v)$
-    \item $\frac{\phi(u)}{\parallel \phi(u) \parallel}\cdot \frac{\phi(v)}{\parallel \phi(v)\parallel} = \frac{u}{\parallel u \parallel}\cdot \frac{v}{\parallel v \parallel}$
+    \item
+      $\frac{\phi(u)}{\parallel \phi(u) \parallel}\cdot
+      \frac{\phi(v)}{\parallel \phi(v)\parallel} = \frac{u}{\parallel
+        u \parallel}\cdot \frac{v}{\parallel v \parallel}$
 \end{itemize}
 \end{definition}
-Nonformally, it means that $\phi$ preserves gyrovector space operations and keeps the inner product of the unit vectors invariant.
-This definition proved to be very useful, because if we can formally prove that some triple is a gyrovector space, and we find a map (with the properties from def 4.1) to another triple we can easily prove that that triple is also a gyrovector space. 
 
-\begin{lemma}$$\frac{1}{2}\otimes_m u = \frac{\gamma_u}{\gamma_u + 1} u$$
+Informally, it means that $\phi$ preserves gyrovector space operations
+and keeps the inner product of the unit vectors invariant.
+
+This definition proved to be very useful, because if we can formally
+prove that some structure is a gyrovector space, and we find an
+isomorphism map to another structure, we can easily prove that that
+other is also a gyrovector space.
+
+In our formalization we have formally proved that the map
+$u \mapsto \frac{1}{2}\otimes_m u$ is an isomorphism that maps
+M\"obius gyrovectors to Einstein gyrovectors, and used that to prove
+that Einstein gyrovectors satisfy all gyrovectorspace axioms. The
+description of this isomorphism is given in \cite{ungar-analytic}, but
+as in many other cases the proof is missing. We made a proof and
+formalized it in Isabelle/HOL. As a contribution to the literature we
+give an informal description of this proof.
+
+First we formulate some simple lemmas.
+
+\begin{lemma}\label{lemma:halfgamma}
+  For any point $u \in \mathbb{P}$ it holds:
+  $$\frac{1}{2}\otimes_m u = \frac{\gamma_u}{\gamma_u + 1} u$$
 \end{lemma}
 
-\begin{lemma}$$\gamma_{u\oplus_e v} = \gamma_u\gamma_v(1+u\cdot v)$$
+\begin{lemma}\label{lemma:normhalfsquared}
+  For any point $u \in \mathbb{P}$ it holds:
+  $$\norm{\frac{\gamma_u}{\gamma_u+1}u}^2 =\frac{\gamma_u^2}{(1+\gamma_u)^2}\cdot\norm{u}^2 = \frac{\gamma_u-1}{\gamma_u+1}$$
 \end{lemma}
-\begin{theorem}Let $G_e=(V_c, \oplus_e, \otimes_e)$ and $G_m=(V_c, \oplus_m, \otimes_m)$ be respectively, the Einstein and the Mobius gyrovector spaces of the same ball $V_c$ of a same real inner product space $V$.
-The following formulas are correct:
-$$u\oplus_e v = 2\otimes_m (\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v)$$
+
+Our central theorem proves that the isomorphism
+$u \mapsto \frac{1}{2}\otimes_m u$ connects M\"obius and Einstein
+addition (other two properites are much easier to prove).
+
+\begin{theorem}
+  Let $G_e=(V_c, \oplus_e, \otimes_e)$ and
+  $G_m=(V_c, \oplus_m, \otimes_m)$ be respectively, the Einstein and
+  the Mobius gyrovector spaces of the same ball $V_c$ of a same real
+  inner product space $V$.  The following formulas are correct:
+  
+  $$\frac{1}{2}\otimes_e (u\oplus_e v) = (\frac{1}{2}\otimes_m u) \oplus_m (\frac{1}{2} \otimes_m v)$$
 \end{theorem}
-\begin{proof}From lemma we have:
-$$\frac{1}{2}\otimes_m u = \frac{\gamma_u}{\gamma_u + 1} u$$
-Similary for vector v. Using the definition of $\otimes_m$ for $\frac{1}{2}\otimes_m u$ and $\frac{1}{2}\otimes_m v$ we conclude that:
-\begin{multline}
-$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v = \Big(1 + 2\cdot\frac{\gamma_u}{1+\gamma_u}\cdot\frac{\gamma_v}{1+\gamma_v}(u\cdot v) + \norm{\frac{\gamma_v}{\gamma_v+1}v}^2\Big) \cdot \frac{\gamma_u}{\gamma_u + 1}u + \\ + \frac{\Big(1-\norm{\frac{\gamma_u}{1+\gamma_u}}^2\cdot \frac{\gamma_v}{1+\gamma_v}v\Big)}{1+2\frac{\gamma_u}{1+\gamma_u}u \cdot \frac{\gamma_v}{1+\gamma_v}v + \norm{\frac{\gamma_u}{\gamma_u+1}u}^2 + \norm{\frac{\gamma_v}{1+\gamma_v}v}^2} $$
-\end{multline}
-On the other hand, $\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_{u \otimes_e v}}{\gamma_{u \otimes_e v} + 1}(u \otimes_e v)$. From the lemma and the definition of Einstein addition, we can conclude that:
-$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_u \gamma_v (1+u\cdot v)}{\gamma_u \gamma_v (1+u\cdot v) + 1}\Big\{\frac{1}{1+u\cdot v}\Big( u +\frac{1}{\gamma_u}v + \frac{\gamma_u}{\gamma_u + 1}(u\cdot v)\cdot u \Big)\Big\}$$
-We want to prove that the left side is equal to the right side. So, we will start with the left side and use a few transformations to get the right side.
-First, we are going to notice that $$\norm{v}^2 = \frac{\gamma_v^2-1}{\gamma_v^2}$$ which is very easy to verify using the definition of gamma factor. Further, we can simplify our expression on the following way:
-$$\norm{\frac{\gamma_v}{\gamma_v+1}v}^2 =\frac{\gamma_v^2}{(1+\gamma_v)^2}\cdot\norm{v}^2 = \frac{\gamma_v-1}{\gamma_v+1}$$
-Our expression transforms into:
-$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v = \frac{\Big(1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v) + \frac{\gamma_v -1}{\gamma_v+1}\Big)\cdot \frac{\gamma_u}{1+\gamma_u}u + \Big(1-\frac{\gamma_u-1}{\gamma_u+1}\Big)\cdot \frac{\gamma_v}{\gamma_v+1}v}{1 + \frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot\frac{\gamma_v-1}{\gamma_v+1}}$$
+\begin{proof}
+  By Lemma \ref{lemma:halfgamma} it holds that
+
+  $$(\frac{1}{2}\otimes_m u) \oplus_m (\frac{1}{2} \otimes_m v) = (\frac{\gamma_u}{\gamma_u + 1} u) \oplus_m (\frac{\gamma_v}{\gamma_v + 1} v)$$
+
+  It turns out that it is better to apply the alternative definition
+  of M\"obius addition (described in Section
+  \ref{sec:mobiusgyrogroup}). Then we get that the right hand side is
+  equal to:
+
+$$
+  \frac{\Big(1 + 2\cdot\frac{\gamma_u}{\gamma_u+1}\cdot\frac{\gamma_v}{\gamma_v+1}(u\cdot v) + \norm{\frac{\gamma_v}{\gamma_v+1}v}^2\Big) \cdot \frac{\gamma_u}{\gamma_u + 1} u\, + \Big(1-\norm{\frac{\gamma_u}{\gamma_u+1}}^2\Big)\cdot \frac{\gamma_v}{\gamma_v+1}v}
+  {1+2\frac{\gamma_u}{\gamma_u+1}u \cdot \frac{\gamma_v}{\gamma_v+1}v + \norm{\frac{\gamma_u}{\gamma_u+1}u}^2 \cdot \norm{\frac{\gamma_v}{\gamma_v+1}v}^2}
+$$
+
+By applying Lemma \ref{lemma:normhalfsquared}, the expression
+transforms into:
+
+$$\frac
+{\Big(1+\frac{2\gamma_u\gamma_v}{(\gamma_u+1)(\gamma_v+1)}(u\cdot v) + \frac{\gamma_v -1}{\gamma_v+1}\Big)\cdot \frac{\gamma_u}{\gamma_u+1}u + \Big(1-\frac{\gamma_u-1}{\gamma_u+1}\Big)\cdot \frac{\gamma_v}{\gamma_v+1}v}
+{1 + \frac{2\gamma_u\gamma_v}{(\gamma_u+1)(\gamma_v+1)}(u\cdot v)+\frac{\gamma_u-1}{\gamma_u+1}\cdot\frac{\gamma_v-1}{\gamma_v+1}}$$
 
 We simplify our expression more using the following equations:
-$$1+\frac{\gamma_v-1}{\gamma_v+1}=\frac{2\gamma_v}{\gamma_v+1}$$
-$$1-\frac{\gamma_u-1}{\gamma_u+1}=\frac{2}{\gamma_u+1}$$
 
-so we get:
-$$\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v =\frac{\Big( \frac{2\gamma_v}{1+\gamma_v}+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)\Big)\cdot\frac{\gamma_u}{1+\gamma_u}u + \frac{2}{1+\gamma_u}\cdot\frac{\gamma_v}{1+\gamma_v}v}{1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot \frac{\gamma_v-1}{\gamma_v+1}}$$
+\begin{footnotesize}
+\begin{eqnarray*}
+  1+\frac{\gamma_v-1}{\gamma_v+1}=\frac{2\gamma_v}{\gamma_v+1}, \qquad 1-\frac{\gamma_u-1}{\gamma_u+1}=\frac{2}{\gamma_u+1}\\
+  1+\frac{\gamma_u-1}{\gamma_u+1}\cdot \frac{\gamma_v-1}{\gamma_v+1}= \frac{2(1+\gamma_u\gamma_v)}{(1+\gamma_u)(1+\gamma_v)}
+\end{eqnarray*}
+\end{footnotesize}
 
-Also, we have that:
-$$1+\frac{\gamma_u-1}{\gamma_u+1}\cdot \frac{\gamma_v-1}{\gamma_v+1}= \frac{2(1+\gamma_u\gamma_v)}{(1+\gamma_u)(1+\gamma_v)}$$
+and we get:
 
-Now, we can reduce to a common denominator and get:
-$$1+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)+\frac{\gamma_u-1}{1+\gamma_u}\cdot \frac{\gamma_v-1}{\gamma_v+1} = \frac{2\gamma_u\gamma_v(1+u\cdot v) + 2}{(1+\gamma_u)(1+\gamma_v)}$$ 
+$$\frac
+{\Big( \frac{2\gamma_v}{1+\gamma_v}+\frac{2\gamma_u\gamma_v}{(1+\gamma_u)(1+\gamma_v)}(u\cdot v)\Big)\cdot\frac{\gamma_u}{1+\gamma_u}u + \frac{2}{1+\gamma_u}\cdot\frac{\gamma_v}{1+\gamma_v}v}
+{\frac{2\gamma_u\gamma_v}{(\gamma_u+1)(\gamma_v+1)}(u\cdot v) + \frac{2(1+\gamma_u\gamma_v)}{(1+\gamma_u)(1+\gamma_v)}}
+$$
 
-On the other side, the numerator of the fraction representing $\frac{1}{2}\otimes_m u \oplus_m \frac{1}{2} \otimes_m v$ is equal to:
-$$2\gamma_u\gamma_v\Big(u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u \cdot v)u\Big)$$
+Adding fractions after reducing them to their common denominator, and
+cancelling $(1+\gamma_u)(1+\gamma_v)$ (that is not zero) gives:
 
-Putting this together, we get our formula.
+$$
+\frac{2\gamma_u\gamma_v\Big(u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u \cdot v)u\Big)}{2\gamma_u\gamma_v(1+u\cdot v) + 2} = \frac{\gamma_u\gamma_v\Big(u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u \cdot v)u\Big)}{\gamma_u\gamma_v(1+u\cdot v) + 1}
+$$
 
+On the other hand, from Lemma \ref{lemma:halfgamma} it holds that:
+
+$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_{u \otimes_e
+    v}}{\gamma_{u \otimes_e v} + 1}(u \otimes_e v).$$
+
+From Lemma \ref{lemma:gammaeinstein} and Definition
+\ref{def:einsteinaddition} of Einstein addition, we can conclude that:
+
+$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_u \gamma_v (1+u\cdot v)}{\gamma_u \gamma_v (1+u\cdot v) + 1}\Big\{\frac{1}{1+u\cdot v}\Big( u +\frac{1}{\gamma_u}v + \frac{\gamma_u}{\gamma_u + 1}(u\cdot v)\cdot u \Big)\Big\}$$
+
+Cancelling $1 + u\cdot v$ (that is not zero), and putting the two
+sides together, we see that the theorem holds.
 \end{proof}
 
-This wasn't enough to prove that structure $(V_1, \oplus_e, \otimes_e)$ is a gyrovector space. We needed to prove how their gyrations are connected so we formulated and proved the following lemmas:
+Formal statement of this theorem is quite direct.
 
 {\tt
-\begin{footnotesize}
+\begin{small}
 \begin{tabbing}
-{\bf lemma} e\_gyr\_m\_gyr:\\
-{\bf shows} \="(1/2) $\otimes_E$ e\_gyr u v w = m\_gyr ((1/2) $\otimes_E$ u) ((1/2) $\otimes_E$ v) ((1/2) $\otimes_E$ w) "\\
-{\bf lemma} m\_gyr\_e\_gyr:\\
-{\bf shows} \="2 $\otimes_E$ m\_gyr u v w = e\_gyr (2 $\otimes_E$ u) (2 $\otimes_E$ v) (2 $\otimes_E$ w)"\\
+\tab\=\tab\=\kill
+{\bf theorem} iso\_me\_oplus:\\
+\>  {\bf shows} "(1/2) $\otimes_{me}$ (u $\oplus_e$ v) = ((1/2) $\otimes_{me}$ u) $\oplus_m$ ((1/2) $\otimes_{me}$ v)"
 \end{tabbing}
-\end{footnotesize}
+\end{small}
 }
 
-The proof of the second followed immediately from the first one.
+\noindent Its formal proof directly follows the informal one,
+carefully checking every step of computation and simplification.
 
-We made an effort to formally prove the connection between M\" obius and Einstein structures in complex plane. The benefits are numerous; we were able to prove that Einstein structure $(V_1,\oplus_E, \otimes_E)$ is a gyrovector space without unfolding the definitions of $\oplus_E$ and $\otimes_E$ and dealing with lots of hard calculations.
-
-
-Here is the example of one of the lemma who has a short proof thanks to the connection formula we have proved before:
+The previous result enables expressing Einstein addition in terms of
+M\"obius addition an scalar multiplication, which are operations whose
+properties are by now formally analyzed.
 
 {\tt
-\begin{footnotesize}
+\begin{small}
 \begin{tabbing}
+  \tab\=\tab\=\kill
+{\bf lemma} iso\_oplus\_e\_via\_oplus\_m:\\
+\> {\bf  shows} "u $\oplus_e$ v = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ u) $\oplus_m$ (1/2) $\otimes_{me}$ v)"
+\end{tabbing}
+\end{small}
+}
+
+
+Since many axioms use gyrations we needed to prove that the
+isomorphism map $u \mapsto (1/2)\otimes_m u$ preserves gyrations,
+which enables expressing Einstein gyration via M\"obius gyration.
+
+{\tt
+\begin{small}
+  \begin{tabbing}
+\tab\=\tab\=\kill
+{\bf lemma} iso\_me\_gyr:\\
+\> {\bf shows} "\=(1/2) $\otimes_{me}$ e\_gyr a b z =\\
+\>\>m\_gyr ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z)"\\
+{\bf lemma} iso\_e\_gyr\_via\_m\_gyr:\\
+\> {\bf shows} "\= e\_gyr a b z =\\
+\>\>2 $\otimes_{me}$ (m\_gyr ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z))"
+\end{tabbing}
+\end{small}
+}
+
+
+From these connections it is very easy to prove that Einstein addition
+and gyration form a gyrocommutative gyrogroup (without unfolding the
+definition of $\oplus_E$ dealing with lots of hard calculations).
+Here is an example of one such simple proof (in Isar language). The
+lemma proves that Einstein addition is gyroassociative.
+
+{\tt
+\begin{small}
+\begin{tabbing}
+  \tab\=\tab\=\tab\=\tab\=\kill
 {\bf lemma} e\_gyro\_left\_assoc:\\
-{\bf shows} \="a $\oplus_E$ (b $\oplus_E$ z) = (a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z "\\
-{\bf proof-}\\
-\tab {\bf have} "(1/2) $\otimes_E$ (a $\oplus_E$ (b $\oplus_E$ z)) = ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ (b $\oplus_E$ z) )" 
-\\ \tab \tab by $\ldots$\\
-
-\tab {\bf moreover have} " ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ (b $\oplus_E$ z)) = \\ \tab \tab ((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ b $\oplus_m$ (1/2) $\otimes_E$ z)" 
-\\ \tab \tab by $\ldots$\\
-
-\tab {\bf moreover have} "((1/2) $\otimes_E$ a) $\oplus_m$((1/2) $\otimes_E$ b $\oplus_m$ (1/2) $\otimes_E$ z) = \\ \tab \tab ((1/2) $\otimes_E$ a $\oplus_m$ (1/2) $\otimes_E$ b) $\oplus_m$ \\ \tab \tab m\_gyr ((1/2) $\otimes_E$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_E$ z)" 
-\\ \tab \tab by $\ldots$\\
-
-
-\tab {\bf moreover have} "(1/2) $\otimes_E$ ((a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z) \\ \tab \tab = (1/2)  $\otimes_E$ (a $\oplus_E$ b) $\oplus_m$ (1/2)  $\otimes_E$ e\_gyr a b z " 
-\\ \tab \tab by $\ldots$\\
-
-\tab {\bf moreover have} "(1/2)  $\otimes_E$ (a $\oplus_E$ b) $\oplus_m$ (1/2)  $\otimes_E$ e\_gyr a b z \\ \tab \tab= ((1/2)  $\otimes_E$ a  $\oplus_m$ (1/2)  $\otimes_E$ b)  $\oplus_m$  \\ \tab \tab m\_gyr ((1/2) $\otimes_E$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_E$ z)" 
-\\ \tab \tab by $\ldots$\\
-
-\tab {\bf moreover have} "(1/2) $\otimes_E$ (a $\oplus_E$ (b $\oplus_E$ z)) = \\ \tab \tab (1/2)  $\otimes_E$ ((a $\oplus_E$ b) $\oplus_E$ e\_gyr a b z)" 
-\\ \tab \tab by $\ldots$\\
-
-\tab {\bf ultimately show} "?thesis"\\
-\tab \tab by $\ldots$\\
-{\bf qed}\\
+\>  {\bf shows} "a $\oplus_e$ (b $\oplus_e$ z) = (a $\oplus_e$ b) $\oplus_e$ e\_gyr a b z"\\
+{\bf proof}-\\
+\>  {\bf let} ?a = "(1/2) $\otimes_{me}$ a" {\bf and} ?b = "(1/2) $\otimes_{me}$ b" {\bf and} ?z = "(1/2) $\otimes_{me}$ z"\\
+\>  {\bf have} "a $\oplus_e$ (b $\oplus_e$ z) = 2 $\otimes_{me}$ (?a $\oplus_m$ (?b $\oplus_m$ ?z))"\\
+\>\>    {\bf using} iso\_me\_oplus iso\_me\_oplus\_e\_oplus\_m {\bf by} simp\\
+\>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ ((?a $\oplus_m$ ?b) $\oplus_m$ m\_gyr ?a ?b ?z)"\\
+\>\>    {\bf using} m\_gyro\_left\_assoc {\bf by} simp\\
+\>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ (a $\oplus_e$ b)) $\oplus_m$ m\_gyr ?a ?b ?z)"\\
+\>\>    {\bf using} iso\_me\_oplus {\bf by} simp\\
+\>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ (a $\oplus_e$ b)) $\oplus_m$ (1/2) $\otimes_{me}$ e\_gyr a b z)"\\
+\>\>    {\bf using} e\_gyr\_m\_gyr {\bf by} simp\\
+\>  {\bf finally} {\bf show} ?thesis\\
+\>\>    {\bf using} iso\_me\_oplus\_e\_oplus\_m {\bf by} simp\\
+{\bf qed}
 \end{tabbing}
-\end{footnotesize}
+\end{small}
 }
 
+Isabelle/HOL automation is powerfull enough to find this proof fully
+automatically.
 
+{\tt
+\begin{small}
+\begin{tabbing}
+  \tab\=\tab\=\tab\=\tab\=\kill
+{\bf lemma} e\_gyro\_left\_assoc:\\
+\>  {\bf shows} "a $\oplus_e$ (b $\oplus_e$ z) = (a $\oplus_e$ b) $\oplus_e$ e\_gyr a b z"\\
+{\bf using} e\_gyr\_m\_gyr iso\_me\_oplus\_e\_oplus\_m iso\_me\_oplus m\_gyro\_left\_assoc\\
+{\bf by} simp
+\end{tabbing}
+\end{small}
+}
 
-
-
-
-
-
-
-- definisati ova dva konkretna prostora i ukratko opisati kako je
-formalno dokazano da oni zadovoljavaju aksiome (ako je nešto
-originalno urađeno tj. nema kond Ungara to posebno naglasiti)
-
-- diskutovati onu vezu sa jednom polovinom i dva i diskutovati kako je to olakšalo dokaz (nadam se da jeste)
 
 \section{Modelling hyperbolic geometry}\label{sec:models}
 

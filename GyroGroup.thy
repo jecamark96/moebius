@@ -2,26 +2,24 @@ theory GyroGroup
   imports Main 
 begin
 
-class gyrogroup' = 
+class gyrogroupoid = 
   fixes gyrozero :: "'a" ("0\<^sub>g")
   fixes gyroplus :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<oplus>" 100)
-  fixes gyroinv :: "'a \<Rightarrow> 'a" ("\<ominus>")
-  fixes gyr :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a"
 begin
-definition gyroaut where
+definition gyroaut :: "('a \<Rightarrow> 'a) \<Rightarrow> bool" where
   "gyroaut f \<longleftrightarrow> 
        (\<forall> a b. f (a \<oplus> b) = f a \<oplus> f b) \<and> 
        bij f"
 end
 
-class gyrogroup = gyrogroup' +
+class gyrogroup = gyrogroupoid +
+  fixes gyroinv :: "'a \<Rightarrow> 'a" ("\<ominus>")
+  fixes gyr :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a"
   assumes gyro_left_id [simp]: "\<And> a. 0\<^sub>g \<oplus> a = a"
-  assumes gyro_left_inv [simp]: "\<ominus>a \<oplus> a = 0\<^sub>g"
+  assumes gyro_left_inv [simp]: "\<And> a. \<ominus>a \<oplus> a = 0\<^sub>g"
   assumes gyro_left_assoc: "\<And> a b z. a \<oplus> (b \<oplus> z) = (a \<oplus> b) \<oplus> (gyr a b z)"
   assumes gyr_left_loop: "\<And> a b. gyr a b = gyr (a \<oplus> b) b"
   assumes gyr_gyroaut: "\<And> a b. gyroaut (gyr a b)"
-
-context gyrogroup
 begin
 
 definition gyrominus :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<ominus>\<^sub>b" 100) where
@@ -56,16 +54,18 @@ text \<open>Thm 2.8, (1)\<close>
 lemma gyro_left_cancel:
   assumes "a \<oplus> b = a \<oplus> c"
   shows "b = c"
+  using assms
+(*  by (metis gyr_inj local.gyro_left_assoc local.gyro_left_id local.gyro_left_inv) *)
 proof-
   from assms
   have "(\<ominus>a) \<oplus> (a \<oplus> b) = (\<ominus>a) \<oplus> (a \<oplus> c)"
     by simp
-  hence "(\<ominus>a \<oplus> a) \<oplus> gyr (\<ominus>a) a b = (\<ominus>a \<oplus> a) \<oplus> gyr (\<ominus>a) a c"
+  then have "(\<ominus>a \<oplus> a) \<oplus> gyr (\<ominus>a) a b = (\<ominus>a \<oplus> a) \<oplus> gyr (\<ominus>a) a c"
     using gyro_left_assoc
     by simp
-  hence "gyr (\<ominus>a) a b = gyr (\<ominus>a) a c"
+  then have "gyr (\<ominus>a) a b = gyr (\<ominus>a) a c"
     by simp
-  thus "b = c"
+  then show "b = c"
     using gyr_inj
     by blast
 qed

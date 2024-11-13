@@ -57,8 +57,7 @@ proof-
       then show ?thesis 
         by (simp add: add_divide_distrib)
     qed
-    then have *: "distance_m_expr u v = 
-                  ((cmod (1 - cnj u * v))\<^sup>2 + (cmod (u - v))\<^sup>2) / (?u * ?v)"
+    then have *: "distance_m_expr u v = ((cmod (1 - cnj u * v))\<^sup>2 + ?uv) / (?u * ?v)"
       using assms 
       by (smt (verit, ccfv_SIG) arcosh_artanh_lemma)
    
@@ -82,6 +81,7 @@ proof-
     finally have **: "sqrt ((distance_m_expr u v)\<^sup>2 - 1) =  
                       2 * cmod (u - v) * cmod (1 - cnj u * v) / (?u * ?v)"
       by (smt (verit, del_insts) arcosh_artanh_lemma norm_ge_zero real_sqrt_abs times_divide_eq_left)
+
     show ?thesis
       using * **
       by (smt (verit, best) add_divide_distrib power2_sum)

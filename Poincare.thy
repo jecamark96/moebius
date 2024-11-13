@@ -1,5 +1,5 @@
 theory Poincare
-  imports Complex_Main
+  imports Complex_Main "HOL-Analysis.Inner_Product"
 begin
 
 typedef PoincareDisc = "{z::complex. cmod z < 1}"
@@ -27,5 +27,23 @@ proof-
   show ?thesis
     by transfer blast
 qed
+
+lift_definition inner_p :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" (infixl "\<cdot>" 100) is inner
+  done
+
+lift_definition norm_p :: "PoincareDisc \<Rightarrow> real"  ("\<llangle>_\<rrangle>" [100] 101) is norm
+  done
+
+lemma norm_lt_one:
+  shows "\<llangle>u\<rrangle> < 1"
+  by transfer simp
+
+lemma norm_geq_zero:
+  shows "\<llangle>u\<rrangle> \<ge> 0"
+  by transfer simp
+
+lemma square_norm_inner:
+  shows "(\<llangle>u\<rrangle>)\<^sup>2 = u \<cdot> u"
+  by transfer (simp add: dot_square_norm)
 
 end

@@ -1,22 +1,30 @@
 theory GammaFactor
-  imports Complex_Main MoreComplex
+  imports Complex_Main MoreComplex Poincare
 begin
 
 definition gamma_factor :: "complex \<Rightarrow> real" ("\<gamma>") where
-  "\<gamma> u = (if cmod u < 1 then 
-             (1 / sqrt(1 - (cmod u)\<^sup>2))
+  "\<gamma> u = (if norm u < 1 then 
+             1 / sqrt (1 - (norm u)\<^sup>2)
           else
              0)"
 
-lemma gamma_ok:
-  assumes "cmod u < 1"
-  shows "1 / sqrt(1 - (norm u)\<^sup>2) \<noteq> 0"
+lift_definition gammma_factor_p :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>p") is gamma_factor
+  done
+
+lemma gamma_factor_nonzero:
+  assumes "norm u < 1"
+  shows "1 / sqrt (1 - (norm u)\<^sup>2) \<noteq> 0"
   using assms square_norm_one by force
+
+lemma gamma_factor_p_nonzero [simp]:
+  shows "\<gamma>\<^sub>p u \<noteq> 0"
+  apply transfer
+  using gamma_factor_def gamma_factor_nonzero by auto
 
 lemma gamma_factor_increasing:
   fixes t1 t2 ::real
   assumes "0 \<le> t2" "t2 < t1" "t1 < 1"
-  shows "\<gamma> t2 < \<gamma> t1" 
+  shows "\<gamma> t2 < \<gamma> t1"
 proof-
   have d: "cmod t1 = abs t1" "cmod t2 = abs t2"
     using norm_of_real 
@@ -35,7 +43,7 @@ proof-
 
   moreover
 
-  have "cmod t1 < 1" "cmod t2 < 1"
+  have "norm t1 < 1" "norm t2 < 1"
     using assms 
     by force+
   then have "\<gamma> t1 = 1 / sqrt(1 - (abs t1)^2)" "\<gamma> t2 = 1 / sqrt(1 - (abs t2)^2)"
@@ -60,17 +68,20 @@ lemma gamma_factor_increase_reverse:
 lemma gamma_factor_u_normu:
   fixes u :: real
   assumes "0 \<le> u" "u \<le> 1"
-  shows "\<gamma> u = \<gamma> (cmod u)"
+  shows "\<gamma> u = \<gamma> (norm u)"
   using gamma_factor_def
   by auto
 
 lemma gamma_factor_positive:
-  assumes "cmod u < 1"
+  assumes "norm u < 1"
   shows "\<gamma> u > 0"
   using assms
   unfolding gamma_factor_def
   by (smt (verit, del_insts) divide_pos_pos norm_ge_zero power2_eq_square power2_nonneg_ge_1_iff real_sqrt_gt_0_iff)
 
+lemma gamma_factor_p_positive [simp]:
+  shows "\<gamma>\<^sub>p u > 0"
+  by transfer (simp add: gamma_factor_positive)
 
 lemma norm_square_gamma_factor:
   assumes "norm u < 1"
@@ -85,16 +96,28 @@ proof-
     by auto
 qed
 
+lemma norm_square_gamma_factor_p:
+  shows "(\<llangle>u\<rrangle>)^2 = 1 - 1 / (\<gamma>\<^sub>p u)^2"
+  by transfer (simp add: norm_square_gamma_factor)
+
 lemma norm_square_gamma_factor':
-  assumes "norm v <1"
-  shows "(norm v)^2 = ((\<gamma> v)^2 - 1) / (\<gamma> v)^2"
+  assumes "norm u < 1"
+  shows "(norm u)^2 = ((\<gamma> u)^2 - 1) / (\<gamma> u)^2"
   using norm_square_gamma_factor[OF assms]
   by (metis assms diff_divide_distrib div_self gamma_factor_positive norm_not_less_zero norm_zero power_not_zero)
 
+lemma norm_square_gamma_factor_p':
+  shows "(\<llangle>u\<rrangle>)^2 = ((\<gamma>\<^sub>p u)^2 - 1) / (\<gamma>\<^sub>p u)^2"
+  by transfer (simp add: norm_square_gamma_factor')
+
 lemma gamma_factor_square_norm:
-  assumes "cmod u < 1"
-  shows "(\<gamma> u)\<^sup>2 = 1 / (1 - (cmod u)\<^sup>2)"
+  assumes "norm u < 1"
+  shows "(\<gamma> u)\<^sup>2 = 1 / (1 - (norm u)\<^sup>2)"
   by (smt (verit) assms gamma_factor_def gamma_factor_positive real_sqrt_divide real_sqrt_eq_iff real_sqrt_one real_sqrt_unique)
+
+lemma gamma_factor_p_square_norm:
+  shows "(\<gamma>\<^sub>p u)\<^sup>2 = 1 / (1 - (\<llangle>u\<rrangle>)\<^sup>2)"
+  by transfer (simp add: gamma_factor_square_norm)
 
 lemma gamma_expression_eq_one_1:
   assumes "norm u < 1" 
