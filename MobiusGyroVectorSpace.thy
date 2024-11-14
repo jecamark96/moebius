@@ -4,7 +4,6 @@ begin
 
 (* --------------------------------------------------------- *)
 
-
 interpretation Mobius_gyrocarrier': gyrocarrier' where
   to_carrier = to_complex and
   of_carrier = of_complex and
@@ -25,7 +24,7 @@ proof-
       by (simp add: Rep_PoincareDisc_inverse)
   next
     show "to_complex 0\<^sub>g = 0"
-      by (simp add: gyrozero_PoincareDisc_def m_ozero'_def m_ozero.rep_eq)
+      by (simp add: gyrozero_PoincareDisc_def ozero_m'_def ozero_m.rep_eq)
   qed
 
   show "gyrocarrier'.gyroinner to_complex = (\<cdot>)"
@@ -45,20 +44,20 @@ qed
 (* --------------------------------------------------------- *)
 
 lemma moebius_gyroauto:
-  shows "m_gyr u v a \<cdot> m_gyr u v b = a \<cdot> b"
+  shows "gyr\<^sub>m u v a \<cdot> gyr\<^sub>m u v b = a \<cdot> b"
 proof-
-  have "m_gyr u v a \<cdot> m_gyr u v b = Re((cnj (to_complex (m_gyr u v a))) * (to_complex (m_gyr u v b)))"
+  have "gyr\<^sub>m u v a \<cdot> gyr\<^sub>m u v b = Re((cnj (to_complex (gyr\<^sub>m u v a))) * (to_complex (gyr\<^sub>m u v b)))"
     using inner_p.rep_eq
     by (simp add: inner_complex_def)
-  moreover have "m_gyr u v a = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
+  moreover have "gyr\<^sub>m u v a = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
     (to_complex a))"
-    by (metis Mobius_gyrocarrier'.of_carrier m_gyr'_def m_gyr.rep_eq)
-  moreover have "m_gyr u v b = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
+    by (metis Mobius_gyrocarrier'.of_carrier gyr_m'_def gyr\<^sub>m.rep_eq)
+  moreover have "gyr\<^sub>m u v b = of_complex(((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
     (to_complex b))"
-    by (metis Mobius_gyrocarrier'.of_carrier m_gyr'_def m_gyr.rep_eq)
-  moreover have "(cnj (to_complex (m_gyr u v a))) = cnj ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
+    by (metis Mobius_gyrocarrier'.of_carrier gyr_m'_def gyr\<^sub>m.rep_eq)
+  moreover have "(cnj (to_complex (gyr\<^sub>m u v a))) = cnj ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (cnj (to_complex u)) * to_complex v)) *
     cnj (to_complex a)"
-    by (simp add: m_gyr'_def m_gyr.rep_eq)
+    by (simp add: gyr_m'_def gyr\<^sub>m.rep_eq)
   moreover have " (cnj ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (to_complex v)*(cnj (to_complex u))) ))*  ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (to_complex v)*(cnj (to_complex u)))) = 1"
   proof-
     have *: "cmod (to_complex u) < 1"
@@ -71,8 +70,8 @@ proof-
     ultimately show ?thesis using cnj_cmod_1
       by (metis mult.commute)
   qed
-  moreover have "m_gyr u v a \<cdot> m_gyr u v b = Re((cnj (to_complex a))*(to_complex b))"
-    using calculation(1) calculation(5) m_gyr'_def m_gyr.rep_eq by force
+  moreover have "gyr\<^sub>m u v a \<cdot> gyr\<^sub>m u v b = Re((cnj (to_complex a))*(to_complex b))"
+    using calculation(1) calculation(5) gyr_m'_def gyr\<^sub>m.rep_eq by force
   moreover have "a \<cdot> b = Re((cnj (to_complex a))*(to_complex b))"
     by (simp add: inner_complex_def inner_p.rep_eq)
   ultimately show ?thesis
@@ -200,8 +199,8 @@ qed
 
 lemma otimes_distrib_lemma:
   assumes "cmod a < 1"
-  shows "otimes'_k (r1 + r2) a = m_oplus' (otimes'_k r1 a) (otimes'_k r2 a)"
-  unfolding otimes'_k_def m_oplus'_def
+  shows "otimes'_k (r1 + r2) a = oplus_m' (otimes'_k r1 a) (otimes'_k r2 a)"
+  unfolding otimes'_k_def oplus_m'_def
   unfolding powr_add
   apply (subst otimes_distrib_lemma')
   apply (smt powr_gt_zero powr_non_neg)
@@ -209,21 +208,21 @@ lemma otimes_distrib_lemma:
   apply simp
   done
 
-lemma otimes_distrib:
+lemma otimes_oplus_m_distrib:
   shows "(r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus>\<^sub>m r2 \<otimes> a" 
 proof transfer
   fix r1 r2 a
   assume "cmod a < 1"
-  show "otimes' (r1 + r2) a = m_oplus' (otimes' r1 a) (otimes' r2 a)"
+  show "otimes' (r1 + r2) a = oplus_m' (otimes' r1 a) (otimes' r2 a)"
   proof (cases "a = 0")
     case True
     then show ?thesis
-      by (simp add: otimes'_def m_oplus'_def)
+      by (simp add: otimes'_def oplus_m'_def)
   next
     case False
     let ?p = "1 + cmod a" and ?m = "1 - cmod a"
     have "cor (otimes'_k (r1 + r2) a) * a / cor (cmod a) = 
-          m_oplus' (otimes'_k r1 a) (otimes'_k r2 a) * a / cor (cmod a)"
+          oplus_m' (otimes'_k r1 a) (otimes'_k r2 a) * a / cor (cmod a)"
       by (simp add: \<open>cmod a < 1\<close> otimes_distrib_lemma)
     moreover
     have "cor (otimes'_k r1 a) * cnj a * (cor (otimes'_k r2 a) * a) / (cor (cmod a) * cor (cmod a)) = 
@@ -232,7 +231,7 @@ proof transfer
     ultimately
      show ?thesis
       using False
-      unfolding otimes'_def m_oplus'_def
+      unfolding otimes'_def oplus_m'_def
       by (smt complex_cnj_complex_of_real complex_cnj_divide complex_cnj_mult distrib_right times_divide_eq_left times_divide_eq_right times_divide_times_eq)
   qed      
 qed
@@ -403,7 +402,7 @@ proof-
     by auto
 qed
 
-lemma gamma_factor_eq1:
+lemma gamma_factor_norm_oplus_m:
   shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) = 
          \<gamma> (to_complex a) *  
          \<gamma> (to_complex b) * 
@@ -415,7 +414,7 @@ proof-
     by fastforce
   then have *: "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) = 
                 1 / sqrt(1 - cmod (?a+?b) / cmod (1 + cnj ?a *?b) * cmod (?a+?b) / cmod (1 + cnj ?a *?b))"
-    using Mobius_gyrocarrier'.gyronorm_def gamma_factor_def m_oplus'_def m_oplus.rep_eq norm_divide norm_eq_zero norm_le_zero_iff norm_of_real real_norm_def 
+    using Mobius_gyrocarrier'.gyronorm_def gamma_factor_def oplus_m'_def oplus_m.rep_eq norm_divide norm_eq_zero norm_le_zero_iff norm_of_real real_norm_def 
     by (smt (verit, del_insts) power2_eq_square times_divide_eq_right)
   also have "\<dots> =  
            cmod(1 + cnj ?a * ?b) /
@@ -453,7 +452,7 @@ proof-
     .
 qed
 
-lemma gamma_factor_ineq1_lemma:
+lemma gamma_factor_oplus_m_triangle_lemma:
   fixes x y ::real
   assumes "x \<ge> 0" "x < 1" "y \<ge> 0" "y < 1"
   shows "1 / sqrt (1 - ((x+y)*(x+y))/((1+x*y)*(1+x*y))) = 
@@ -472,7 +471,7 @@ proof-
     by simp
 qed
 
-lemma gamma_factor_ineq1:
+lemma gamma_factor_oplus_m_triangle:
   shows "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) \<le> \<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>))))"
 proof-
   have "\<gamma> (to_complex ((of_complex (\<llangle>a\<rrangle>)) \<oplus>\<^sub>m (of_complex (\<llangle>b\<rrangle>)))) =
@@ -481,7 +480,7 @@ proof-
     let ?expr1 =  "((\<llangle>a\<rrangle>) + (\<llangle>b\<rrangle>)) / (1 + (\<llangle>a\<rrangle>)*(\<llangle>b\<rrangle>))"
     let ?expr2 = "to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>))"
     have *: "?expr1 = ?expr2"
-      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier Rep_PoincareDisc m_oplus'_def m_oplus.rep_eq
+      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier Rep_PoincareDisc oplus_m'_def oplus_m.rep_eq
       by auto
 
     have **: "norm (\<llangle>a\<rrangle>) < 1" "norm (\<llangle>b\<rrangle>) < 1"
@@ -502,7 +501,7 @@ proof-
     have "\<gamma> ?expr1 = 1 / sqrt (1 - (Re ?expr1 * Re ?expr1))"
        by (metis Re_complex_of_real)
     then have "\<gamma> ?expr1 = (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) / (sqrt (1-\<llangle>a\<rrangle>*\<llangle>a\<rrangle>) * sqrt (1-\<llangle>b\<rrangle>*\<llangle>b\<rrangle>))"
-       using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc gamma_factor_ineq1_lemma
+       using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc gamma_factor_oplus_m_triangle_lemma
        using \<open>cmod ?expr1 = ?expr1\<close> 
        by force
 
@@ -535,25 +534,25 @@ proof-
    qed
 
    ultimately show ?thesis 
-     using gamma_factor_eq1
+     using gamma_factor_norm_oplus_m
      by presburger
 qed
 
-lemma moebius_triangle:
+lemma mobius_triangle:
   shows "\<llangle>a \<oplus>\<^sub>m b\<rrangle> \<le> \<llangle>of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)\<rrangle>"
 proof (cases "to_complex a = - to_complex b")
   case True
   then show ?thesis
-   by (simp add: Mobius_gyrocarrier'.gyronorm_def m_oplus'_def m_oplus.rep_eq)
+   by (simp add: Mobius_gyrocarrier'.gyronorm_def oplus_m'_def oplus_m.rep_eq)
 next
   case False
   let ?e1 = "(\<llangle>a \<oplus>\<^sub>m b\<rrangle>)"
   let ?e2 = "cmod (to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)))"
   have "?e1 > 0"
-    by (smt (verit, best) Mobius_gyrocarrier'.gyronorm_def \<open>to_complex a \<noteq> - to_complex b\<close> ab_left_minus add_right_cancel divide_eq_0_iff gamma_factor_eq1 gamma_factor_positive m_oplus'_def m_oplus.rep_eq norm_eq_zero norm_le_zero_iff of_real_0 zero_less_mult_iff)
+    by (smt (verit, best) Mobius_gyrocarrier'.gyronorm_def \<open>to_complex a \<noteq> - to_complex b\<close> ab_left_minus add_right_cancel divide_eq_0_iff gamma_factor_norm_oplus_m gamma_factor_positive oplus_m'_def oplus_m.rep_eq norm_eq_zero norm_le_zero_iff of_real_0 zero_less_mult_iff)
   moreover
   have "?e2 > 0"
-    by (metis Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc \<open>0 < \<llangle>a \<oplus>\<^sub>m b\<rrangle>\<close> dual_order.refl gamma_factor_increasing gamma_factor_ineq1 linorder_not_le mem_Collect_eq of_real_0 zero_less_norm_iff)
+    by (metis Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc \<open>0 < \<llangle>a \<oplus>\<^sub>m b\<rrangle>\<close> dual_order.refl gamma_factor_increasing gamma_factor_oplus_m_triangle linorder_not_le mem_Collect_eq of_real_0 zero_less_norm_iff)
   moreover
   have "?e1 < 1" "?e2 < 1"
     using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc 
@@ -561,11 +560,11 @@ next
   ultimately 
   show ?thesis
     using gamma_factor_increase_reverse[of ?e1 ?e2]
-    by (smt (verit, best) gamma_factor_def gamma_factor_increasing gamma_factor_ineq1 norm_p.rep_eq norm_of_real)
+    by (smt (verit, best) gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_p.rep_eq norm_of_real)
 qed
 
-lemma moebius_gyroauto_norm:
-  shows "\<llangle>m_gyr a b v\<rrangle> = \<llangle>v\<rrangle>"
+lemma mobius_gyroauto_norm:
+  shows "\<llangle>gyr\<^sub>m a b v\<rrangle> = \<llangle>v\<rrangle>"
   using Mobius_gyrocarrier.norm_gyr gyr_PoincareDisc_def
   by auto
 
@@ -574,7 +573,7 @@ lemma otimes_homogenity:
 proof (cases "a = 0\<^sub>m")
   case True
   then show ?thesis
-    using Mobius_gyrocarrier'.gyronorm_def otimes'_def otimes.rep_eq m_ozero'_def m_ozero.rep_eq m_ozero_def
+    using Mobius_gyrocarrier'.gyronorm_def otimes'_def otimes.rep_eq ozero_m'_def ozero_m.rep_eq ozero_m_def
     by force
 next
   case False
@@ -594,7 +593,7 @@ next
       by simp
     then have "(\<llangle>a\<rrangle>) / cmod (\<llangle>a\<rrangle>) = 1"
       using \<open>a \<noteq> 0\<^sub>m\<close>
-      by (metis Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.of_carrier divide_self_if m_ozero'_def m_ozero_def norm_eq_zero)
+      by (metis Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.of_carrier divide_self_if ozero_m'_def ozero_m_def norm_eq_zero)
     ultimately
     have "to_complex (\<bar>r\<bar> \<otimes> ( of_complex (cor(\<llangle>a\<rrangle>)))) = cor (otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>)))"
       by auto
@@ -611,10 +610,10 @@ next
     by (smt (verit, best) norm_of_real real_compex_cmod tanh_real_abs)
 qed
 
-lemma m_gyr_gyrospace:
-  shows "m_gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
+lemma gyr_m_gyrospace:
+  shows "gyr\<^sub>m (r1 \<otimes> v) (r2 \<otimes> v) = id"
 proof-
-  have "m_gyr' (to_complex (r1 \<otimes> v)) (to_complex (r2 \<otimes> v)) = id"
+  have "gyr_m' (to_complex (r1 \<otimes> v)) (to_complex (r2 \<otimes> v)) = id"
   proof-
     let ?v = "to_complex v"
     let ?e1 = "?v * tanh (r1 * artanh (cmod ?v)) /cmod(to_complex v)"
@@ -647,27 +646,27 @@ proof-
     qed
 
     ultimately show ?thesis 
-       using m_gyr_def m_gyr'_def
+       using gyr\<^sub>m_def gyr_m'_def
        by (metis eq_id_iff mult.commute mult_1)
    qed
 
    then show ?thesis 
-     by (metis (no_types, opaque_lifting) add_0_left add_0_right complex_cnj_zero div_by_1 eq_id_iff m_gyr_def m_left_id m_oplus'_def m_oplus_def m_ozero'_def m_ozero.rep_eq map_fun_apply mult_zero_left)
+     by (metis (no_types, opaque_lifting) add_0_left add_0_right complex_cnj_zero div_by_1 eq_id_iff gyr\<^sub>m_def m_left_id oplus_m'_def oplus_m_def ozero_m'_def ozero_m.rep_eq map_fun_apply mult_zero_left)
 qed
 
-lemma m_gyr_gyrospace2:
-  shows "m_gyr u v (r \<otimes> a) = r \<otimes> (m_gyr u v a)"
+lemma gyr_m_gyrospace2:
+  shows "gyr\<^sub>m u v (r \<otimes> a) = r \<otimes> (gyr\<^sub>m u v a)"
 proof-
   let ?u = "to_complex u" and ?v = "to_complex v" and ?a = "to_complex a"
-  let ?e1 = "m_gyr u v a"
+  let ?e1 = "gyr\<^sub>m u v a"
   let ?e2 = "cmod (to_complex ?e1)"
 
   have "?e1 = of_complex ((1 + ?u * cnj ?v) / (1 + cnj ?u *?v) * ?a)"
-    by (metis Mobius_gyrocarrier'.of_carrier m_gyr'_def m_gyr.rep_eq)
+    by (metis Mobius_gyrocarrier'.of_carrier gyr_m'_def gyr\<^sub>m.rep_eq)
   then have "?e2 = cmod ((1 + ?u * cnj ?v) / (1 + cnj ?u *?v)) * cmod ?a"
-    by (metis m_gyr'_def m_gyr.rep_eq norm_mult)
+    by (metis gyr_m'_def gyr\<^sub>m.rep_eq norm_mult)
   then have "?e2 = cmod ?a"
-    using Mobius_gyrocarrier'.gyronorm_def moebius_gyroauto_norm 
+    using Mobius_gyrocarrier'.gyronorm_def mobius_gyroauto_norm 
     by presburger
   then have "r \<otimes> ?e1 = of_complex (((1+cmod ?a) powr r - (1-cmod ?a) powr r) /
                                     ((1+cmod ?a) powr r + (1-cmod ?a) powr r) * to_complex ?e1 / ?e2)"
@@ -676,12 +675,10 @@ proof-
   then have "r \<otimes> ?e1 = of_complex (to_complex (r \<otimes> a) * ((1 + ?u * cnj ?v) / (1 + cnj ?u * ?v)))"
     using otimes_def
     using \<open>?e2 = cmod ?a\<close>
-    by (smt (verit, ccfv_threshold) Mobius_gyrocarrier'.of_carrier  ab_semigroup_mult_class.mult_ac(1) m_gyr'_def m_gyr.rep_eq otimes'_def otimes'_k_def otimes.rep_eq mult.commute mult_eq_0_iff times_divide_eq_right)
+    by (smt (verit, ccfv_threshold) Mobius_gyrocarrier'.of_carrier  ab_semigroup_mult_class.mult_ac(1) gyr_m'_def gyr\<^sub>m.rep_eq otimes'_def otimes'_k_def otimes.rep_eq mult.commute mult_eq_0_iff times_divide_eq_right)
   then show ?thesis 
-    by (metis Mobius_gyrocarrier'.of_carrier m_gyr'_def m_gyr.rep_eq mult.commute)
+    by (metis Mobius_gyrocarrier'.of_carrier gyr_m'_def gyr\<^sub>m.rep_eq mult.commute)
 qed
-
-print_locale gyrovector_space
 
 interpretation Mobius_gyrovector_space:
  gyrovector_space to_complex of_complex "\<lambda> z. cmod z < 1" "of_complex \<circ> cor" "cmod \<circ> to_complex" otimes
@@ -692,7 +689,7 @@ proof
 next
   fix r1 r2 a
   show "(r1 + r2) \<otimes> a = r1 \<otimes> a \<oplus> r2 \<otimes> a"
-    using gyroplus_PoincareDisc_def otimes_distrib by auto
+    using gyroplus_PoincareDisc_def otimes_oplus_m_distrib by auto
 next
   fix r1 r2 a
   show "(r1 * r2) \<otimes> a = r1 \<otimes> (r2 \<otimes> a)"
@@ -706,15 +703,15 @@ next
     by (metis Mobius_gyrocarrier'.gyrocarrier'_axioms divide_inverse gyrocarrier'.gyronorm_def mult.commute norm_p.rep_eq of_real_inverse scaleR_conv_of_real)
 next
   fix u v r a
-  have "m_gyr u v (r \<otimes> a) = r \<otimes> m_gyr u v a"
-    using m_gyr_gyrospace2 
+  have "gyr\<^sub>m u v (r \<otimes> a) = r \<otimes> gyr\<^sub>m u v a"
+    using gyr_m_gyrospace2 
     by auto
   then show "gyr u v (r \<otimes> a) = r \<otimes> gyr u v a"
     using gyr_PoincareDisc_def by auto
 next
   fix r1 r2 v
-  have "m_gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
-    using m_gyr_gyrospace
+  have "gyr\<^sub>m (r1 \<otimes> v) (r2 \<otimes> v) = id"
+    using gyr_m_gyrospace
     by simp
   then show "gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
     by (simp add: gyr_PoincareDisc_def)
@@ -732,19 +729,32 @@ next
            \<le> (cmod \<circ> to_complex)
                ((of_complex \<circ> cor) (gyrocarrier'.gyronorm to_complex a) \<oplus>
                 (of_complex \<circ> cor) (gyrocarrier'.gyronorm to_complex b))"
-    using moebius_triangle[of a b]
+    using mobius_triangle[of a b]
     using Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def gyrocarrier'.gyronorm_def gyroplus_PoincareDisc_def
     by fastforce 
 qed
 
 (* ---------------------------------------------------------------------------- *)
 
-lemma m_minus_scale:
+lemma norm_scale_tanh: 
+  shows "\<llangle>r \<otimes> z\<rrangle> = \<bar>tanh (r * artanh (\<llangle>z\<rrangle>))\<bar>"
+proof transfer
+  fix r z
+  assume "cmod z < 1"
+  have "cmod ((otimes'_k r z) * z / cor (cmod z)) = cmod (otimes'_k r z)"
+    by (smt (verit) artanh_0 div_by_0 mult_cancel_right1 nonzero_eq_divide_eq norm_divide norm_not_less_zero norm_of_real of_real_0 otimes'_k_tanh tanh_0)
+  then show "cmod (otimes' r z) = \<bar>tanh (r * artanh (cmod z))\<bar>"
+    unfolding otimes'_def
+    using \<open>cmod z < 1\<close> otimes'_k_tanh 
+    by auto
+qed
+
+lemma ominus_m_scale:
   shows "k \<otimes> (\<ominus>\<^sub>m u) = \<ominus>\<^sub>m (k \<otimes> u)"
   using Mobius_gyrovector_space.scale_minus' gyroinv_PoincareDisc_def 
   by auto
 
-lemma times2_m: "2 \<otimes> u = u \<oplus>\<^sub>m u"
+lemma otimes_2_oplus_m: "2 \<otimes> u = u \<oplus>\<^sub>m u"
   using Mobius_gyrovector_space.times2 gyroplus_PoincareDisc_def
   by simp
 
@@ -764,11 +774,11 @@ proof-
     by (metis mult_closed_for_unit_disc norm_of_real scaleR_conv_of_real)
 qed
 
-lemma two_times_half:
+lemma otimes_2_half:
   shows "2 \<otimes> (half v) = v"
 proof-
   have "2 \<otimes> (half v) = half v \<oplus>\<^sub>m half v"
-    using times2_m
+    using otimes_2_oplus_m
     by simp
   also have "\<dots> = v"
   proof transfer
@@ -797,8 +807,8 @@ proof-
     also have "\<dots> = 2 * ?k"
       using *
       by (simp add: field_simps)
-    finally show "m_oplus' (half' v) (half' v) = v"
-      unfolding m_oplus'_def half'_def
+    finally show "oplus_m' (half' v) (half' v) = v"
+      unfolding oplus_m'_def half'_def
       using * \<open>1 + cnj (?k * v) * (?k * v) = 1 + ?k\<^sup>2 * (cmod v)\<^sup>2\<close>
       by (smt (verit)  mult_eq_0_iff nonzero_mult_div_cancel_left of_real_eq_0_iff power2_eq_square scaleR_conv_of_real scaleR_left_distrib)
   qed
@@ -808,7 +818,7 @@ qed
 
 lemma half:
   shows "half v = (1/2) \<otimes> v"
-  by (metis Mobius_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double two_times_half)
+  by (metis Mobius_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double otimes_2_half)
 
 lemma half':
   assumes "cmod u < 1"

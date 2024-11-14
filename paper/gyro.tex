@@ -23,6 +23,7 @@
 \DeclareMathOperator{\sgn}{sgn}
 \DeclareMathOperator{\Real}{Re}
 \DeclareMathOperator{\Imag}{Im} 
+\DeclareMathOperator{\atanh}{atanh}
 
 
 \makeatletter
@@ -881,11 +882,11 @@ points of the Poincar\'e disc).
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf definition} m\_oplus' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
-\tab "m\_oplus' u v = (u + v) / (1 + (cnj u)*v)"\\
+{\bf definition} oplus\_m' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\tab "oplus\_m' u v = (u + v) / (1 + (cnj u)*v)"\\
 
-{\bf lift\_definition} m\_oplus:: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
-\tab (infixl "$\oplus_m$" 100) {\bf is} m\_oplus'
+{\bf lift\_definition} oplus\_m:: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
+\tab (infixl "$\oplus_m$" 100) {\bf is} oplus\_m'
 \end{tabbing}
 \end{small}
 }
@@ -898,10 +899,10 @@ arguments are in the unit disc.
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf lemma} m\_oplus'\_in\_disc:\\
+{\bf lemma} oplus\_m'\_in\_disc:\\
 \>  {\bf fixes} u v :: complex\\
 \>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
-\>  {\bf shows} "cmod (m\_oplus' u v) < 1"
+\>  {\bf shows} "cmod (oplus\_m' u v) < 1"
 \end{tabbing}
 \end{small}
 }
@@ -919,10 +920,10 @@ We formalize the gyration by the next sequence of definitions.
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf definition} m\_gyr' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
-\>  "m\_gyr' a b z = ((1 + a * cnj b) / (1 + cnj a * b)) * z"\\
-{\bf lift\_definition} m\_gyr ::\\
-\>"PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" is m\_gyr'
+{\bf definition} gyr\_m' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\>  "gyr\_m' a b z = ((1 + a * cnj b) / (1 + cnj a * b)) * z"\\
+{\bf lift\_definition} gyr$_m$ ::\\
+\>"PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" is gyr\_m'
 \end{tabbing}
 \end{small}
 }
@@ -935,10 +936,10 @@ disc (which is easy, since $|1+a\overline{b}| = |1+\overline{a}b|$).
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf lemma} m\_gyr'\_in\_disc:\\
+{\bf lemma} gyr\_m'\_in\_disc:\\
 \>  {\bf fixes} a b z :: complex\\
 \>  {\bf assumes} "cmod a < 1" "cmod b < 1" "cmod z < 1"\\
-\>  {\bf shows} "cmod (m\_gyr' a b z) < 1"
+\>  {\bf shows} "cmod (gyr\_m' a b z) < 1"
 \end{tabbing}
 \end{small}
 }
@@ -965,12 +966,12 @@ course, proved that it is equivalent to the original one).
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\hspace{5mm}\=\kill
-{\bf definition} m\_oplus'\_alternative :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where} \\
-\>  "m\_oplus'\_alternative u v =\\
-\>\>      ((1 + 2*inner u v + (norm v)$^2$) $*_R$ u + (1 - (norm u)$^2$) $*_R$ v) / \\
-\>\>       (1 + 2*inner u v + (norm u)$^2$ * (norm v)$^2$)"\\
-{\bf lift\_definition} m\_oplus\_alternative ::\\
-\> "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" {\bf is} m\_oplus'\_alternative
+{\bf definition} oplus\_m'\_alternative :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where} \\
+\>  "oplus\_m'\_alternative u v =\\
+\>\>      ((1 + 2 * inner u v + (norm v)$^2$) $*_R$ u + (1 - (norm u)$^2$) $*_R$ v) / \\
+\>\>       (1 + 2 * inner u v + (norm u)$^2$ * (norm v)$^2$)"\\
+{\bf lift\_definition} oplus\_m\_alternative ::\\
+\> "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" {\bf is} oplus\_m'\_alternative
 \end{tabbing}
 \end{small}
 }
@@ -1011,12 +1012,12 @@ disc.\footnote{In section \ref{einstein_gvs} we shall see that the
 {\tt
 \begin{small}
 \begin{tabbing}
-{\bf definition}  me\_otimes'\_k  :: "real $\Rightarrow$ complex $\Rightarrow$ real" {\bf where}\\
-\tab "me\_otimes'\_k r z = \=((1 + cmod z) powr r - (1 - cmod z) powr r) /\\
+{\bf definition}  otimes\_me'\_k  :: "real $\Rightarrow$ complex $\Rightarrow$ real" {\bf where}\\
+\tab "otimes\_me'\_k r z = \=((1 + cmod z) powr r - (1 - cmod z) powr r) /\\
 \>                  ((1 + cmod z) powr r + (1 - cmod z) powr r)"\\ 
-{\bf definition} me\_otimes' :: "real $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
-\tab "me\_otimes' r z = (if z = 0 then 0 else m\_otimes'\_k r z * (z / cmod z)"\\
-{\bf lift\_definition} me\_otimes:: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
+{\bf definition} otimes\_me' :: "real $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\tab "otimes\_me' r z = (if z = 0 then 0 else otimes\_me'\_k r z * (z / cmod z)"\\
+{\bf lift\_definition} otimes\_me :: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc" \\
 \tab (infixl "$\otimes_{me}$" 105) {\bf is} me\_otimes'
 \end{tabbing}
 \end{small}
@@ -1037,10 +1038,10 @@ original definition).
 \begin{small}
 \begin{tabbing}
 \hspace{5mm}\=\kill
-{\bf lemma} me\_otimes'\_k\_tanh:\\
+{\bf lemma} otimes\_me'\_k\_tanh:\\
 \>  {\bf fixes} r :: real {\bf and} z :: complex\\
 \>  {\bf assumes} "cmod z < 1"\\
-\>  {\bf shows} "me\_otimes'\_k r z = tanh (r * artanh (cmod z))"
+\>  {\bf shows} "otimes\_me'\_k r z = tanh (r * artanh (cmod z))"
 \end{tabbing}
 \end{small}
 }
@@ -1071,7 +1072,7 @@ without loss of generality that $c=1$):
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf definition} gamma\_factor :: "complex $\Rightarrow$ real" {\bf where}\\
+{\bf definition} gamma\_factor :: "complex $\Rightarrow$ real" ("$\gamma$") {\bf where}\\
 \> "gamma\_factor u = \\
 \>\> (if (norm u)$^2$ < 1 then  1 / sqrt (1 - (norm u)$^2$) else 0)"\\
 {\bf lift\_definition} gammma\_factor\_p :: "PoincareDisc $\Rightarrow$ real" ("$\gamma_p$") {\bf is}\\
@@ -1112,7 +1113,7 @@ of their $\gamma$-factors.
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf lemma} gamma\_factor\_norm\_sum:\\
+{\bf lemma} gamma\_factor\_norm\_oplus\_m:\\
 \>  {\bf fixes} a b :: PoincareDisc\\
 \>  {\bf shows} "\=$\gamma$ $\llangle$a $\oplus_m$ b$\rrangle$ =\\
 \>\>$\gamma_p$ a * $\gamma_p$ b * cmod (1 + cnj (to\_complex a) * (to\_complex b))"
@@ -1127,7 +1128,7 @@ $\gamma$-factors.
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf lemma} gamma\_factor\_triangle\_inequality:\\
+{\bf lemma} gamma\_factor\_oplus\_m\_triangle\_inequality:\\
 \>  {\bf fixes} a b :: PoincareDisc\\
 \>  {\bf shows} "$\gamma$ $\llangle$a $\oplus_m$ b$\rrangle$ $\leq$ $\gamma_p$ ((of\_complex $\llangle a\rrangle$) $\oplus_m$ (of\_complex $\llangle$b$\rrangle$))"
 \end{tabbing}
@@ -1202,12 +1203,12 @@ definitions.
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf definition} e\_oplus' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
-\>  "e\_oplus' u v = \\
+{\bf definition} oplus\_e' :: "complex $\Rightarrow$ complex $\Rightarrow$ complex" {\bf where}\\
+\>  "oplus\_e' u v = \\
 \>\>(1 / (1 + inner u v)) $*_R$\\
 \>\>(u + (1 / $\gamma$ u) $*_R$ v + (($\gamma$ u / (1 + $\gamma$ u)) * (inner u v)) $*_R$ u)"\\
-{\bf lift\_definition} e\_oplus :: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc"\\
-\> (infixl "$\oplus_e$" 100) is e\_oplus'
+{\bf lift\_definition} oplus\_e :: "PoincareDisc $\Rightarrow$ PoincareDisc $\Rightarrow$ PoincareDisc"\\
+\> (infixl "$\oplus_e$" 100) is oplus\_e'
 \end{tabbing}
 \end{small}
 }
@@ -1219,9 +1220,9 @@ must prove that the Poincar\'e disc is closed under this operation.
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf lemma} e\_oplus'\_in\_unit\_disc:\\
+{\bf lemma} oplus\_e'\_in\_unit\_disc:\\
 \>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
-\>  {\bf shows} "cmod (e\_oplus' u v) < 1"
+\>  {\bf shows} "cmod (oplus\_e' u v) < 1"
 \end{tabbing}
 \end{small}
 }
@@ -1243,20 +1244,21 @@ statement on the representation type $\mathbb{C}$):
 \begin{small}
 \begin{tabbing}
 \tab\=\tab\=\kill
-{\bf lemma} gamma\_factor\_e\_oplus':\\
+{\bf lemma} gamma\_factor\_oplus\_e':\\
 \>  {\bf assumes} "cmod u < 1" "cmod v < 1"\\
-\>  {\bf shows} "$\gamma$ (e\_oplus' u v) = ($\gamma$ u) * ($\gamma$ v) * (1 + inner u v)"
+\>  {\bf shows} "$\gamma$ (oplus\_e' u v) = ($\gamma$ u) * ($\gamma$ v) * (1 + inner u v)"
 \end{tabbing}
 \end{small}
 }
 
-\noindent This proof is not hard, but is technically involved. Since
-\texttt{$\gamma$ (e\_oplus' u v) = 1 / sqrt(1 - (cmod (e\_oplus' u
-  v))$^2$)}, and \texttt{($\gamma$ u) * ($\gamma$ v) * (1 + inner u
-  v)} is a positive real number, so must be \texttt{sqrt(1 - (cmod
-  (e\_oplus' u v))$^2$)}. This is possible only if the radicand is
-non-negative, implying that \texttt{cmod (e\_oplus' u v)} is less than
-1.
+\noindent The proof of this lemma is not hard, but is technically
+involved. With this lemma it is not hard to prove that the unit disc
+is closed for \texttt{oplus\_e}. Since \texttt{$\gamma$ (oplus\_e' u
+  v) = 1 / sqrt(1 - (cmod (oplus\_e' u v))$^2$)}, and
+\texttt{($\gamma$ u) * ($\gamma$ v) * (1 + inner u v)} is a positive
+real number, so must be \texttt{sqrt(1 - (cmod (oplus\_e' u
+  v))$^2$)}. This is possible only if the radicand is non-negative,
+implying that \texttt{cmod (oplus\_e' u v)} is less than 1.
 
 Again, details of such proofs are not present in the literature. Ungar
 just gives a brief comment: ,,Like M\"obius addition in the ball, one
@@ -1416,7 +1418,7 @@ properties are by now formally analyzed.
 \begin{small}
 \begin{tabbing}
   \tab\=\tab\=\kill
-{\bf lemma} iso\_oplus\_e\_via\_oplus\_m:\\
+{\bf lemma} oplus\_e\_oplus\_m:\\
 \> {\bf  shows} "u $\oplus_e$ v = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ u) $\oplus_m$ (1/2) $\otimes_{me}$ v)"
 \end{tabbing}
 \end{small}
@@ -1432,11 +1434,11 @@ which enables expressing Einstein gyration via M\"obius gyration.
   \begin{tabbing}
 \tab\=\tab\=\kill
 {\bf lemma} iso\_me\_gyr:\\
-\> {\bf shows} "\=(1/2) $\otimes_{me}$ e\_gyr a b z =\\
-\>\>m\_gyr ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z)"\\
-{\bf lemma} iso\_e\_gyr\_via\_m\_gyr:\\
-\> {\bf shows} "\= e\_gyr a b z =\\
-\>\>2 $\otimes_{me}$ (m\_gyr ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z))"
+\> {\bf shows} "\=(1/2) $\otimes_{me}$ gyr$_e$ a b z =\\
+\>\>gyr$_m$ ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z)"\\
+{\bf lemma} gyr\_e\_gyr\_m:\\
+\> {\bf shows} "\= gyr$_e$ a b z =\\
+\>\>2 $\otimes_{me}$ (gyr$_m$ ((1/2) $\otimes_{me}$ a) ((1/2) $\otimes_E$ b) ((1/2) $\otimes_{me}$ z))"
 \end{tabbing}
 \end{small}
 }
@@ -1445,27 +1447,27 @@ which enables expressing Einstein gyration via M\"obius gyration.
 From these connections it is very easy to prove that Einstein addition
 and gyration form a gyrocommutative gyrogroup (without unfolding the
 definition of $\oplus_E$ dealing with lots of hard calculations).
-Here is an example of one such simple proof (in Isar language). The
-lemma proves that Einstein addition is gyroassociative.
+Here is an example of one such simple and readable proof (in Isar
+language). The lemma proves that Einstein addition is gyroassociative.
 
 {\tt
 \begin{small}
 \begin{tabbing}
-  \tab\=\tab\=\tab\=\tab\=\kill
-{\bf lemma} e\_gyro\_left\_assoc:\\
-\>  {\bf shows} "a $\oplus_e$ (b $\oplus_e$ z) = (a $\oplus_e$ b) $\oplus_e$ e\_gyr a b z"\\
+  \hspace{3mm}\=\hspace{3mm}\=\hspace{3mm}\=\hspace{3mm}\=\kill
+{\bf lemma} oplus\_e\_gyro\_left\_assoc:\\
+\>  {\bf shows} "a $\oplus_e$ (b $\oplus_e$ z) = (a $\oplus_e$ b) $\oplus_e$ gyr$_e$ a b z"\\
 {\bf proof}-\\
 \>  {\bf let} ?a = "(1/2) $\otimes_{me}$ a" {\bf and} ?b = "(1/2) $\otimes_{me}$ b" {\bf and} ?z = "(1/2) $\otimes_{me}$ z"\\
 \>  {\bf have} "a $\oplus_e$ (b $\oplus_e$ z) = 2 $\otimes_{me}$ (?a $\oplus_m$ (?b $\oplus_m$ ?z))"\\
-\>\>    {\bf using} iso\_me\_oplus iso\_me\_oplus\_e\_oplus\_m {\bf by} simp\\
+\>\>    {\bf using} iso\_me\_oplus oplus\_e\_oplus\_m {\bf by} simp\\
 \>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ ((?a $\oplus_m$ ?b) $\oplus_m$ m\_gyr ?a ?b ?z)"\\
-\>\>    {\bf using} m\_gyro\_left\_assoc {\bf by} simp\\
+\>\>    {\bf using} oplus\_m\_gyro\_left\_assoc {\bf by} simp\\
 \>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ (a $\oplus_e$ b)) $\oplus_m$ m\_gyr ?a ?b ?z)"\\
 \>\>    {\bf using} iso\_me\_oplus {\bf by} simp\\
 \>  {\bf also} {\bf have} "$\ldots$ = 2 $\otimes_{me}$ (((1/2) $\otimes_{me}$ (a $\oplus_e$ b)) $\oplus_m$ (1/2) $\otimes_{me}$ e\_gyr a b z)"\\
-\>\>    {\bf using} e\_gyr\_m\_gyr {\bf by} simp\\
+\>\>    {\bf using} gyr\_e\_gyr\_m {\bf by} simp\\
 \>  {\bf finally} {\bf show} ?thesis\\
-\>\>    {\bf using} iso\_me\_oplus\_e\_oplus\_m {\bf by} simp\\
+\>\>    {\bf using} oplus\_e\_oplus\_m {\bf by} simp\\
 {\bf qed}
 \end{tabbing}
 \end{small}
@@ -1477,15 +1479,102 @@ automatically.
 {\tt
 \begin{small}
 \begin{tabbing}
-  \tab\=\tab\=\tab\=\tab\=\kill
+  \hspace{2mm}\=\hspace{3mm}\=\hspace{3mm}\=\hspace{3mm}\=\kill
 {\bf lemma} e\_gyro\_left\_assoc:\\
 \>  {\bf shows} "a $\oplus_e$ (b $\oplus_e$ z) = (a $\oplus_e$ b) $\oplus_e$ e\_gyr a b z"\\
-{\bf using} e\_gyr\_m\_gyr iso\_me\_oplus\_e\_oplus\_m iso\_me\_oplus m\_gyro\_left\_assoc\\
+{\bf using} gyr\_e\_gyr\_m oplus\_e\_oplus\_m iso\_me\_oplus oplus\_m\_gyro\_left\_assoc\\
 {\bf by} simp
 \end{tabbing}
 \end{small}
 }
 
+To prove gyrovector space axioms, some additional work needs to be
+done. We proved the connection of the isomorphism function
+$z \mapsto (1/2) \otimes z$ and its inverse $z \mapsto 2 \otimes z$
+with the inner product and the norm. This is then used to prove the
+invariance of the inner product under gyrations and the triangle
+inequality. Since these explicit proofs are missing from
+\cite{ungar-analytic}, as a contribution to the literature we shall
+present an informal proof sketches (the full formal proofs are
+available in our formalization).
+
+\begin{lemma}\label{lemma:iso_dot}
+  For all elements $a$ and $b$ in the unit disc $\mathbb{P}$ it holds
+
+  $$((1/2)\otimes a)\cdot b = \frac{\gamma_a}{1 + \gamma_a}(a\cdot b), \qquad a \cdot ((1/2)\otimes b) = \frac{\gamma_b}{1 + \gamma_b}(a\cdot b).$$
+
+  $$(2\otimes a)\cdot b = \frac{2\gamma^2_a}{2\gamma^2_a-1}(a\cdot b), \qquad a \cdot (2\otimes b) = \frac{2\gamma^2_b}{2\gamma^2_b-1}(a\cdot b).$$
+\end{lemma}
+
+This is easily proved by direct computation. By expressing norm as
+$(\llangle a \rrangle)^2 = a \cdot a$, expressions for
+$\llangle (1/2)\otimes a\rrangle$ and $\llangle 2\otimes a\rrangle$
+directly follow.
+
+\begin{theorem}
+  For any three points $u, v, a \in \mathbb{P}$ it holds:
+  $$gyr_e[u, v] a \cdot gyr_e[u, v] b = a \cdot b.$$
+\end{theorem}
+\begin{proof}
+  Let $u' = (1/2)\otimes u$, $v' = (1/2)\otimes v$,
+  $a' = (1/2)\otimes a$ and $b' = (1/2)\otimes b$. By the isomorphism
+  property of gyration it holds that
+  $$gyr_e[u, v] a \cdot gyr_e[u, v] b  = (2\otimes gyr_m[u', v'] a') \cdot (2\otimes gyr_m[u', v'] b')$$
+
+  By Lemma \ref{lemma:iso_dot} this is further equal to:
+
+  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{2\gamma_{G_b}}{2\gamma{G_b}-1}\right)(G_a \cdot G_b),$$
+
+  \noindent where $G_a = gyr_m[u', v'] a'$ and
+  $G_b = gyr_m[u', v'] b'$. Since inner product is invariant under
+  M\"obius gyrations this is equal to:
+
+  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{2\gamma_{G_b}}{2\gamma{G_b}-1}\right)(a' \cdot b').$$
+
+  By Lemma \ref{lemma:iso_dot} this is further equal to:
+
+  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{2\gamma_{G_b}}{2\gamma{G_b}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right)\left(\frac{\gamma_b}{1+\gamma_b}\right)(a \cdot b).$$
+
+  The proof finishes by tedious but straightforward proof that
+
+  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right) = \left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right) = 1$$
+\end{proof}
+
+
+We based the proof of the gyrotriangle equality for $\oplus_e$ on the
+monotonicity of the function $x \mapsto \tanh (2 \atanh(x))$ on the
+interval $[0, 1)$ and the following lemma.
+
+
+\begin{lemma}\label{lemma:norm_scale}
+  For $r \in R$ and $a \in \mathbb{P}$ it holds
+
+  $$\llangle r\otimes a \rrangle = \lvert \tanh (r \atanh(\llangle a\rrangle)\rvert$$
+\end{lemma}
+
+\noindent For $r > 0$ (including $r=2$) there is no need for absolute value on the right hand side.
+
+\begin{theorem}
+  For any $a, b \in \mathbb{P}$ it holds:
+  
+  $$\llangle a \oplus_e b\rrangle \leq \llangle \llangle a\rrangle \oplus_e \llangle b\rrangle \rrangle$$
+
+  By the isomorphism properties left hand side is equal to:
+
+  $$\llangle 2 \otimes (((1/2)\otimes a) \oplus_m ((1/2)\otimes b))\rrangle)$$
+
+  The right hand side is equal to:
+
+  $$\llangle 2\otimes (\llangle (1/2)\otimes a\rrangle \oplus_m \llangle (1/2)\otimes b\rrangle)\rrangle$$
+
+  The theorem then follows by the gyroriangle inequallity for M\"obius
+  addition applied on $(1/2)\otimes a$ and $(1/2)\otimes b$, Lemma
+  \ref{lemma:norm_scale} and the monotonicity of the function
+  $x \mapsto \tanh (2 \atanh(x))$ on the interval $[0, 1)$.
+\end{theorem}
+
+Other gyrovector axioms directly follow from the isomorphism
+properties and were very easy to prove.
 
 \section{Modelling hyperbolic geometry}\label{sec:models}
 
