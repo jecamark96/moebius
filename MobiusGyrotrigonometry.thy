@@ -3,13 +3,6 @@ theory MobiusGyrotrigonometry
   MoreComplex
 begin
 
-(*
-datatype m_gyroangle = M_gyroangle (a:PoincareDisc) (b:PoincareDisc) (c:PoincareDisc)
-lemma abs_inner_lt_1:
-  assumes "norm u < 1" "norm v < 1"
-  shows "abs (inner u v) < 1"
-*)
-
 
 lemma arccos_well_defined:
   shows "norm (inner  ((to_complex (⊖⇩m a ⊕⇩m b )) /⇩R ⟪((⊖⇩m a ⊕⇩m b))⟫)
@@ -208,62 +201,7 @@ proof-
     by (smt (verit, del_insts) mult.commute mult_1 of_real_1 of_real_divide of_real_eq_iff of_real_mult times_divide_eq_left)
 qed
 
-(*
-lemma T8_25:
-  assumes   "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
-           "a = ⟪get_a t⟫" "b=⟪get_b t⟫" "c = ⟪get_c t⟫"
-           "alpha = get_alpha t" "beta = get_beta t" "gamma = get_gamma t"
-            "beta_a = 1/sqrt(1+a*a)" "beta_b = 1/sqrt(1+b*b)"
- shows "c*c = Rep_PoincareDisc ((Abs_PoincareDisc (a*a)) ⊕⇩m (Abs_PoincareDisc (b*b))  ⊕⇩m( ⊖⇩m 
-      (Abs_PoincareDisc ((2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))
-/(1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))))))"
-proof-
-  have "⊖⇩m (get_a t) ⊕⇩m (get_b t) = m_gyr (⊖⇩m (C t)) (B t) (get_c t)"
-    by (simp add: Mobius_gyrogroup.gyro_translation_1 get_a_def get_b_def get_c_def)
-  moreover have "⟪⊖⇩m (get_a t) ⊕⇩m (get_b t)⟫=⟪get_c t⟫"
-    by (simp add: calculation moebius_gyroauto_norm)
-  moreover have *:"m_gammma_factor (⊖⇩m (get_a t) ⊕⇩m (get_b t)) = m_gammma_factor (get_c t)"
-  proof-
-    have "⟪⊖⇩m (get_a t) ⊕⇩m (get_b t)⟫ <1 "
-      using norm_lt_one by blast
-    then show ?thesis
-      by (metis calculation(2) comp_def gamma_factor_def m_gammma_factor_def map_fun_def norm_p.rep_eq)
-  qed
-  let ?l = "m_gammma_factor (⊖⇩m (get_a t) ⊕⇩m (get_b t))"
-  let ?r = "m_gammma_factor (get_c t)"
-  have "?l*?l = ?r*?r" using * 
-    by presburger
-  let ?a = "get_a t"
-  let ?b = "get_b t"
-  have "?l*?l = (γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)*(1-2*(inner (to_complex ?a) (to_complex ?b))+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)"
-    using inner_p.rep_eq m_gamma_equation by presburger
-  moreover have "(inner (to_complex ?a) (to_complex ?b)) = a*b*cos(gamma)"
-  proof-
-    have "gamma = angle (C t) (A t) (B t)"
-      using assms(6) get_gamma_def 
-      by (simp add: assms(9))
-    moreover have "gamma = arccos (inner ((to_complex (⊖⇩m (C t) ⊕⇩m (A t))) /⇩R 
-⟪((⊖⇩m (C t) ⊕⇩m (A t)))⟫)  ((to_complex (⊖⇩m (C t) ⊕⇩m (B t))) /⇩R ⟪(⊖⇩m (C t) ⊕⇩m (B t))⟫))"
-      using angle_def calculation by blast
-   
-    moreover have *:"cos(gamma) = (inner ((to_complex ?a) /⇩R 
-a) ((to_complex (?b)) /⇩R b))"
-      by (smt (verit) Cauchy_Schwarz_ineq2 assms(4) assms(5) calculation(2) cos_arccos_abs get_a_def get_b_def inner_commute inner_real_def inner_zero_right inverse_nonnegative_iff_nonnegative left_inverse norm_geq_zero norm_p.rep_eq norm_scaleR real_inner_1_right)
 
-    moreover have "b≠0" 
-      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(2) assms(5) get_b_def gyrozero_PoincareDisc_def)
-    moreover have "a≠0"
-      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(3) assms(4) get_a_def gyrozero_PoincareDisc_def)
-    moreover have "cos(gamma)*a*b = (inner  (to_complex ?a) (to_complex (?b)))"
-      by (simp add: "*" calculation(4) calculation(5) mult.left_commute)
-    ultimately show ?thesis
-      by (simp add: mult.left_commute)
-  qed
-    
-
-  ultimately show ?thesis
-    sorry
-qed*)
 
 lemma T8_25_help1:
    assumes   "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
@@ -333,6 +271,11 @@ proof-
     using assms(6) mult_eq_0_iff norm_mult norm_of_real norm_one of_real_divide real_minus_mult_self_le by force
 qed
 
+lemma help1:
+  fixes x::real
+  fixes y::real
+  shows "(1+x)*(1+y) =(1+x+x*y+y)"
+          by (smt (verit, ccfv_SIG) mult_cancel_left2 mult_cancel_right2 mult_diff_mult)
 
 lemma T8_25_help2:
   assumes   "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
@@ -340,7 +283,127 @@ lemma T8_25_help2:
            "alpha = get_alpha t" "beta = get_beta t" "gamma = get_gamma t"
             "beta_a = 1/sqrt(1+a*a)" "beta_b = 1/sqrt(1+b*b)"
           shows "cos(gamma) = (a*a+b*b-c*c-a*a*b*b*c*c)/(2*a*b*(1-c*c))"
-  sorry
+proof-
+  have "⊖⇩m (get_a t) ⊕⇩m (get_b t) = m_gyr (⊖⇩m (C t)) (B t) (get_c t)"
+    by (simp add: Mobius_gyrogroup.gyro_translation_1 get_a_def get_b_def get_c_def)
+  moreover have "⟪⊖⇩m (get_a t) ⊕⇩m (get_b t)⟫=⟪get_c t⟫"
+    by (simp add: calculation moebius_gyroauto_norm)
+  moreover have *:"m_gammma_factor (⊖⇩m (get_a t) ⊕⇩m (get_b t)) = m_gammma_factor (get_c t)"
+  proof-
+    have "⟪⊖⇩m (get_a t) ⊕⇩m (get_b t)⟫ <1 "
+      using norm_lt_one by blast
+    then show ?thesis
+      by (metis calculation(2) comp_def gamma_factor_def m_gammma_factor_def map_fun_def norm_p.rep_eq)
+  qed
+  let ?l = "m_gammma_factor (⊖⇩m (get_a t) ⊕⇩m (get_b t))"
+  let ?r = "m_gammma_factor (get_c t)"
+  have "?l*?l = ?r*?r" using * 
+    by presburger
+  let ?a = "get_a t"
+  let ?b = "get_b t"
+  have "?l*?l = (γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)*(1-2*(inner (to_complex ?a) (to_complex ?b))+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)"
+    using inner_p.rep_eq m_gamma_equation by presburger
+  moreover have "(inner (to_complex ?a) (to_complex ?b)) = a*b*cos(gamma)"
+  proof-
+    have "gamma = angle (C t) (A t) (B t)"
+      using assms(6) get_gamma_def 
+      by (simp add: assms(9))
+    moreover have "gamma = arccos (inner ((to_complex (⊖⇩m (C t) ⊕⇩m (A t))) /⇩R 
+⟪((⊖⇩m (C t) ⊕⇩m (A t)))⟫)  ((to_complex (⊖⇩m (C t) ⊕⇩m (B t))) /⇩R ⟪(⊖⇩m (C t) ⊕⇩m (B t))⟫))"
+      using angle_def calculation by blast
+   
+    moreover have *:"cos(gamma) = (inner ((to_complex ?a) /⇩R 
+a) ((to_complex (?b)) /⇩R b))"
+      by (smt (verit) Cauchy_Schwarz_ineq2 assms(4) assms(5) calculation(2) cos_arccos_abs get_a_def get_b_def inner_commute inner_real_def inner_zero_right inverse_nonnegative_iff_nonnegative left_inverse norm_geq_zero norm_p.rep_eq norm_scaleR real_inner_1_right)
+
+    moreover have "b≠0" 
+      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(2) assms(5) get_b_def gyrozero_PoincareDisc_def)
+    moreover have "a≠0"
+      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(3) assms(4) get_a_def gyrozero_PoincareDisc_def)
+    moreover have "cos(gamma)*a*b = (inner  (to_complex ?a) (to_complex (?b)))"
+      by (simp add: "*" calculation(4) calculation(5) mult.left_commute)
+    ultimately show ?thesis
+      by (simp add: mult.left_commute)
+  qed
+  moreover have "(γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)*(1-2*(inner (to_complex ?a) (to_complex ?b))+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)
+      = (γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)*(1-2* a*b*cos(gamma)+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)"
+    by (simp add: calculation(4))
+  moreover have "?r*?r =(γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)*(1-2* a*b*cos(gamma)+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫) "
+    using "*" calculation(3) calculation(5) by presburger
+  moreover have **:"(?r*?r)/((γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)) = (1-2* a*b*cos(gamma)+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)"
+   proof-
+    have "(γ⇩m ?a) ≠0"
+      by (metis gamma_factor_positive linorder_not_le m_gammma_factor.rep_eq norm_lt_one norm_p.rep_eq order.refl)
+    moreover have "(γ⇩m ?b) ≠0"
+      by (metis gamma_factor_positive linorder_not_le m_gammma_factor.rep_eq norm_lt_one norm_p.rep_eq order.refl)
+    ultimately show ?thesis 
+      by (simp add: ‹γ⇩m (get_c t) * γ⇩m (get_c t) = γ⇩m (get_a t) * γ⇩m (get_a t) * γ⇩m (get_b t) * γ⇩m (get_b t) * (1 - 2 * a * b * cos gamma + ⟪get_a t⟫ * ⟪get_a t⟫ * ⟪get_b t⟫ * ⟪get_b t⟫)›)
+  qed
+  moreover have "(?r*?r)/((γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)) = ((1-⟪?a⟫*⟪?a⟫)*(1-⟪?b⟫*⟪?b⟫))/(1-⟪get_c t⟫*⟪get_c t⟫)"
+  proof-
+    have "(γ⇩m ?a)*(γ⇩m ?a) = 1/(1-⟪?a⟫*⟪?a⟫)"
+      by (metis gamma_factor_square_norm m_gammma_factor.rep_eq norm_lt_one norm_p.rep_eq power2_eq_square)
+    moreover have "(γ⇩m ?b)*(γ⇩m ?b) = 1/(1-⟪?b⟫*⟪?b⟫)"
+      by (metis gamma_factor_square_norm m_gammma_factor.rep_eq norm_lt_one norm_p.rep_eq power2_eq_square)
+    moreover have "?r*?r = 1/(1-⟪get_c t⟫*⟪get_c t⟫)"
+      by (metis gamma_factor_square_norm m_gammma_factor.rep_eq norm_lt_one norm_p.rep_eq power2_eq_square)
+    ultimately show ?thesis
+      by simp
+  qed
+  moreover have "(1+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫ -(?r*?r)/((γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b)))/(2*a*b) = cos(gamma)"
+  proof-
+    have "a≠0"
+      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(3) assms(4) get_a_def gyrozero_PoincareDisc_def)
+    moreover have "b≠0"
+      by (metis Mobius_gyrodom.norm_zero_iff Mobius_gyrogroup.gyro_left_cancel' Mobius_gyrogroup.gyro_right_id assms(2) assms(5) get_b_def gyrozero_PoincareDisc_def)
+    ultimately show ?thesis 
+      using **
+      by force
+  qed
+  moreover have "(1+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫ -(?r*?r)/((γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b))) =  (a*a+b*b-c*c-a*a*b*b*c*c)/(1-c*c)"
+  proof-
+    have "(1+⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫ -(?r*?r)/((γ⇩m ?a)*(γ⇩m ?a)*(γ⇩m ?b)*(γ⇩m ?b))) =
+    1 + ⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫ - ((1-⟪?a⟫*⟪?a⟫)*(1-⟪?b⟫*⟪?b⟫))/(1-⟪get_c t⟫*⟪get_c t⟫)"
+      using calculation(8) by presburger
+    moreover have "1 + ⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫ - ((1-⟪?a⟫*⟪?a⟫)*(1-⟪?b⟫*⟪?b⟫))/(1-⟪get_c t⟫*⟪get_c t⟫) =
+      ( (1 + ⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)* (1-⟪get_c t⟫*⟪get_c t⟫)-(1-⟪?a⟫*⟪?a⟫)*(1-⟪?b⟫*⟪?b⟫))/(1-⟪get_c t⟫*⟪get_c t⟫) "
+      by (smt (verit, ccfv_SIG) Mobius_gyrodom.norm_inner diff_divide_distrib nonzero_mult_div_cancel_right norm_lt_one power2_eq_square real_sqrt_one square_norm_inner)
+    moreover have " ( (1 + ⟪?a⟫*⟪?a⟫*⟪?b⟫*⟪?b⟫)* (1-⟪get_c t⟫*⟪get_c t⟫)-(1-⟪?a⟫*⟪?a⟫)*(1-⟪?b⟫*⟪?b⟫)) =
+        ((1+a*a*b*b)*(1-c*c) - (1-a*a)*(1-b*b))"
+      using assms(4) assms(5) assms(6) by fastforce
+    moreover have "((1+a*a*b*b)*(1-c*c) - (1-a*a)*(1-b*b)) = (a*a+b*b-c*c-a*a*b*b*c*c)"
+    proof-
+      have "(1+a*a*b*b)*(1-c*c) = 1 - c*c +a*a*b*b -a*a*b*b*c*c"
+      proof-
+        let ?iz1 = "a*a*b*b"
+        let ?iz2 = "-c*c"
+        have "Re(a*a*b*b) = a*a*b*b"
+          using Re_complex_of_real by blast
+        moreover have "Re(-c*c) = -c*c"
+          using Re_complex_of_real by blast
+        ultimately show ?thesis using help1[of ?iz1 ?iz2] 
+          by auto
+      qed
+      moreover have "(1-a*a)*(1-b*b) = 1-a*a+a*a*b*b - b*b"
+       proof-
+        let ?iz1 = "-a*a"
+        let ?iz2 = "-b*b"
+        have "Re(-a*a) = -a*a"
+          using Re_complex_of_real by blast
+        moreover have "Re(-b*b) = -b*b"
+          using Re_complex_of_real by blast
+        ultimately show ?thesis using help1[of ?iz1 ?iz2] 
+          by auto
+      qed
+      ultimately show ?thesis 
+        by fastforce
+    qed
+    ultimately show ?thesis 
+      by (simp add: assms(6))
+  qed
+    ultimately show ?thesis
+      by (metis (mono_tags, lifting) divide_divide_eq_left')
+qed   
 
 lemma T8_25_help3:
   assumes   "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
@@ -447,7 +510,109 @@ proof-
     qed
   ultimately show ?thesis by auto
 qed
-  
 
+lemma T25_help5:
+    assumes   "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
+           "a = ⟪get_a t⟫" "b=⟪get_b t⟫" "c = ⟪get_c t⟫"
+           "alpha = get_alpha t" "beta = get_beta t" "gamma = get_gamma t"
+            "beta_a = 1/sqrt(1+a*a)" "beta_b = 1/sqrt(1+b*b)"
+          shows "(2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) = to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor c*c))))"
+proof-
+  have "to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor c*c)))) =
+            (a*a+b*b-c*c-a*a*b*b*c*c)/(1+a*a*b*b - a*a*c*c - b*b*c*c)"
+    by (metis (mono_tags, opaque_lifting) T8_25_help1 ab_semigroup_mult_class.mult_ac(1) assms(1) assms(2) assms(3) assms(4) assms(5) assms(6) of_real_mult)
+  moreover have "(1+a*a)≠0"
+    by (metis le_add_same_cancel1 not_one_le_zero zero_le_square)
+  moreover have "(1+b*b)≠0"
+    by (metis add_le_same_cancel2 not_one_le_zero zero_le_square)
+  moreover have "(1-c*c)≠0"
+    by (metis Mobius_gyrodom.norm_inner assms(6) eq_iff_diff_eq_0 norm_lt_one order_less_irrefl power2_eq_square real_sqrt_one square_norm_inner)
+  moreover have *:"(1+a*a)*(1+b*b)*(1-c*c) ≠0"
+    using calculation(2) calculation(3) calculation(4) divisors_zero by blast
+  let ?iz = "(1+a*a)*(1+b*b)*(1-c*c)"
+  have "(2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) = ((a * a + b * b - c * c - a * a * b * b * c * c)/?iz)/
+((1 + a * a * b * b - a * a * c * c - b * b * c * c)/?iz)"
+  proof-
+    have "(2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) = ((a * a + b * b - c * c - a * a * b * b * c * c)/?iz)"
+      using T8_25_help3 assms by blast
+    moreover have "( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) =((1 + a * a * b * b - a * a * c * c - b * b * c * c)/?iz)"
+      using T8_25_help4 assms by blast
+    ultimately show ?thesis 
+      by presburger
+  qed
+  moreover have "(2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) = (a * a + b * b - c * c - a * a * b * b * c * c)/(1 + a * a * b * b - a * a * c * c - b * b * c * c)"
+    using "*" calculation(5) by auto
+  ultimately show ?thesis
+  proof -
+    have "cor (2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma) / (1 - cor (2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma)) = to_complex (of_complex (cor (a * a)) ⊕⇩m of_complex (cor (b * b)) ⊕⇩m ⊖⇩m (of_complex (cor (c * c))))"
+      by (smt (z3) ‹2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma / (1 - 2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma) = (a * a + b * b - c * c - a * a * b * b * c * c) / (1 + a * a * b * b - a * a * c * c - b * b * c * c)› ‹to_complex (of_complex (cor a * cor a) ⊕⇩m of_complex (cor b * cor b) ⊕⇩m ⊖⇩m (of_complex (cor c * cor c))) = cor ((a * a + b * b - c * c - a * a * b * b * c * c) / (1 + a * a * b * b - a * a * c * c - b * b * c * c))› of_real_1 of_real_diff of_real_divide of_real_mult)
+    then show ?thesis
+      by (simp add: cos_of_real)
+  qed
+qed
+
+
+lemma T25_MobiusCosineLaw:
+  assumes "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
+           "a = ⟪get_a t⟫" "b=⟪get_b t⟫" "c = ⟪get_c t⟫"
+           "alpha = get_alpha t" "beta = get_beta t" "gamma = get_gamma t"
+            "beta_a = 1/sqrt(1+a*a)" "beta_b = 1/sqrt(1+b*b)"
+          shows "c*c =  to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor (2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))))))"
+proof-
+  have  "(2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma)) = to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor c*c))))"
+     using T25_help5[OF assms]
+     by (simp add: cos_of_real)
+   moreover have "norm ((2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))) < 1"
+     by (metis calculation norm_lt_one norm_of_real norm_p.rep_eq real_norm_def)
+   moreover have "norm (cor a*a) < 1"
+     by (simp add: assms(4) mult_closed_for_unit_disc norm_geq_zero norm_lt_one)
+   moreover have "norm (cor b*b) < 1"
+     by (metis abs_norm_cancel assms(5) linorder_not_le norm_lt_one norm_mult norm_of_real norm_p.rep_eq real_sqrt_abs2 real_sqrt_ge_one)
+   moreover have "norm (cor c*c)<1"
+     by (simp add: assms(6) mult_closed_for_unit_disc norm_geq_zero norm_lt_one)
+   moreover have "Re (cor a*a) = a*a"
+     by force
+   moreover have "Re (cor b*b) = b*b"
+     by force
+   moreover have "Re (cor c*c) = c*c"
+     by force
+   moreover have "c*c = to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor c*c))))))"
+     by (metis Mobius_gyrocommutative_gyrogroup.gyroautomorphic_inverse Mobius_gyrodom'.to_dom Mobius_gyrogroup.gyro_inv_idem Mobius_gyrogroup.gyrominus_def Mobius_gyrogroup.oplus_ominus_cancel calculation(5) of_real_mult)
+   moreover have "c*c = to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m ( (⊖⇩m(of_complex (cor a*a)))⊕⇩m  ⊖⇩m (of_complex (cor b*b)) ⊕⇩m (of_complex (cor c*c))))"
+     using Mobius_gyrocommutative_gyrogroup.gyroautomorphic_inverse Mobius_gyrogroup.gyrominus_def calculation(9) by auto 
+   ultimately show ?thesis
+   proof -
+     have f1: "cor (2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma / (1 - 2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma)) = to_complex (of_complex (cor (a * a)) ⊕⇩m of_complex (cor (b * b)) ⊕⇩m ⊖⇩m (of_complex (cor (c * c))))"
+       using ‹cor (2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma / (1 - 2 * beta_a * beta_a * a * beta_b * beta_b * b * cos gamma)) = to_complex (of_complex (cor a * cor a) ⊕⇩m of_complex (cor b * cor b) ⊕⇩m ⊖⇩m (of_complex (cor c * cor c)))› by auto
+     have "to_complex (of_complex (cor (a * a)) ⊕⇩m of_complex (cor (b * b)) ⊕⇩m ⊖⇩m (of_complex (cor (a * a)) ⊕⇩m of_complex (cor (b * b)) ⊕⇩m ⊖⇩m (of_complex (cor (c * c))))) = cor (c * c)"
+       using ‹cor (c * c) = to_complex (of_complex (cor a * cor a) ⊕⇩m of_complex (cor b * cor b) ⊕⇩m ⊖⇩m (of_complex (cor a * cor a) ⊕⇩m of_complex (cor b * cor b) ⊕⇩m ⊖⇩m (of_complex (cor c * cor c))))› by auto
+     then show ?thesis
+       using f1 by (simp add: Mobius_gyrodom'.of_dom cos_of_real)
+   qed
+ qed
+
+lemma T_MobiusPythagorean:
+  assumes "(A t) ≠ (B t)" "(A t) ≠ (C t)" "(C t) ≠ (B t)"
+           "a = ⟪get_a t⟫" "b=⟪get_b t⟫" "c = ⟪get_c t⟫"
+           "alpha = get_alpha t" "beta = get_beta t" "gamma = get_gamma t"
+            "beta_a = 1/sqrt(1+a*a)" "beta_b = 1/sqrt(1+b*b)"
+           "gamma = pi/2"
+          shows "c*c =  to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)))"
+proof-
+  have "c*c =  to_complex ((of_complex (cor a*a)) ⊕⇩m (of_complex (cor b*b)) ⊕⇩m (⊖⇩m (of_complex (cor (2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))/
+( 1-2*beta_a*beta_a*a*beta_b*beta_b*b*cos(gamma))))))"
+    using T25_MobiusCosineLaw[OF assms(1) assms(2) assms(3) assms(4) assms(5) assms(6) assms(7) assms(8) assms(9) assms(10) assms(11)]
+    by (simp add: cos_of_real)
+  moreover have "cos(gamma) = 0"
+    using assms(12) cos_pi_half by blast
+  ultimately show ?thesis 
+    using m_ozero'_def m_ozero_def by force 
+qed
 
 end
