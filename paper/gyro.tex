@@ -686,7 +686,7 @@ In this abstract setup we proved a large number of lemmas and theorems
 that hold in gyrovector spaces (given in Chapter 8 in
 \cite{ungar-analytic}).
 
-\subsection{Basic geometric notions}
+\subsection{Basic geometric notions}\label{sec:basic_geometry}
 
 The structure of gyrovector spaces is rich enough to allow defining
 basic geometric notions. For $x \neq y$ it hold that $z$ belongs to
@@ -719,7 +719,7 @@ Collinearity enables the definition of lines.
 \end{small}
 
 
-Definition of the betweness relation is quite similar (and again
+Definition of the betweenness relation is quite similar (and again
 analogous to the Euclidean case).
 
 \begin{small}
@@ -771,6 +771,40 @@ previously proven lemmas about gyrovector spaces).
 \end{tabbing}
 }
 \end{small}
+
+As an illustration, we give an informal proof that translations
+preserve collinearity (in Isabelle/HOL this is proved by automated
+provers).
+
+\begin{theorem}
+  Let $t_a$ be a translation $t_a(x) = \ominus a \oplus x$. Three
+  points $x$, $u$ and $v$ are collinear iff $t_a(x)$, $t_a(u)$ and
+  $t_a(v)$ are collinear.
+\end{theorem}
+\begin{proof} Points $x$, $u$ and $v$ are gyrocollinear, iff $u=v$ or
+  there exists a real number $t$ such that
+  $x=u\oplus t\otimes (\ominus u \oplus v)$. We can prove that this
+  formula is equivalent to $\ominus a \oplus u = \ominus v$ or there
+  exists a real number $t$ such that
+  $$(\ominus a \oplus x) = (\ominus a \oplus u) \oplus t \otimes
+  (\ominus (\ominus a \oplus u) \oplus (\ominus a \oplus v)).$$
+  Indeed, if $x=u\oplus t\otimes (\ominus u \oplus v)$, then
+\begin{align*} 
+(\ominus a \oplus x) &=  \ominus a \oplus (u\oplus t \otimes (\ominus u \oplus v)) \\ 
+ &=  (\ominus a \oplus u) \oplus gyr [\ominus a, u] (t\otimes (\ominus u \oplus v))\\
+ &= (\ominus a \oplus u) \oplus t \otimes gyr [\ominus a, u] (\ominus u \oplus v)\\
+ &= (\ominus a \oplus u) \oplus t \otimes (\ominus (\ominus a \oplus u) \oplus (\ominus a \oplus v))
+\end{align*}
+
+We used gyroassociativity, gyroautomorphism property and the
+gyrotranslation theorem that states that for $a$, $b$ and $c$, it
+holds that
+$\ominus (a \oplus b) \oplus (a \oplus c) = gyr[a, b] (\ominus b
+\oplus c)$ (Theorem 3.13 in \cite{ungar-analytic}, that we formally
+proved in Isabelle/HOL).
+
+The other direction is very similar.
+\end{proof}
 
 
 \section{Instances of gyrovector spaces}\label{sec:mobiuseinstein}
@@ -1578,71 +1612,190 @@ properties and were very easy to prove.
 
 \section{Modelling hyperbolic geometry}\label{sec:models}
 
-In this section we are going to explain how to show that our new gyrodefinitions are formaly equivalent to our old definitions used in paper [].
+We have shown that Mo\"bius and Einstein addition, gyration and
+scaling give rise to gyrovector space structures. In this section we
+shall show that these structures are exactly the same as well known
+models of hyperbolic geometry. We have formally shown that M\"obius
+gyrovector space is essentially the same as the Poincar\'e disc model
+(formally described in \cite{amai-poincare}). Since Einstein velocity
+addition is isomorphic to Mo\"bius addition (as we have formally shown
+in the previous section), relativistic physics is set in hyperbolic
+geometry. It can be shown that Einstein gyrovector space is
+essentially the same as the Klein-Beltrami model of hyperbolic
+geometry (formally described in
+\cite{makarios,harrison2005hol,coghetto2018klein}).
 
-One of the models used to represent hyperbolic geometry is the Poincar\'{e} disk model. We named our type PoincareDisc on purpose, to highlight the equivalence between definitions from this paper and [].
+To show that Mo\"bius gyrovector space is a model of hyperbolic
+geometry, it must be shown that it satisfies all axioms of the
+absolute geometry, and the negation of the parallels postulate. These
+axioms can be, for example, Tarski's axioms\cite{tarski}. In
+\cite{amai-poincare} it was proved that the Poincar\'e disc, defined
+by using homogenous coordinates in the projective space
+$\mathbb{C}P^1$ satisfies these axioms. Instead of directly proving
+that M\"obius gyrovector space notions (points, collinearity,
+betweenness, distance, congruence) satisfy Tarski's axioms, we have
+shown that they are equivalent to the correpsonding notions in the
+Poincar\'e disc model. Therefore we know that they must satisfy all
+the axioms, but additionally we know that M\"obius gyrovector space is
+essentially the same as the Poincar\'e disc model.
 
-Basic objects in the Poincare model of the hyperbolic plane are h-points and h-lines. H-points are points of the extended complex plane that lie within the unit disc. From the following definition:
-\begin{definition}\textbf{(Point in M\" obius gyrovector space)} Any element of M\" obius gyrovector space is a point in that space.
-\end{definition}
+In \cite{amai-poincare} h-points in the Poincare disc were defined as
+a subtype of $\mathbb{C}P^1$ which have the norm less than 1. Points
+in $\mathbb{C}P^1$ are represented by pairs of complex numbers (their
+homogenous coordinates). Since all points within the Poincar\'e disc
+are finite (note that $\mathbb{C}P^1$ contains both finite and
+infinite points), these points can be identified by the complex
+numbers in the unit disc. Therefore we shall identify the unit disc
+$\mathbb{P}'$ set in $\mathbb{C}P^1$ defined in \cite{amai-poincare}
+and the unit disc $\mathbb{P}$ set in $\mathbb{C}$ defined in this
+paper (formally, there is a natural bijection between the two abstract
+types \texttt{PoincareDisc} and \texttt{PoincareDisc'}).
 
-We can conclude that the definition of a point in M\" obius gyrovector space coincides with the definition of a h-point.
+An essential feature of each model of hyperbolic geometry is the
+distance function. In \cite{amai-poincare} it was proved that the
+distance between points in $\mathbb{P'}$ represented by homogenous
+coordinates of complex numbers $u$ and $v$ (with norm less than 1) can
+be calculated by:
 
-By the characterization of h-lines, we know that h-lines are Euclidean circles if they don't contain the center of a unit disk (complex $0$). Otherwise they are Euclidean lines.
+$$d'(u, v) = \arccosh\left(1 + 2\frac{\lVert u-v \rVert^2}{(1-\lVert u \rVert^2)(1-\lVert v \rVert^2)}\right).$$
 
-We want to prove that gyrocollinearity in M\" obius gyrovector space implies h-collinearity and vice versa. Also, we are interested in proving that the order of points is unchanged (h-betweenness is equivalent to gyro-betweeness).
+In Section \ref{sec:basic_geometry} gyrodistance of two points in a
+gyrovector space is defined as
+$d(u, v) = \llangle \ominus u \oplus v\rrangle$. Gyrodistance $d$ and
+distance are not the same, but they are connected by the relation
+$d'(u, v) = 2\atanh(d(u, v))$. We have proved this relation formally
+(the proof is done by expressing inverse trigonometric functions using
+logarithms and them applying calculations and expression
+simplifications). Therefore, if we define distance of two points in
+$\mathbb{P}$ by $D(u, v) = 2\atanh(d(u, v))$ we obtain exactly the
+same distance as in the Poincar\'e disc model $\mathbb{P'}$, making
+the two models geometrically the same. Namely, since collinearity,
+lines, betweenness and other important geometric notions can be
+expressed using distance (for examples, lines can be defined as
+geodesics), having the same distance guarantees the same geometry.
+However, we did not rely on this, but we explicitly proved that
+betweenness and collinearity in two models coincide.
 
-First, lets give some definitions:
-
-\begin{definition}\textbf{(Gyrocollinearity in M\" obius gyrovector space)}: Three points $u$, $v$ and $x$ in M\" obius gyrovector space are gyrocollinear if there exists a real number $t$ such that:
-$$x = u\oplus_m t \otimes_m (\ominus_m u \oplus_m v)$$
-\end{definition}
-
-\begin{definition}\textbf{(Betweenness in M\" obius gyrovector space):} Point $x$ is between two points $u$ and $v$ if $x$, $u$ and $v$ are gyrocollinear with coefficient $t$ between 0 and 1.
-\end{definition}
-
-In our formalization, we didn't start from these definitions, but we have proved that they are correct.
-
-Consider three gyrocollinear points $u$, $v$ and $x$. There exists some real number $t$ such that $$x=u\oplus_m t\otimes_m (\ominus_m u \oplus_m v)$$
-Without losing of generality we can assume that $u=0$. If $u$ is not $0$ we can use the following M\" obius transformation:
-$$f_u(z) = \frac{z-u}{1-\overline{u}z}=\ominus_m u \oplus_m z$$ to provide that $u=0$. The function $f_u(z)$ is obviously closed on ball $V_1$.
-Another very important property of $f_u(z)$ is that it keeps a gyrocollinearity.
+Let us show that the betweenness relations coincide (collinearity is
+done in a very similar way). Recall that betweenness in gyrovector
+spaces is defined in Section \ref{sec:basic_geometry}. Point
+$x \in \mathbb{P}$ is between points $u, v \in \mathbb{P}$ (let us
+denote this by $\mathfrak{B}(u, x, v)$) if there is a real number
+$t \in [0, 1]$ such that
+$x = u \oplus t \otimes (\ominus u \oplus v)$. On the other hand, in
+\cite{amai-poincare}, the point $x \in \mathbb{P}'$ is between points
+$u, v \in \mathbb{P}'$ (let us denote this by
+$\mathfrak{B}'(u, x, v)$) iff the cross-ratio of points $u$, $x$, $v$,
+and inversion of $x$ is a real negative number.
 
 \begin{theorem}
-Three points $x$, $u$ and $v$ are gyrocollinear iff $f_a(x)$, $f_a(u)$ and $f_a(v)$ are gyrocollinear.
+  For any three points $u, v, x \in \mathbb{P}$ it holds that
+
+  $$\mathfrak{B}(u, x, v) \longleftrightarrow \mathfrak{B}'(u, x, v).$$  
 \end{theorem}
-\begin{proof} Since three points $x$, $u$ and $v$ are gyrocollinear, there exists a real number $t$ such that $x=u\oplus_m t\otimes_m (\ominus_m u \oplus_m v)$. We can prove that this formula is equivalent to $$(\ominus_m a \oplus_m x) = (\ominus_m a \oplus_m u) \oplus_m t \otimes_m (\ominus_m (\ominus_m a \oplus_m u) \oplus_m (\ominus_m a \oplus_m v))$$
-using the following equalities:
-\begin{align*} 
-(\ominus_m a \oplus_m u) &=  \ominus_m a \oplus_m (u\oplus_m t \otimes_m (\ominus_m u \oplus_m v)) \\ 
- &=  (\ominus_m a \oplus_m u) \oplus_m m\_gyr (\ominus_m a, u, t\otimes_m (\ominus_m u \oplus_m v))\\
- &= (\ominus_m a \oplus_m u) \oplus_m t \otimes_m m\_gyr(\ominus_m a, u, \ominus_m u \oplus_m v)\\
- &= (\ominus_m a \oplus_m u) \oplus_m t \otimes_m (\ominus_m (\ominus_m a \oplus_m u) \oplus_m (\ominus_m a \oplus_m v))
-\end{align*}
+\begin{proof}
+  The proof would be very hard if we do not use
+  ,,without-loss-of-generality'' reasoning. Let us consider the
+  translation $z \mapsto \ominus u \oplus z$. As, it was proved in
+  Section \ref{sec:basic_geometry}, betweenness is invariant under
+  such translations it holds that
+
+  $$\mathfrak{B}(u, x, v) \longleftrightarrow \mathfrak{B}(\ominus u\oplus u, \ominus u \oplus x, \ominus u\oplus v) \longleftrightarrow \mathfrak{B}(0, x', v'),$$
+
+  \noindent where $x' = \ominus u \oplus x$ and
+  $v' = \ominus u \oplus v$.
+  
+  On the other hand, it is easily proved that on the representation
+  type of complex numbers, this translation is expressed by:
+
+  $$z \mapsto \frac{z - u}{1 - \overline{a}u}$$
+
+  In \cite{amai-poincare} it was formally proved that such, so called
+  Blaschke-factors, preserve many relations, including betweenness.
+  
+  Therefore it holds
+
+  $$\mathfrak{B}'(u, x, v) \longleftrightarrow \mathfrak{B}'(0, x', v').$$
+
+  Therefore, the problem reduces to comparing the two relations in the
+  special case when the first point is 0, i.e., proving that
+  $\mathfrak{B}(0, x', v') \longleftrightarrow \mathfrak{B}(0, x',
+  v')$.
+
+  The case $v'=0$ is trivial, so we assume that $v' \neq 0$. From the
+  definition of $\mathfrak{B}$ the left hand side holds iff there
+  exists $t \in [0, 1]$ such that $x' = t \otimes v'$. By using the
+  characterization of $\otimes$ we show that this holds iff
+
+  $$x' = \frac{\tanh(t \cdot \atanh (\lVert v'\rVert))}{\lVert
+    v'\rVert}v'.$$
+
+  By analyzing the properties of hyperbolic trigonometric functions we
+  can see that $t \in [0, 1]$ iff
+  $\frac{\tanh(t \cdot \atanh (\lVert v'\rVert))}{\lVert v'\rVert} \in
+  [0, 1]$. Therefore,
+
+  $$\mathfrak{B}(0, x', v') \longleftrightarrow (\exists t' \in [0, 1])(x' = t' \cdot v').$$
+
+  But in \cite{amai-poincare} it was formally proved that this exact
+  condition is equivalent to point $x'$ being between $0$ and $v'$ in
+  the definition of betweenness based on cross-ratio, i.e.
+
+  $$(\exists t' \in [0, 1])(x' = t' \cdot v') \longleftrightarrow \mathfrak{B}'(0, x', v').$$
+
+  This concludes the proof.
 \end{proof}
 
-So, we can conclude that transforming our unit disk in a way that $u$ becomes zero, doesn't change gyrocollinearity of our points and we can continue our work assuming that $u$ is zero.
-
-If $u$ is zero, then $x=t\otimes_m v$ which is equal to tanh(t$\cdot$ artanh($\norm{v}$))$\frac{v}{\norm{v}}$ like we have formally proved in our work. 
-
-The argument of a complex number $x$ is equal to the argument of a complex number $z$. This follows from the fact that the argument of a purely real number is zero, and $\frac{tanh(t\cdot artanh(\norm{v}))}{\norm{v}}$ is truly a purely real number. The complex argument of a product of purely real number and complex number is the sum of their arguments. So, $arg(a\cdot z)$, where $a$ is a purely real number and $z$ is a complex number, is $arg(a)+arg(z) = arg(z)$.  
-
-Further, the fact that $x$ and $v$ have same argument means that they are also h-collinear. Also, $u$ is h-collinear with them, because we get $u$ putting $t=0$.
-
-If $x$ is between $u=0$ and $v$, then $0\leq t \leq 1$, so we have:
-$$\frac{\norm{x}}{\norm{v}} = \frac{tanh(t\cdot artanh(\norm{v})}{\norm{v}}\leq \frac{tanh(artanh(\norm{v}))}{\norm{v}}=1$$
-
-This inequality is true because $tanh$ is strictly increasing for all real numbers. It follows that $\norm{x} \leq \norm{v}$ and $x$ is h-between $u=0$ and $v$.
-
-
-- Definisati osnovne pojmove Poincare-ovg diska u Mebijusovom žirovektorskom prostoru (tačke, prave, između, rastojanje, podudarno, Mebijusove transformacije)
-
-- Diskutovati kako je dokazano da su osnovni pojmovi invarijantni u odnosu na Mebijustove transformacije
-
-- Diskutovati kako je to pomoglo da se uspostavi formalna ekivalentnost između ovih žiro-definicija i starih Poincare definicija
+Since all functions and relations from the language of Tarski's axioms
+coincide between the Poincar\'e disc and the M\"obius gyrovector
+space, and the Poincar\'e disc satisfy all Tarski's axioms for
+hyperbolic geometry, so does the M\"obius gyrovector space and these
+two structures are, although defined very differently, essentially the
+same.
 
 \section{Conclusions and further work}\label{sec:conclusions}
 
+In this paper we described our Isabelle/HOL formalization of
+gyrogroups and gyrovector spaces \cite{ungar-analytic}. These
+non-associative and non-commutative algebraic structures capture the
+essence of both hyperbolic geometry and relativistic physics. Smartly
+hiding complicated computations under just several operation signs
+($\oplus$, $\otimes$) it allows to define analytic geometry in the
+hyperbolic plane in a syntactically almost identical way to the
+Cartesian geometry that models Euclidean plane.
+
+We have formally defined gyrogroups and gyrovector spaces, and proved
+their numerous properties. Then we have defined two most important
+gyrovector spaces: M\"obius, that is inspired by hyperbolic geometry
+and Einstein that is inspired by relativistic physics. Proving that
+these concrete structures satisfy all axioms of gyrovector spaces was
+challenging, since many proofs are missing in the literature (due to
+their technical and computational nature, they are ,,left as an
+exercise to the reader'', or ,,can be done by using computer
+algebra''). Therefore, our formalization might fill a gap in the
+development of gyrovector spaces. We have formally proved that
+M\"obius and Einstein gyrovector spaces are isomorphic. This ,,trick''
+enabled us to have a significantly simpler proof that Einstein
+velocity addition and related operations satisfy the axioms of
+gyrovector spaces, without having to unfold a very complicated
+definition of this operation when proving each axiom.
+
+Finally, we have proved that M\"obius gyrovector is equivalent to the
+Poincar\'e disc model (previously formalized in \cite{amai-poincare}),
+and therefore is a model of Tarski's axioms of hyperbolic
+geometry. Therefore, we have obtained a new formal model of the
+Poincar\'e disc, that has a syntactically much nicer definition than
+the classic one (developed in the projective line $\mathbb{C}P^1$) and
+might be more convenient for further research. Since Einstein
+gyrovector space is isomorphic to the M\"obius one, we have
+effectively formally proved that Einstein's theory of relativity is
+set in hyperbolic geometry (a folklore result, but up to the best of
+our knowledge, not formalized before).
+
+In our further work we plan to enrich the theory of gyrogroups and
+gyrovector spaces by proving additional theorems. We also plan to
+prove the connections between the Einstein gyrospace and the
+Klein-Beltrami model.
 \bibliographystyle{plain}
 \bibliography{gyro} % name your BibTeX data base
 

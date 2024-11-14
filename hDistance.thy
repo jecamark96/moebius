@@ -121,17 +121,17 @@ proof-
     by (simp add: norm_divide)
 qed
 
-definition distance_m_gyr :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" where
- "distance_m_gyr u v = 2 * artanh (Mobius_gyrovector_space.distance u v)"
+definition distance_m_gyro :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> real" where
+ "distance_m_gyro u v = 2 * artanh (Mobius_gyrovector_space.distance u v)"
 
 lemma distance_equiv:
-  shows "distance_m_gyr u v = distance_m (to_complex u) (to_complex v)"
+  shows "distance_m_gyro u v = distance_m (to_complex u) (to_complex v)"
 proof-
   have "(\<llangle>\<ominus>\<^sub>m u \<oplus>\<^sub>m v\<rrangle>) =
          (cmod ((to_complex u - to_complex v) / (1 - cnj (to_complex u) * (to_complex v))))"
-    by transfer (simp add: m_oplus'_def m_ominus'_def norm_divide norm_minus_commute)
+    by transfer (simp add: oplus_m'_def ominus_m'_def norm_divide norm_minus_commute)
   then show ?thesis
-  unfolding distance_m_gyr_def distance_m_def Mobius_gyrovector_space.distance_def gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
+  unfolding distance_m_gyro_def distance_m_def Mobius_gyrovector_space.distance_def gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
   using arcosh_artanh norm_lt_one norm_p.rep_eq
   by force
 qed
@@ -141,8 +141,8 @@ definition blaschke where
 
 lemma
   fixes a z :: complex
-  shows "blaschke a z  = m_oplus' (m_ominus' a) z"
-  unfolding blaschke_def m_oplus'_def m_ominus'_def
+  shows "blaschke a z  = oplus_m' (ominus_m' a) z"
+  unfolding blaschke_def oplus_m'_def ominus_m'_def
   by (simp add: minus_divide_left)
 
 end

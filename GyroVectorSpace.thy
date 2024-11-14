@@ -334,6 +334,7 @@ lemma collinear_transitive:
 lemma collinear_translate':
   shows "x = u \<oplus> t \<otimes> (\<ominus> u \<oplus> v) \<longleftrightarrow> 
         (\<ominus> a \<oplus> x) = (\<ominus> a \<oplus> u) \<oplus> t \<otimes> (\<ominus> (\<ominus> a \<oplus> u) \<oplus> (\<ominus> a \<oplus> v))"
+  thm gyro_translation_2a
   by (metis (no_types, lifting) gyr_misc_2 gyro_right_assoc gyro_translation_2a gyroauto_property oplus_ominus_cancel)
 
 definition translate where

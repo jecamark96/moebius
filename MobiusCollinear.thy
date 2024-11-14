@@ -9,9 +9,9 @@ lemma collinear_0_proportional':
   using assms
 proof transfer
   fix v x
-  assume "cmod v < 1" "cmod x < 1" "v \<noteq> m_ozero'"
+  assume "cmod v < 1" "cmod x < 1" "v \<noteq> ozero_m'"
   then have "v \<noteq> 0"
-    unfolding m_ozero'_def
+    unfolding ozero_m'_def
     by simp
   have "(\<exists>t. x = (otimes'_k t v) * v / cor (cmod v)) \<longleftrightarrow> (\<exists>k :: real. x = k * v)" (is "?lhs \<longleftrightarrow> ?rhs")
   proof
@@ -45,17 +45,17 @@ proof transfer
     show ?lhs
       by auto
   qed
-  then show "(m_ozero' = v \<or> (\<exists>t. x = m_oplus' m_ozero' (otimes' t (m_oplus' (m_ominus' m_ozero') v)))) \<longleftrightarrow>
+  then show "(ozero_m' = v \<or> (\<exists>t. x = oplus_m' ozero_m' (otimes' t (oplus_m' (ominus_m' ozero_m') v)))) \<longleftrightarrow>
         (\<exists> k::real. x = k * v)"
     using \<open>v \<noteq> 0\<close>
-    unfolding m_oplus'_def m_ozero'_def m_ominus'_def otimes'_def
+    unfolding oplus_m'_def ozero_m'_def ominus_m'_def otimes'_def
     by simp
 qed
 
 lemma
   assumes "v \<noteq> 0\<^sub>m"
   shows "Mobius_gyrovector_space.collinear x 0\<^sub>m v \<longleftrightarrow> to_complex x * cnj (to_complex v) = cnj (to_complex x) * to_complex v"
-  using Mobius_gyrodom.to_dom_zero_iff assms cnj_mix_ex_real_k collinear_0_proportional' gyrozero_PoincareDisc_def 
+  using Mobius_gyrocarrier'.to_carrier_zero_iff assms cnj_mix_ex_real_k collinear_0_proportional' gyrozero_PoincareDisc_def
   by fastforce
 
 lemma collinear_0_proportional:
@@ -64,11 +64,11 @@ lemma collinear_0_proportional:
 
 lemma to_complex_0 [simp]:
   shows "to_complex 0\<^sub>m = 0"
-  by transfer (simp add: m_ozero'_def)
+  by transfer (simp add: ozero_m'_def)
 
 lemma to_complex_0_iff [iff]:
   shows "to_complex x = 0 \<longleftrightarrow> x = 0\<^sub>m"
-  by transfer (simp add: m_ozero'_def)
+  by transfer (simp add: ozero_m'_def)
 
 lemma mobius_between_0xy:
   shows "Mobius_gyrovector_space.between 0\<^sub>m x y \<longleftrightarrow> 
@@ -84,9 +84,9 @@ next
     unfolding Mobius_gyrovector_space.between_def gyroplus_PoincareDisc_def gyrozero_PoincareDisc_def gyroinv_PoincareDisc_def
   proof (transfer)
     fix x y
-    assume "cmod y < 1" "y \<noteq> m_ozero'" "cmod x < 1"
+    assume "cmod y < 1" "y \<noteq> ozero_m'" "cmod x < 1"
     then have "y \<noteq> 0"
-      by (simp add: m_ozero'_def)
+      by (simp add: ozero_m'_def)
 
     have "(\<exists>t\<ge>0. t \<le> 1 \<and> x = cor (otimes'_k t y) * y / cor (cmod y)) =
           (\<exists>k\<ge>0. k \<le> 1 \<and> x = cor k * y)" (is "?lhs = ?rhs")
@@ -143,10 +143,10 @@ next
         by auto
     qed
     then show "(\<exists>t\<ge>0. t \<le> 1 \<and>
-                       x = m_oplus' m_ozero' (otimes' t (m_oplus' (m_ominus' m_ozero') y))) =
+                       x = oplus_m' ozero_m' (otimes' t (oplus_m' (ominus_m' ozero_m') y))) =
                (\<exists>k\<ge>0. k \<le> 1 \<and> x = cor k * y)"
       using \<open>y \<noteq> 0\<close>
-      unfolding m_ozero'_def m_oplus'_def m_ominus'_def otimes'_def
+      unfolding ozero_m'_def oplus_m'_def ominus_m'_def otimes'_def
       by simp
   qed
 qed
