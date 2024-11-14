@@ -62,111 +62,115 @@
 
 \begin{document}
 \begin{abstract}
-  In this paper we describe an Isabelle/HOL formalization of
-  non-commu\-ta\-ti\-ve and non-associative algebraic structures
-  called \emph{gyrogroups} and \emph{gyrovector spaces}. These were
-  introduced by Abraham A. Ungar and have deep connections to
+  In this paper, we present an Isabelle/HOL formalization of
+  non-commu\-ta\-ti\-ve and non-associative algebraic structures known
+  as \emph{gyrogroups} and \emph{gyrovector spaces}. These concepts
+  were introduced by Abraham A. Ungar and have deep connections to
   hyperbolic geometry and special relativity. Gyrovector spaces can be
-  used to define models of hyperbolic geometry. In contrast to other
-  models, gyrovector spaces have the advantage that all definitions
-  have remarkable syntactical similarities with normal Euclidean and
-  Cartesian geometry (e.g., points on line between $a$ and $b$ satisfy
-  the equation $a \oplus t\otimes(\ominus a \oplus b)$, while the
-  hyperbolic Pythagorean theorem is given by $a^2\oplus b^2 = c^2$,
-  where $\otimes$, $\oplus$, and $\ominus$ are gyro operations).
+  used to define models of hyperbolic geometry. Unlike other models,
+  gyrovector spaces offer the advantage that all definitions exhibit
+  remarkable syntactical similarities to standard Euclidean and
+  Cartesian geometry (e.g., points on the line between $a$ and $b$
+  satisfy the parametric equation
+  $a \oplus t\otimes(\ominus a \oplus b)$, for $t \in \mathbb{R}$,
+  while the hyperbolic Pythagorean theorem is expressed as
+  $a^2\oplus b^2 = c^2$, where $\otimes$, $\oplus$, and $\ominus$
+  represent gyro operations).
 
-  We first formally define gyrogroups and gyrovector spaces, and prove
-  their numerous properties. Then we formalize M\"obius and Einstein
-  models of these abstract structures and then formally prove that
-  these are equivalent to Poincar\'e and Klen-Beltrami models and
-  satisfy Tarski's geometry axioms for hyperbolic geometry,
+  We begin by formally defining gyrogroups and gyrovector spaces and
+  proving their numerous properties. Next, we formalize M\"obius and
+  Einstein models of these abstract structures, and then demonstrate
+  that these are equivalent to the Poincar\'e and Klein-Beltrami
+  models, satisfying Tarski's geometry axioms for hyperbolic geometry.
+  
 \end{abstract}
 
 \section{Introduction}
 
 Non-Euclidean geometries, including hyperbolic geometry, have been
-studied since the 19th century, and their properties are well
+studied since the 19th century, and their properties are now well
 understood. Applications of hyperbolic geometry in physics have also
-been extensively explored, with findings showing that hyperbolic
+been widely explored, with findings indicating that hyperbolic
 geometry provides the mathematical foundation for the theory of
-special relativity, much as Euclidean geometry underpins classical
+special relativity, just as Euclidean geometry underpins classical
 Newtonian and Galilean mechanics.
 
-Analytic definitions of hyperbolic geometry are typically presented in
-the extended complex plane, relying heavily on linear algebra
+Analytic definitions of hyperbolic geometry are typically framed in
+the extended complex plane, heavily relying on linear algebra
 techniques (such as Hermitian matrices) and hyperbolic trigonometry
-\cite{schwerdtfeger}. In contrast to the Cartesian approach used in
+\cite{schwerdtfeger}. Unlike the Cartesian approach used in
 Euclidean geometry, hyperbolic geometry does not incorporate vectors
-in the same way. Euclidean geometry provides a natural framework for
-vectors: vector addition is associative and commutative, forming an
+in the same manner. In Euclidean geometry, vectors form a natural
+framework: vector addition is associative and commutative, forming an
 Abelian group, and vectors can be scaled by real numbers, creating a
 vector space. The dot (inner) product and vector norm are easily
 defined, establishing the Euclidean metric,
 $d(A, B) = \vert\overrightarrow{AB}\vert$. However, these concepts are
-not as straightforward to define in the hyperbolic plane, resulting in
+not as straightforward to define in the hyperbolic plane, leading to
 analytic definitions of hyperbolic geometry that do not employ vector
-spaces. This creates an inherent asymmetry between the definitions of
-Euclidean and hyperbolic geometry.
+spaces. This results in an inherent asymmetry between the definitions
+of Euclidean and hyperbolic geometry.
 
-In 1988.~Ungar \cite{ungar-analytic} proposed an alternative and
-developed algebraic structures known as gyrogroups and gyrovector
-spaces, enabling the definition and use of ``vectors'' for the
-formalization of hyperbolic geometry. Although operations with these
-``vectors'' do not form traditional vector spaces (vector addition,
-for example, is neither commutative nor associative) the elements,
-called gyrovectors, and their associated operations still satisfy
-enough algebraic properties to allow for a formalism of hyperbolic
-geometry that is syntactically astonishingly similar to the classical
-treatment of Euclidean geometry.
+
+In 1988, Ungar \cite{ungar-analytic} proposed an alternative and
+developed algebraic structures known as \emph{gyrogroups} and
+\emph{gyrovector spaces}, enabling the definition and use of
+``vectors'' for the formalization of hyperbolic geometry. Although
+operations with these ``vectors'' do not form traditional vector
+spaces—vector addition, for instance, is neither commutative nor
+associative—the elements, called gyrovectors, along with their
+associated operations, satisfy enough algebraic properties to allow a
+formalism of hyperbolic geometry that is strikingly similar in syntax
+to the classical treatment of Euclidean geometry.
 
 Interestingly, these structures were first discovered through an
 examination of Einstein's velocity addition laws, which were then
-unified with classical Galilean velocity addition. This revealed a
-profound connection between the special theory of relativity and
-hyperbolic geometry. Experimentally discovered Thomas
-precession\cite{ungar-analytic} was found as a ,,missing link''
-between Einstein's velocity addition formula and the ordinary vector
-addition.
+unified with classical Galilean velocity addition. This unification
+revealed a deep connection between the special theory of relativity
+and hyperbolic geometry. The experimentally discovered Thomas
+precession (also known as Thomas gyration) was identified as a
+``missing link'' between Einstein's velocity addition formula and
+ordinary vector addition.\cite{ungar-analytic}
 
-In this paper we present a formalization of gyrovector spaces and
+In this paper, we present a formalization of gyrovector spaces and
 their connections with hyperbolic geometry and special relativity,
 within the interactive theorem prover Isabelle/HOL.\footnote{The full
-  formalization is available on
-  \url{https://github.com/jecamark96/moebius}}. Machine-verified
-proofs are gaining popularity, and with recent advances in AI, it may
-only be a matter of time before they become the norm. Such proofs are
-particularly valuable in error-prone areas -- we argue that
-non-associative and non-commutative algebras fall into this
-category. Namely, human mathematicians, accustomed to the standard
-laws of groups and vector spaces, may make assumptions in
-pen-and-paper proofs that seem legitimate to those not specifically
-trained to think within non-commutative and non-associative
-structures. Additionally, since most gyrogroup and gyrovector space
-laws are expressed as equalities, automated provers, especially those
-based on term rewriting, can often find proofs that are shorter and
-more elegant than those produced by humans. We will support this claim
-by providing several examples.
+  formalization is available at
+  \url{https://github.com/jecamark96/moebius}} Machine-verified proofs
+are gaining popularity, and with recent advances in AI, it may only be
+a matter of time before they become the norm. Such proofs are
+particularly valuable in areas prone to error; we argue that
+non-associative and non-commutative algebras belong to this category.
+Namely, human mathematicians, accustomed to the standard laws of
+groups and vector spaces, may make assumptions in pen-and-paper proofs
+that seem valid to those not specifically trained to think within
+non-commutative and non-associative structures. Additionally, since
+most gyrogroup and gyrovector space laws are expressed as equalities,
+automated provers, especially those based on term rewriting, often
+find proofs that are shorter and more elegant than those produced by
+humans. We support this claim by providing several examples.
 
-We follow the book \cite{ungar-analytic}, but filling in many
-important details that are missing in the book. This includes making
-the underlying notation more precise, but also providing some proofs
-missing in the book.
+We follow the book \cite{ungar-analytic}, while filling in many
+important details that are omitted in the original text. This includes
+making the underlying notation more precise and providing many proofs
+missing from the book.
 
-The paper is structured as follows. First, we describe a formalization
-of gyrogroups (Section \ref{sec:gyrogroups}) and gyrovector spaces
-(Section \ref{sec:gyrovectorspaces}), defining these abstract
-structures and proving their important properties. In Section
+The paper is structured as follows. First, we describe the
+formalization of gyrogroups (Section \ref{sec:gyrogroups}) and
+gyrovector spaces (Section \ref{sec:gyrovectorspaces}), defining these
+abstract structures and proving their essential properties. In Section
 \ref{sec:mobiuseinstein}, we formally demonstrate that M\"obius
-transformations, traditionally used for defining hyperbolic geometry,
+transformations, traditionally used to define hyperbolic geometry,
 give rise to gyrogroup and gyrovector space structures (formalizing
 the so-called M\"obius gyrovector spaces). We also formally prove that
-Einstein's velocity addition satisfies the same structure (formalizing
+Einstein's velocity addition follows the same structure (formalizing
 the so-called Einstein gyrovector spaces). In Section
-\ref{sec:models}, we use gyrovector spaces to define hyperbolic
+\ref{sec:models}, we employ gyrovector spaces to define hyperbolic
 geometry in a syntactically elegant manner. We then prove that these
-definitions yield models equivalent to the Poincar'e and
+definitions yield models equivalent to the Poincar\'e and
 Klein-Beltrami disks. Finally, in Section \ref{sec:conclusions}, we
-draw conclusions and propose possible directions for further work
+present our conclusions and propose potential directions for future
+work.
 
 \subsection{Related work}
 
@@ -1612,81 +1616,85 @@ properties and were very easy to prove.
 
 \section{Modelling hyperbolic geometry}\label{sec:models}
 
-We have shown that Mo\"bius and Einstein addition, gyration and
-scaling give rise to gyrovector space structures. In this section we
-shall show that these structures are exactly the same as well known
-models of hyperbolic geometry. We have formally shown that M\"obius
-gyrovector space is essentially the same as the Poincar\'e disc model
-(formally described in \cite{amai-poincare}). Since Einstein velocity
-addition is isomorphic to Mo\"bius addition (as we have formally shown
-in the previous section), relativistic physics is set in hyperbolic
-geometry. It can be shown that Einstein gyrovector space is
-essentially the same as the Klein-Beltrami model of hyperbolic
-geometry (formally described in
+We have shown that M\"obius and Einstein addition, along with gyration
+and scaling, give rise to gyrovector space structures. In this
+section, we will demonstrate that these structures correspond
+precisely to well-known models of hyperbolic geometry. Specifically,
+we will formally show that the M\"obius gyrovector space is
+essentially equivalent to the Poincar\'e disc model (formally
+described in \cite{amai-poincare}). Since Einstein velocity addition
+is isomorphic to M\"obius addition (as we formally established in the
+previous section), this implies that relativistic physics is grounded
+in hyperbolic geometry. It can also be shown that the Einstein
+gyrovector space is essentially equivalent to the Klein-Beltrami model
+of hyperbolic geometry (formally described in
 \cite{makarios,harrison2005hol,coghetto2018klein}).
 
-To show that Mo\"bius gyrovector space is a model of hyperbolic
-geometry, it must be shown that it satisfies all axioms of the
-absolute geometry, and the negation of the parallels postulate. These
-axioms can be, for example, Tarski's axioms\cite{tarski}. In
-\cite{amai-poincare} it was proved that the Poincar\'e disc, defined
-by using homogenous coordinates in the projective space
-$\mathbb{C}P^1$ satisfies these axioms. Instead of directly proving
-that M\"obius gyrovector space notions (points, collinearity,
-betweenness, distance, congruence) satisfy Tarski's axioms, we have
-shown that they are equivalent to the correpsonding notions in the
-Poincar\'e disc model. Therefore we know that they must satisfy all
-the axioms, but additionally we know that M\"obius gyrovector space is
-essentially the same as the Poincar\'e disc model.
+To demonstrate that the M\"obius gyrovector space is a valid model of
+hyperbolic geometry, we must show that it satisfies all axioms of
+absolute geometry and the negation of the parallel postulate. These
+axioms can be taken, for example, as Tarski's axioms \cite{tarski}. In
+\cite{amai-poincare}, it was proven that the Poincar\'e disc, defined
+using homogeneous coordinates in projective space $\mathbb{C}P^1$,
+satisfies these axioms. Instead of directly proving that M\"obius
+gyrovector space concepts (such as points, collinearity, betweenness,
+distance, and congruence) satisfy Tarski's axioms, we have shown that
+they are equivalent to the corresponding concepts in the Poincar\'e
+disc model. Consequently, we know that they must satisfy all the
+axioms, and additionally, we know that the M\"obius gyrovector space
+is fundamentally the same as the Poincar\'e disc model.
 
-In \cite{amai-poincare} h-points in the Poincare disc were defined as
-a subtype of $\mathbb{C}P^1$ which have the norm less than 1. Points
-in $\mathbb{C}P^1$ are represented by pairs of complex numbers (their
-homogenous coordinates). Since all points within the Poincar\'e disc
+In \cite{amai-poincare}, h-points in the Poincar\'e disc were defined
+as a subtype of $\mathbb{C}P^1$ with norm less than 1. Points in
+$\mathbb{C}P^1$ are represented by pairs of complex numbers (their
+homogeneous coordinates). Since all points within the Poincar\'e disc
 are finite (note that $\mathbb{C}P^1$ contains both finite and
-infinite points), these points can be identified by the complex
-numbers in the unit disc. Therefore we shall identify the unit disc
+infinite points), these points can be identified with the complex
+numbers in the unit disc. Thus, we identify the unit disc
 $\mathbb{P}'$ set in $\mathbb{C}P^1$ defined in \cite{amai-poincare}
-and the unit disc $\mathbb{P}$ set in $\mathbb{C}$ defined in this
-paper (formally, there is a natural bijection between the two abstract
-types \texttt{PoincareDisc} and \texttt{PoincareDisc'}).
+with the unit disc $\mathbb{P}$ set in $\mathbb{C}$ as defined in the
+present paper (formally, there exists a natural bijection between the
+two abstract types \texttt{PoincareDisc} and \texttt{PoincareDisc'}).
 
-An essential feature of each model of hyperbolic geometry is the
-distance function. In \cite{amai-poincare} it was proved that the
-distance between points in $\mathbb{P'}$ represented by homogenous
-coordinates of complex numbers $u$ and $v$ (with norm less than 1) can
-be calculated by:
+A fundamental aspect of each model of hyperbolic geometry is the
+distance function. In \cite{amai-poincare}, it was shown that the
+distance between points in $\mathbb{P'}$, represented by the
+homogeneous coordinates of complex numbers $u$ and $v$ (with norm less
+than 1), can be calculated by:
 
 $$d'(u, v) = \arccosh\left(1 + 2\frac{\lVert u-v \rVert^2}{(1-\lVert u \rVert^2)(1-\lVert v \rVert^2)}\right).$$
 
-In Section \ref{sec:basic_geometry} gyrodistance of two points in a
-gyrovector space is defined as
-$d(u, v) = \llangle \ominus u \oplus v\rrangle$. Gyrodistance $d$ and
-distance are not the same, but they are connected by the relation
-$d'(u, v) = 2\atanh(d(u, v))$. We have proved this relation formally
-(the proof is done by expressing inverse trigonometric functions using
-logarithms and them applying calculations and expression
-simplifications). Therefore, if we define distance of two points in
-$\mathbb{P}$ by $D(u, v) = 2\atanh(d(u, v))$ we obtain exactly the
-same distance as in the Poincar\'e disc model $\mathbb{P'}$, making
-the two models geometrically the same. Namely, since collinearity,
-lines, betweenness and other important geometric notions can be
-expressed using distance (for examples, lines can be defined as
-geodesics), having the same distance guarantees the same geometry.
-However, we did not rely on this, but we explicitly proved that
-betweenness and collinearity in two models coincide.
+In Section \ref{sec:basic_geometry}, the gyrodistance between two
+points in a gyrovector space is defined as
+$d(u, v) = \llangle \ominus u \oplus v \rrangle$. Although
+gyrodistance $d$ and distance $d'$ are not identical, they are related
+by the expression $d'(u, v) = 2 \atanh(d(u, v))$. We have formally
+proved this relation (the proof involves expressing inverse
+trigonometric functions using logarithms, followed by calculation and
+expression simplification). Consequently, if we define the distance
+between two points in $\mathbb{P}$ as
+$D(u, v) = 2 \atanh(\llangle \ominus u \oplus v \rrangle)$, we obtain
+precisely the same distance as in the Poincar\'e disc model
+$\mathbb{P'}$, making the two models geometrically equivalent.
+Namely, since key geometric notions such as collinearity, lines,
+betweenness, and others can be expressed in terms of distance (for
+example, lines can be defined as geodesics), having an identical
+distance function ensures the same underlying geometry. However,
+rather than relying solely on this fact, we explicitly proved that
+betweenness and collinearity coincide in both models.
 
-Let us show that the betweenness relations coincide (collinearity is
-done in a very similar way). Recall that betweenness in gyrovector
-spaces is defined in Section \ref{sec:basic_geometry}. Point
-$x \in \mathbb{P}$ is between points $u, v \in \mathbb{P}$ (let us
-denote this by $\mathfrak{B}(u, x, v)$) if there is a real number
-$t \in [0, 1]$ such that
-$x = u \oplus t \otimes (\ominus u \oplus v)$. On the other hand, in
-\cite{amai-poincare}, the point $x \in \mathbb{P}'$ is between points
-$u, v \in \mathbb{P}'$ (let us denote this by
-$\mathfrak{B}'(u, x, v)$) iff the cross-ratio of points $u$, $x$, $v$,
-and inversion of $x$ is a real negative number.
+Let us demonstrate that the betweenness relations coincide (the proof
+for collinearity is done in a very similar way). Recall that
+betweenness in gyrovector spaces is defined in Section
+\ref{sec:basic_geometry}: point $x \in \mathbb{P}$ is between points
+$u, v \in \mathbb{P}$ (we shall this by $\mathfrak{B}(u, x, v)$) if
+there exists a real number $t \in [0, 1]$ such that
+$x = u \oplus t \otimes (\ominus u \oplus v)$. In contrast, in
+\cite{amai-poincare}, a point $x \in \mathbb{P}'$ is between points
+$u, v \in \mathbb{P}'$ (we shall denote this by
+$\mathfrak{B}'(u, x, v)$) if and only if the cross-ratio of the points
+$u$, $x$, $v$, and the inversion of $x$ wrt. the unit circle is a real
+negative number.
 
 \begin{theorem}
   For any three points $u, v, x \in \mathbb{P}$ it holds that
@@ -1694,108 +1702,107 @@ and inversion of $x$ is a real negative number.
   $$\mathfrak{B}(u, x, v) \longleftrightarrow \mathfrak{B}'(u, x, v).$$  
 \end{theorem}
 \begin{proof}
-  The proof would be very hard if we do not use
-  ,,without-loss-of-generality'' reasoning. Let us consider the
-  translation $z \mapsto \ominus u \oplus z$. As, it was proved in
-  Section \ref{sec:basic_geometry}, betweenness is invariant under
-  such translations it holds that
+The proof would be very challenging without using
+``without-loss-of-generality'' reasoning. Consider the translation
+$z \mapsto \ominus u \oplus z$. As proved in Section
+\ref{sec:basic_geometry}, since betweenness is invariant under such
+translations, we have
 
-  $$\mathfrak{B}(u, x, v) \longleftrightarrow \mathfrak{B}(\ominus u\oplus u, \ominus u \oplus x, \ominus u\oplus v) \longleftrightarrow \mathfrak{B}(0, x', v'),$$
+$$\mathfrak{B}(u, x, v) \longleftrightarrow \mathfrak{B}(\ominus u \oplus u, \ominus u \oplus x, \ominus u \oplus v) \longleftrightarrow \mathfrak{B}(0, x', v'),$$
 
-  \noindent where $x' = \ominus u \oplus x$ and
-  $v' = \ominus u \oplus v$.
-  
-  On the other hand, it is easily proved that on the representation
-  type of complex numbers, this translation is expressed by:
+\noindent where $x' = \ominus u \oplus x$ and
+$v' = \ominus u \oplus v$.
 
-  $$z \mapsto \frac{z - u}{1 - \overline{a}u}$$
+On the other hand, it can simply be shown that, in the representation
+type of complex numbers, this translation is expressed by
 
-  In \cite{amai-poincare} it was formally proved that such, so called
-  Blaschke-factors, preserve many relations, including betweenness.
-  
-  Therefore it holds
+$$z \mapsto \frac{z - u}{1 - \overline{u}z}.$$
 
-  $$\mathfrak{B}'(u, x, v) \longleftrightarrow \mathfrak{B}'(0, x', v').$$
+In \cite{amai-poincare}, it was formally demonstrated that these
+transformations, known as Blaschke factors, preserve many relations,
+including betweenness. Therefore, we have
 
-  Therefore, the problem reduces to comparing the two relations in the
-  special case when the first point is 0, i.e., proving that
-  $\mathfrak{B}(0, x', v') \longleftrightarrow \mathfrak{B}(0, x',
-  v')$.
+$$\mathfrak{B}'(u, x, v) \longleftrightarrow \mathfrak{B}'(0, x', v').$$
 
-  The case $v'=0$ is trivial, so we assume that $v' \neq 0$. From the
-  definition of $\mathfrak{B}$ the left hand side holds iff there
-  exists $t \in [0, 1]$ such that $x' = t \otimes v'$. By using the
-  characterization of $\otimes$ we show that this holds iff
+Thus, the problem reduces to comparing the two betweenness relations
+in the special case when the first point is 0, i.e., proving that
+$\mathfrak{B}(0, x', v') \longleftrightarrow \mathfrak{B}'(0, x',
+v')$.
 
-  $$x' = \frac{\tanh(t \cdot \atanh (\lVert v'\rVert))}{\lVert
-    v'\rVert}v'.$$
+The case where $v' = 0$ is trivial, so we assume that $v' \neq
+0$. From the definition of $\mathfrak{B}$, the left-hand side holds if
+and only if there exists $t \in [0, 1]$ such that $x' = t \otimes
+v'$. Using the characterization of $\otimes$, this holds if and only
+if
 
-  By analyzing the properties of hyperbolic trigonometric functions we
-  can see that $t \in [0, 1]$ iff
-  $\frac{\tanh(t \cdot \atanh (\lVert v'\rVert))}{\lVert v'\rVert} \in
-  [0, 1]$. Therefore,
+$$x' = \frac{\tanh(t \cdot \atanh (\lVert v' \rVert))}{\lVert v' \rVert} v'.$$
 
-  $$\mathfrak{B}(0, x', v') \longleftrightarrow (\exists t' \in [0, 1])(x' = t' \cdot v').$$
+By analyzing the properties of hyperbolic trigonometric functions, we
+see that $t \in [0, 1]$ if and only if
+$\frac{\tanh(t \cdot \atanh (\lVert v' \rVert))}{\lVert v' \rVert} \in
+[0, 1]$. Therefore,
 
-  But in \cite{amai-poincare} it was formally proved that this exact
-  condition is equivalent to point $x'$ being between $0$ and $v'$ in
-  the definition of betweenness based on cross-ratio, i.e.
+$$\mathfrak{B}(0, x', v') \longleftrightarrow (\exists t' \in [0, 1])(x' = t' \cdot v').$$
 
-  $$(\exists t' \in [0, 1])(x' = t' \cdot v') \longleftrightarrow \mathfrak{B}'(0, x', v').$$
+In \cite{amai-poincare}, it was formally proven that this condition is
+equivalent to $x'$ being between $0$ and $v'$ according to the
+cross-ratio-based definition of betweenness, i.e.,
 
-  This concludes the proof.
+$$(\exists t' \in [0, 1])(x' = t' \cdot v') \longleftrightarrow \mathfrak{B}'(0, x', v').$$
+
+This concludes the proof.
 \end{proof}
 
 Since all functions and relations from the language of Tarski's axioms
 coincide between the Poincar\'e disc and the M\"obius gyrovector
-space, and the Poincar\'e disc satisfy all Tarski's axioms for
-hyperbolic geometry, so does the M\"obius gyrovector space and these
-two structures are, although defined very differently, essentially the
-same.
+space, and the Poincar\'e disc satisfies all of Tarski's axioms for
+hyperbolic geometry, it follows that the M\"obius gyrovector space
+does as well. Thus, although these two structures are defined very
+differently, they are essentially the same.
 
 \section{Conclusions and further work}\label{sec:conclusions}
 
-In this paper we described our Isabelle/HOL formalization of
+In this paper, we described our Isabelle/HOL formalization of
 gyrogroups and gyrovector spaces \cite{ungar-analytic}. These
 non-associative and non-commutative algebraic structures capture the
-essence of both hyperbolic geometry and relativistic physics. Smartly
-hiding complicated computations under just several operation signs
-($\oplus$, $\otimes$) it allows to define analytic geometry in the
-hyperbolic plane in a syntactically almost identical way to the
-Cartesian geometry that models Euclidean plane.
+essence of both hyperbolic geometry and relativistic physics. By
+cleverly hiding complicated computations under a few operation symbols
+($\oplus$, $\otimes$), they allow for the definition of analytic
+geometry in the hyperbolic plane in a syntactically almost identical
+way to the Cartesian geometry that models the Euclidean plane.
 
-We have formally defined gyrogroups and gyrovector spaces, and proved
-their numerous properties. Then we have defined two most important
-gyrovector spaces: M\"obius, that is inspired by hyperbolic geometry
-and Einstein that is inspired by relativistic physics. Proving that
-these concrete structures satisfy all axioms of gyrovector spaces was
-challenging, since many proofs are missing in the literature (due to
-their technical and computational nature, they are ,,left as an
-exercise to the reader'', or ,,can be done by using computer
-algebra''). Therefore, our formalization might fill a gap in the
-development of gyrovector spaces. We have formally proved that
-M\"obius and Einstein gyrovector spaces are isomorphic. This ,,trick''
-enabled us to have a significantly simpler proof that Einstein
-velocity addition and related operations satisfy the axioms of
-gyrovector spaces, without having to unfold a very complicated
-definition of this operation when proving each axiom.
+We have formally defined gyrogroups and gyrovector spaces, proving
+their numerous properties. Next, we defined two important gyrovector
+spaces: M\"obius, inspired by hyperbolic geometry, and Einstein,
+inspired by relativistic physics. Proving that these concrete
+structures satisfy all the axioms of gyrovector spaces was
+challenging, as many proofs are missing in the literature (often left
+as ``exercises for the reader'' or ``left to be done with computer
+algebra'' due to their technical and computational nature). Thus, our
+formalization may help fill a gap in the literature about gyrovector
+spaces. We have formally proved that M\"obius and Einstein gyrovector
+spaces are isomorphic. This result enabled a significantly simpler
+proof that Einstein's velocity addition and related operations satisfy
+the axioms of gyrovector spaces, without the need to unfold the
+complicated definition of this operation for each axiom.
 
-Finally, we have proved that M\"obius gyrovector is equivalent to the
-Poincar\'e disc model (previously formalized in \cite{amai-poincare}),
-and therefore is a model of Tarski's axioms of hyperbolic
-geometry. Therefore, we have obtained a new formal model of the
-Poincar\'e disc, that has a syntactically much nicer definition than
-the classic one (developed in the projective line $\mathbb{C}P^1$) and
-might be more convenient for further research. Since Einstein
-gyrovector space is isomorphic to the M\"obius one, we have
-effectively formally proved that Einstein's theory of relativity is
-set in hyperbolic geometry (a folklore result, but up to the best of
-our knowledge, not formalized before).
+Finally, we proved that the M\"obius gyrovector space is equivalent to
+the Poincar\'e disc model (previously formalized in
+\cite{amai-poincare}), and therefore is a model of Tarski's axioms for
+hyperbolic geometry. This yields a new formal model of the Poincar\'e
+disc, with a syntactically much cleaner definition than the classical
+one (developed in the projective line $\mathbb{C}P^1$) and potentially
+more convenient for further research. Since the Einstein gyrovector
+space is isomorphic to the M\"obius one, we have effectively formally
+proved that Einstein's theory of relativity is set in hyperbolic
+geometry (a well-known, folklore, result, but to the best of our
+knowledge, not formalized previously).
 
-In our further work we plan to enrich the theory of gyrogroups and
+In our future work, we plan to enrich the theory of gyrogroups and
 gyrovector spaces by proving additional theorems. We also plan to
-prove the connections between the Einstein gyrospace and the
+establish the connections between the Einstein gyrospace and the
 Klein-Beltrami model.
+
 \bibliographystyle{plain}
 \bibliography{gyro} % name your BibTeX data base
 
