@@ -1,0 +1,362 @@
+%% BioMed_Central_Bib_Style_v1.01
+
+\begin{thebibliography}{23}
+% BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
+\ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
+\ifx \binits  \undefined \def \binits#1{#1}\fi
+\ifx \bauthor  \undefined \def \bauthor#1{#1}\fi
+\ifx \batitle  \undefined \def \batitle#1{#1}\fi
+\ifx \bjtitle  \undefined \def \bjtitle#1{#1}\fi
+\ifx \bvolume  \undefined \def \bvolume#1{\textbf{#1}}\fi
+\ifx \byear  \undefined \def \byear#1{#1}\fi
+\ifx \bissue  \undefined \def \bissue#1{#1}\fi
+\ifx \bfpage  \undefined \def \bfpage#1{#1}\fi
+\ifx \blpage  \undefined \def \blpage #1{#1}\fi
+\ifx \burl  \undefined \def \burl#1{\textsf{#1}}\fi
+\ifx \doiurl  \undefined \def \doiurl#1{\url{https://doi.org/#1}}\fi
+\ifx \betal  \undefined \def \betal{\textit{et al.}}\fi
+\ifx \binstitute  \undefined \def \binstitute#1{#1}\fi
+\ifx \binstitutionaled  \undefined \def \binstitutionaled#1{#1}\fi
+\ifx \bctitle  \undefined \def \bctitle#1{#1}\fi
+\ifx \beditor  \undefined \def \beditor#1{#1}\fi
+\ifx \bpublisher  \undefined \def \bpublisher#1{#1}\fi
+\ifx \bbtitle  \undefined \def \bbtitle#1{#1}\fi
+\ifx \bedition  \undefined \def \bedition#1{#1}\fi
+\ifx \bseriesno  \undefined \def \bseriesno#1{#1}\fi
+\ifx \blocation  \undefined \def \blocation#1{#1}\fi
+\ifx \bsertitle  \undefined \def \bsertitle#1{#1}\fi
+\ifx \bsnm \undefined \def \bsnm#1{#1}\fi
+\ifx \bsuffix \undefined \def \bsuffix#1{#1}\fi
+\ifx \bparticle \undefined \def \bparticle#1{#1}\fi
+\ifx \barticle \undefined \def \barticle#1{#1}\fi
+\bibcommenthead
+\ifx \bconfdate \undefined \def \bconfdate #1{#1}\fi
+\ifx \botherref \undefined \def \botherref #1{#1}\fi
+\ifx \url \undefined \def \url#1{\textsf{#1}}\fi
+\ifx \bchapter \undefined \def \bchapter#1{#1}\fi
+\ifx \bbook \undefined \def \bbook#1{#1}\fi
+\ifx \bcomment \undefined \def \bcomment#1{#1}\fi
+\ifx \oauthor \undefined \def \oauthor#1{#1}\fi
+\ifx \citeauthoryear \undefined \def \citeauthoryear#1{#1}\fi
+\ifx \endbibitem  \undefined \def \endbibitem {}\fi
+\ifx \bconflocation  \undefined \def \bconflocation#1{#1}\fi
+\ifx \arxivurl  \undefined \def \arxivurl#1{\textsf{#1}}\fi
+\csname PreBibitemsHook\endcsname
+
+%%% 1
+\bibitem[\protect\citeauthoryear{Schwerdtfeger}{1979}]{schwerdtfeger}
+\begin{bbook}
+\bauthor{\bsnm{Schwerdtfeger}, \binits{H.}}:
+\bbtitle{Geometry of Complex Numbers: Circle Geometry, Moebius Transformation,
+  Non-euclidean Geometry}.
+\bpublisher{Courier Corporation}, \blocation{???}
+(\byear{1979})
+\end{bbook}
+\endbibitem
+
+%%% 2
+\bibitem[\protect\citeauthoryear{U.}{2005}]{ungar-analytic}
+\begin{bchapter}
+\bauthor{\bsnm{U.}, \binits{A.A.}}:
+\bctitle{Analytic hyperbolic geometry: Mathematical foundations and
+  applications}.
+(\byear{2005}).
+\burl{https://api.semanticscholar.org/CorpusID:118184283}
+\end{bchapter}
+\endbibitem
+
+%%% 3
+\bibitem[\protect\citeauthoryear{Tarski and Givant}{1999}]{tarski}
+\begin{barticle}
+\bauthor{\bsnm{Tarski}, \binits{A.}},
+\bauthor{\bsnm{Givant}, \binits{S.}}:
+\batitle{Tarski's system of geometry}.
+\bjtitle{Bulletin of Symbolic Logic}
+\bvolume{5},
+\bfpage{175}--\blpage{214}
+(\byear{1999})
+\end{barticle}
+\endbibitem
+
+%%% 4
+\bibitem[\protect\citeauthoryear{Narboux}{2006}]{narboux-tarski}
+\begin{bchapter}
+\bauthor{\bsnm{Narboux}, \binits{J.}}:
+\bctitle{Mechanical theorem proving in tarski’s geometry},
+pp. \bfpage{139}--\blpage{156}
+(\byear{2006}).
+\doiurl{10.1007/978-3-540-77356-6_9}
+\end{bchapter}
+\endbibitem
+
+%%% 5
+\bibitem[\protect\citeauthoryear{Magaud et~al.}{2008}]{coq-projective}
+\begin{barticle}
+\bauthor{\bsnm{Magaud}, \binits{N.}},
+\bauthor{\bsnm{Narboux}, \binits{J.}},
+\bauthor{\bsnm{Schreck}, \binits{P.}}:
+\batitle{Formalizing projective plane geometry in coq}.
+\bjtitle{Proceedings of Automated Deduction in Geometry (ADG'08)}
+\bvolume{6301},
+\bfpage{141}--\blpage{162}
+(\byear{2008})
+\end{barticle}
+\endbibitem
+
+%%% 6
+\bibitem[\protect\citeauthoryear{Braun et~al.}{2016}]{hilbert-to-tarski}
+\begin{bchapter}
+\bauthor{\bsnm{Braun}, \binits{G.}},
+\bauthor{\bsnm{Boutry}, \binits{P.}},
+\bauthor{\bsnm{Narboux}, \binits{J.}}:
+\bctitle{From hilbert to tarski}.
+In: \bbtitle{Eleventh International Workshop on Automated Deduction in
+  Geometry}.
+\bsertitle{Proceedings of ADG 2016},
+p. \bfpage{19},
+\bconflocation{Strasbourg, France}
+(\byear{2016}).
+\burl{https://inria.hal.science/hal-01332044}
+\end{bchapter}
+\endbibitem
+
+%%% 7
+\bibitem[\protect\citeauthoryear{Boutry et~al.}{2015}]{coq-parallels}
+\begin{botherref}
+\oauthor{\bsnm{Boutry}, \binits{P.}},
+\oauthor{\bsnm{Narboux}, \binits{J.}},
+\oauthor{\bsnm{Schreck}, \binits{P.}}:
+Parallel postulates and decidability of intersection of lines: a mechanized
+  study within Tarski's system of geometry.
+working paper or preprint
+(2015).
+\url{https://inria.hal.science/hal-01178236}
+\end{botherref}
+\endbibitem
+
+%%% 8
+\bibitem[\protect\citeauthoryear{Braun and Narboux}{2012}]{tarski-to-hilbert}
+\begin{bchapter}
+\bauthor{\bsnm{Braun}, \binits{G.}},
+\bauthor{\bsnm{Narboux}, \binits{J.}}:
+\bctitle{From tarski to hilbert}.
+In: \beditor{\bsnm{Ida}, \binits{T.}},
+\beditor{\bsnm{Fleuriot}, \binits{J.}} (eds.)
+\bbtitle{Automated Deduction in Geometry 2012},
+vol. \bseriesno{7993},
+pp. \bfpage{89}--\blpage{109}.
+\bpublisher{Springer},
+\blocation{Edinburgh, United Kingdom}
+(\byear{2012}).
+\doiurl{10.1007/978-3-642-40672-0\_7} .
+\bcomment{Jacques Fleuriot}.
+\burl{https://inria.hal.science/hal-00727117}
+\end{bchapter}
+\endbibitem
+
+%%% 9
+\bibitem[\protect\citeauthoryear{Petrović and Marić}{2012}]{adg-analytic}
+\begin{bchapter}
+\bauthor{\bsnm{Petrović}, \binits{D.}},
+\bauthor{\bsnm{Marić}, \binits{F.}}:
+\bctitle{{Formalizing Analytic Geometries}}.
+In: \bbtitle{Automated Deduction in Geometry (ADG 2012)}
+(\byear{2012})
+\end{bchapter}
+\endbibitem
+
+%%% 10
+\bibitem[\protect\citeauthoryear{Boutry et~al.}{2019}]{aritmetization}
+\begin{barticle}
+\bauthor{\bsnm{Boutry}, \binits{P.}},
+\bauthor{\bsnm{Braun}, \binits{G.}},
+\bauthor{\bsnm{Narboux}, \binits{J.}}:
+\batitle{Formalization of the arithmetization of euclidean plane geometry and
+  applications}.
+\bjtitle{Journal of Symbolic Computation}
+\bvolume{90},
+\bfpage{149}--\blpage{168}
+(\byear{2019})
+\doiurl{10.1016/j.jsc.2018.04.007}
+\end{barticle}
+\endbibitem
+
+%%% 11
+\bibitem[\protect\citeauthoryear{Makarios}{2012}]{makarios}
+\begin{botherref}
+\oauthor{\bsnm{Makarios}, \binits{T.J.M.}}:
+{A Mechanical Verification of the Independence of Tarski's Euclidean Axiom}
+(2012)
+\doiurl{10.26686/wgtn.16999462}
+\end{botherref}
+\endbibitem
+
+%%% 12
+\bibitem[\protect\citeauthoryear{Harrison}{2005}]{harrison2005hol}
+\begin{bchapter}
+\bauthor{\bsnm{Harrison}, \binits{J.}}:
+\bctitle{A {HOL} theory of {E}uclidean space}.
+In: \beditor{\bsnm{Hurd}, \binits{J.}},
+\beditor{\bsnm{Melham}, \binits{T.}} (eds.)
+\bbtitle{Theorem Proving in Higher Order Logics, 18th International Conference,
+  TPHOLs 2005}.
+\bsertitle{Lecture Notes in Computer Science},
+vol. \bseriesno{3603}.
+\bpublisher{Springer},
+\blocation{Oxford, UK}
+(\byear{2005})
+\end{bchapter}
+\endbibitem
+
+%%% 13
+\bibitem[\protect\citeauthoryear{Coghetto}{2018}]{coghetto2018klein}
+\begin{barticle}
+\bauthor{\bsnm{Coghetto}, \binits{R.}}:
+\batitle{Klein-beltrami model. part i}.
+\bjtitle{Formalized Mathematics}
+\bvolume{26},
+\bfpage{21}--\blpage{32}
+(\byear{2018})
+\doiurl{10.2478/forma-2018-0003}
+\end{barticle}
+\endbibitem
+
+%%% 14
+\bibitem[\protect\citeauthoryear{Marić and
+  Petrović}{2015}]{amai-complexplane}
+\begin{barticle}
+\bauthor{\bsnm{Marić}, \binits{F.}},
+\bauthor{\bsnm{Petrović}, \binits{D.}}:
+\batitle{Formalizing complex plane geometry}.
+\bjtitle{Annals of Mathematics and Artificial Intelligence}
+\bvolume{74}(\bissue{3}),
+\bfpage{271}--\blpage{308}
+(\byear{2015})
+\doiurl{10.1007/s10472-014-9436-4}
+\end{barticle}
+\endbibitem
+
+%%% 15
+\bibitem[\protect\citeauthoryear{Simić et~al.}{2021}]{amai-poincare}
+\begin{barticle}
+\bauthor{\bsnm{Simić}, \binits{D.}},
+\bauthor{\bsnm{Marić}, \binits{F.}},
+\bauthor{\bsnm{Boutry}, \binits{P.}}:
+\batitle{Formalization of the poincaré disc model of hyperbolic geometry}.
+\bjtitle{Journal of Automated Reasoning}
+\bvolume{65}(\bissue{1}),
+\bfpage{31}--\blpage{73}
+(\byear{2021})
+\doiurl{10.1007/s10817-020-09551-2}
+\end{barticle}
+\endbibitem
+
+%%% 16
+\bibitem[\protect\citeauthoryear{Andréka et~al.}{2011}]{logical-relativity}
+\begin{botherref}
+\oauthor{\bsnm{Andréka}, \binits{H.}},
+\oauthor{\bsnm{Németi}, \binits{I.}},
+\oauthor{\bsnm{Madarász}, \binits{J.X.}},
+\oauthor{\bsnm{Székely}, \binits{G.}}:
+On Logical Analysis of Relativity Theories
+(2011).
+\url{https://arxiv.org/abs/1105.0885}
+\end{botherref}
+\endbibitem
+
+%%% 17
+\bibitem[\protect\citeauthoryear{Kapustin}{2013}]{lifeq}
+\begin{botherref}
+\oauthor{\bsnm{Kapustin}, \binits{A.}}:
+Is there life beyond Quantum Mechanics?
+(2013).
+\url{https://arxiv.org/abs/1303.6917}
+\end{botherref}
+\endbibitem
+
+%%% 18
+\bibitem[\protect\citeauthoryear{Fleuriot}{2001}]{jf}
+\begin{botherref}
+\oauthor{\bsnm{Fleuriot}, \binits{J.}}:
+A combination of geometry theorem proving and nonstandard analysis with
+  application to newton’s principia
+(2001)
+\doiurl{10.1007/978-0-85729-329-9}
+\end{botherref}
+\endbibitem
+
+%%% 19
+\bibitem[\protect\citeauthoryear{Wenzel}{2002}]{isar}
+\begin{bchapter}
+\bauthor{\bsnm{Wenzel}, \binits{M.}}:
+\bctitle{Isabelle, isar - a versatile environment for human readable formal
+  proof documents}.
+(\byear{2002}).
+\burl{https://api.semanticscholar.org/CorpusID:1495755}
+\end{bchapter}
+\endbibitem
+
+%%% 20
+\bibitem[\protect\citeauthoryear{Ballarin}{2006}]{isabelle-locales}
+\begin{bchapter}
+\bauthor{\bsnm{Ballarin}, \binits{C.}}:
+\bctitle{Interpretation of locales in isabelle: Theories and proof contexts}.
+In: \bbtitle{Mathematical Knowledge Management, MKM, Proceedings},
+pp. \bfpage{31}--\blpage{43}
+(\byear{2006})
+\end{bchapter}
+\endbibitem
+
+%%% 21
+\bibitem[\protect\citeauthoryear{Haftmann and Wenzel}{2007}]{isabelle-classes}
+\begin{bchapter}
+\bauthor{\bsnm{Haftmann}, \binits{F.}},
+\bauthor{\bsnm{Wenzel}, \binits{M.}}:
+\bctitle{Constructive type classes in isabelle}.
+In: \beditor{\bsnm{Altenkirch}, \binits{T.}},
+\beditor{\bsnm{McBride}, \binits{C.}} (eds.)
+\bbtitle{Types for Proofs and Programs},
+pp. \bfpage{160}--\blpage{174}.
+\bpublisher{Springer},
+\blocation{Berlin, Heidelberg}
+(\byear{2007})
+\end{bchapter}
+\endbibitem
+
+%%% 22
+\bibitem[\protect\citeauthoryear{Huffman and
+  Kun{\v{c}}ar}{2013}]{isabelle-lifting-transfer}
+\begin{bchapter}
+\bauthor{\bsnm{Huffman}, \binits{B.}},
+\bauthor{\bsnm{Kun{\v{c}}ar}, \binits{O.}}:
+\bctitle{{Lifting and Transfer: A Modular Design for Quotients in
+  Isabelle/HOL}}.
+In: \beditor{\bsnm{Gonthier}, \binits{G.}},
+\beditor{\bsnm{Norrish}, \binits{M.}} (eds.)
+\bbtitle{Certified Programs and Proofs},
+pp. \bfpage{131}--\blpage{146}.
+\bpublisher{Springer},
+\blocation{Cham}
+(\byear{2013})
+\end{bchapter}
+\endbibitem
+
+%%% 23
+\bibitem[\protect\citeauthoryear{B\"{o}hme and Nipkow}{2010}]{sledgehammer}
+\begin{bchapter}
+\bauthor{\bsnm{B\"{o}hme}, \binits{S.}},
+\bauthor{\bsnm{Nipkow}, \binits{T.}}:
+\bctitle{Sledgehammer: judgement day}.
+In: \bbtitle{Proceedings of the 5th International Conference on Automated
+  Reasoning}.
+\bsertitle{IJCAR'10},
+pp. \bfpage{107}--\blpage{121}.
+\bpublisher{Springer},
+\blocation{Berlin, Heidelberg}
+(\byear{2010}).
+\doiurl{10.1007/978-3-642-14203-1_9} .
+\burl{https://doi.org/10.1007/978-3-642-14203-1_9}
+\end{bchapter}
+\endbibitem
+
+\end{thebibliography}

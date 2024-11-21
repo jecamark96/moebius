@@ -1,6 +1,62 @@
-\documentclass[a4paper]{article}
+%Version 3 October 2023
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\documentclass[smallextended]{svjour3} 
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
+
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
+
+%%\documentclass[lineno,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%======================================================%%
+%% to compile with pdflatex/xelatex use pdflatex option %%
+%%======================================================%%
+
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove �Numbered� in the optional parenthesis. 
+%%The option is available for: sn-basic.bst, sn-vancouver.bst, sn-chicago.bst%  
+ 
+%%\documentclass[sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+\documentclass[sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style 
+%%\documentclass[sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[sn-vancouver,Numbered]{sn-jnl}% Vancouver Reference Style
+%%\documentclass[sn-apa]{sn-jnl}% APA Reference Style 
+%%\documentclass[sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
+%%%%
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{stmaryrd}
@@ -52,17 +108,69 @@
 \scalebox{0.8}{\subfloat[]{#2}}}
 
 \usepackage{amsthm}
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[section]
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{corollary}{Corollary}[theorem]
-\newtheorem{lemma}[theorem]{Lemma}
+
+
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
-%\smartqed 
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published 
+%%%%  by Springer Nature. The guidance has been prepared in partnership with 
+%%%%  production teams to conform to Springer Nature technical requirements. 
+%%%%  Editorial and presentation requirements differ among journal portfolios and 
+%%%%  research disciplines. You may find sections in this template are irrelevant 
+%%%%  to your work and are empowered to omit any such section if allowed by the 
+%%%%  journal you intend to submit to. The submission guidelines and policies 
+%%%%  of the journal take precedence. A detailed User Manual is available in the 
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
+
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}% 
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
+
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
+
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
 
 \begin{document}
-\begin{abstract}
-  In this paper, we present an Isabelle/HOL formalization of
+
+\title[Article Title]{Article Title}
+
+%%=============================================================%%
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% \author*[1,2]{\fnm{Joergen W.} \spfx{van der} \sur{Ploeg} 
+%%  \sfx{IV}}\email{iauthor@gmail.com}
+%%=============================================================%%
+
+\author*[1]{\fnm{Jelena} \sur{Markovi\' c}}\email{jelena.markovic@matf.bg.ac.rs}
+
+\author*[1]{\fnm{Filip} \sur{Mari\' c}}\email{filip.maric@matf.bg.ac.rs}
+%\equalcont{These authors contributed equally to this work.}
+
+\affil*[1]{\orgdiv{Computer Science Department}, \orgname{Faculty of Mathematics}, \orgaddress{\street{Studentski Trg 16}, \city{Belgrade}, \postcode{11000}, \state{Serbia}, \country{Serbia}}}
+
+
+
+%%==================================%%
+%% Sample for unstructured abstract %%
+%%==================================%%
+
+\abstract{In this paper, we present an Isabelle/HOL formalization of
   non-commu\-ta\-ti\-ve and non-associative algebraic structures known
   as \emph{gyrogroups} and \emph{gyrovector spaces}. These concepts
   were introduced by Abraham A. Ungar and have deep connections to
@@ -72,7 +180,7 @@
   remarkable syntactical similarities to standard Euclidean and
   Cartesian geometry (e.g., points on the line between $a$ and $b$
   satisfy the parametric equation
-  $a \oplus t\otimes(\ominus a \oplus b)$, for $t \in \mathbb{R}$,
+  $ a \oplus t\otimes(\ominus a \oplus b)$, for $t \in \mathbb{R}$,
   while the hyperbolic Pythagorean theorem is expressed as
   $a^2\oplus b^2 = c^2$, where $\otimes$, $\oplus$, and $\ominus$
   represent gyro operations).
@@ -82,10 +190,29 @@
   Einstein models of these abstract structures, and then demonstrate
   that these are equivalent to the Poincar\'e and Klein-Beltrami
   models, satisfying Tarski's geometry axioms for hyperbolic geometry.
-  
-\end{abstract}
+  }
 
-\section{Introduction}
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
+
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
+
+\keywords{gyrogroup, gyrovector space, Poincar\'e Disc, M\" obius gyrovector space, hyperbolic geometry, theory of relativity}
+
+%%\pacs[JEL Classification]{D8, H51}
+
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
+
+\maketitle
+
+\section{Introduction}\label{sec1}
 
 Non-Euclidean geometries, including hyperbolic geometry, have been
 studied since the 19th century, and their properties are now well
@@ -115,10 +242,10 @@ of Euclidean and hyperbolic geometry.
 In 1988, Ungar \cite{ungar-analytic} proposed an alternative and
 developed algebraic structures known as \emph{gyrogroups} and
 \emph{gyrovector spaces}, enabling the definition and use of
-``vectors'' for the formalization of hyperbolic geometry. Although
-operations with these ``vectors'' do not form traditional vector
-spaces—vector addition, for instance, is neither commutative nor
-associative—the elements, called gyrovectors, along with their
+''vectors'' for the formalization of hyperbolic geometry. Although
+operations with these ''vectors'' do not form traditional vector
+spaces-vector addition, for instance, is neither commutative nor
+associative-the elements, called gyrovectors, along with their
 associated operations, satisfy enough algebraic properties to allow a
 formalism of hyperbolic geometry that is strikingly similar in syntax
 to the classical treatment of Euclidean geometry.
@@ -129,7 +256,7 @@ unified with classical Galilean velocity addition. This unification
 revealed a deep connection between the special theory of relativity
 and hyperbolic geometry. The experimentally discovered Thomas
 precession (also known as Thomas gyration) was identified as a
-``missing link'' between Einstein's velocity addition formula and
+''missing link'' between Einstein's velocity addition formula and
 ordinary vector addition.\cite{ungar-analytic}
 
 In this paper, we present a formalization of gyrovector spaces and
@@ -172,7 +299,7 @@ Klein-Beltrami disks. Finally, in Section \ref{sec:conclusions}, we
 present our conclusions and propose potential directions for future
 work.
 
-\subsection{Related work}
+\section{Related work}
 
 Over the past decade, significant progress has been made in
 formalizing various geometries and their models using proof
@@ -191,7 +318,7 @@ axioms\cite{hilbert-to-tarski}. They have also mechanized the proof
 that Tarski's version of the parallel postulate is equivalent to the
 Playfair's postulate used by Hilbert\cite{coq-parallels} and proved
 that Hilbert's axioms for plane neutral geometry (excluding
-continuity) can be derived from the corresponding Tarski’s
+continuity) can be derived from the corresponding Tarski's
 axioms\cite{tarski-to-hilbert}.
 
 Petrovi\'c and Mari\'c describe formalization of analytic geometry of
@@ -214,7 +341,7 @@ developed a formalization of the Poincar\'e disc model of hyperbolic
 geometry within the Isabelle/HOL proof
 assistant\cite{amai-poincare}. They showed that model is defined
 within the complex projective line $\mathbb{C}P^1$ and adheres to
-Tarski’s axioms, except for Euclid’s axiom, which it negates while
+Tarski's axioms, except for Euclid's axiom, which it negates while
 satisfying the existence of limiting parallels. The formalization
 follows Schwerdfeger's book\cite{schwerdtfeger} based on linear
 algebra (points are represented by vectors of complex homogenous
@@ -223,6 +350,8 @@ and M\"obius transformations by non-degenerate matrices). Our paper
 builds upon this work, leveraging some of the established
 results. This connection is elaborated further in Section
 \ref{sec:models}.
+
+There have been attempts to describe some fragments of physics with the help of mathematical logic. A very interesting paper about giving the axioms of relativistic theory is \cite{logical-relativity}, but it lacks a computer formalization, making it a potential path for future work. Another theoritical paper about the axiomatization of physics is A. Kapustin's paper\cite{lifeq}. Regarding formalization, we are familiar with Jacques Fleuriot's paper involving both geometry and physics\cite{jf}. As far as we know, this is the first attempt to formalize gyrovector spaces.
 
 \subsection{Background}\label{sec:background}
 
@@ -300,6 +429,7 @@ that operate on complex numbers, and then lifting them to the subtype.
 Proofs about such functions can be done by transfering them from the
 abstract type to the representation type.
 
+
 \section{Gyrogroups}\label{sec:gyrogroups}
 
 In this section we give a definition of a gyrogroup, a nonassociative
@@ -310,20 +440,20 @@ serve as a bridge between nonassociative algebra and hyperbolic
 geometry and relativistic physics. They are the foundation on which
 analytic hyperbolic geometry rests.
 
-\begin{definition} \textbf{(Grupoid)} A structure $(G, \oplus)$ where
+\begin{definition}[Grupoid] A structure $(G, \oplus)$ where
   $\oplus$ is a binary operation is a \emph{grupoid} if $G$ is a
   non-empty set closed for $\oplus$.
 \end{definition}
 
-\begin{definition} \textbf{(Automorphism)} An \emph{automorphism} of a
+\begin{definition}[Automorphism] An \emph{automorphism} of a
   groupoid $(G , \oplus)$ is a bijective self-map of $S$ ,
   $ \phi: G \rightarrow G$ , which preserves its groupoid operation,
   that is, $\phi (a\oplus b) = \phi (a) \oplus \phi (b)$ for all
   $a, b\in G$.
 \end{definition}
 
-\begin{definition} \textbf{(Gyrogroups \cite{ungar-analytic},
-    Definition 2.5)} A grupoid $(G, \oplus)$ is a \emph{gyrogroup} if
+\begin{definition}[Gyrogroups \cite{ungar-analytic},
+    Definition 2.5] A grupoid $(G, \oplus)$ is a \emph{gyrogroup} if
   its binary operation satisfies the following axioms.
 \begin{itemize}
 \item[(G1)] There is at least one element in $G$ called a left
@@ -498,8 +628,8 @@ why the statement holds).
 
 Gyrogroups are used to define gyrovectors and gyrovector spaces.
 
-\begin{definition} \textbf{(Real Inner Product Gyrovector Spaces, Definition 6.2 in
-    \cite{ungar-analytic})} A real inner product gyrovector space
+\begin{definition}[Real Inner Product Gyrovector Spaces, Definition 6.2 in
+    \cite{ungar-analytic}] A real inner product gyrovector space
   $(G, \oplus, \otimes)$ (gyrovector space, in short) is a
   gyrocommutative gyrogroup $(G, \oplus)$ that obeys the following
   axioms:
@@ -832,7 +962,7 @@ $$z \mapsto e^{i\theta} \frac{a+z}{1+\overline{a}z}.$$
 
 This inspires the following definition of addition.
 
-\begin{definition}\textbf{(M\" obius addition in the Poincar\'e disc, Definition 3.125 in \cite{ungar-analytic})}: Let 
+\begin{definition}[M\" obius addition in the Poincar\'e disc, Definition 3.125 in \cite{ungar-analytic}] Let 
   $V_1 = \{z\in \mathbb{C}: \norm{z} < 1\}$ be a unit disc in
   $\mathbb{C}$. M\" obius addition $\oplus_m$ is a binary operation
   defined in $V_1$ as:
@@ -862,7 +992,7 @@ product vector space $V$ (all of those are isomorphic to
 $\mathbb{R}^n$). However, we did not consider this in our
 formalization.
 
-\begin{definition}\textbf{(M\" obius addition in the ball of $V$)}: Let $V$
+\begin{definition}[M\" obius addition in the ball of $V$] Let $V$
   be a real inner product vector space, let
   $V_{s} = \{v\in V: \norm{v}<s\}$ be a ball in $V$. M\" obius
   addition $\oplus_m$ is a binary operation defined in $V_s$ as:
@@ -1020,7 +1150,7 @@ In \cite{ungar-analytic} Ungar shows that M\" obius gyrogroup
 $(V_1, \oplus_m)$ admits scalar multiplication $\otimes_m$, turning it
 into the M\" obius gyrovector space $(V_1, \oplus_m, \otimes_m)$.
 
-\begin{definition}\textbf{(M\" obius Scalar Multiplication)}: Let
+\begin{definition}[M\" obius Scalar Multiplication] Let
   $(V_1, \oplus_m)$ be a M\" obius gyrogroup. For $r \in \mathbb{R}$,
   $v \in V_1$, and $v \neq 0$, the M\" obius scalar multiplication
   $r\otimes_{m} v$ is in $V_1$ and is given by the equation:
@@ -1215,7 +1345,7 @@ very challenging and involves many computational tricks.
 
 Let us first define Einstein's velocity addition $\oplus_e$.
 
-\begin{definition}\textbf{(Einstein addition in the ball, Definition 3.39 in \cite{ungar-analytic})}
+\begin{definition}[Einstein addition in the ball, Definition 3.39 in \cite{ungar-analytic}]
   \label{def:einsteinaddition}
 
   Let $V$ be a real inner product vector space and let
@@ -1575,7 +1705,7 @@ directly follow.
 
   The proof finishes by tedious but straightforward proof that
 
-  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right) = \left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right) = 1$$
+  $$\left(\frac{2\gamma_{G_a}}{2\gamma{G_a}-1}\right)\left(\frac{\gamma_a}{1+\gamma_a}\right) = \left(\frac{2\gamma_{G_b}}{2\gamma{G_b}-1}\right)\left(\frac{\gamma_b}{1+\gamma_b}\right) = 1$$
 \end{proof}
 
 
@@ -1799,11 +1929,22 @@ geometry (a well-known, folklore, result, but to the best of our
 knowledge, not formalized previously).
 
 In our future work, we plan to enrich the theory of gyrogroups and
-gyrovector spaces by proving additional theorems. We also plan to
+gyrovector spaces by proving additional theorems (for example we have already proved cosine theorem and Pythagorean theorem). We also plan to
 establish the connections between the Einstein gyrospace and the
 Klein-Beltrami model.
 
-\bibliographystyle{plain}
-\bibliography{gyro} % name your BibTeX data base
+
+
+%%===========================================================================================%%
+%% If you are submitting to one of the Nature Portfolio journals, using the eJP submission   %%
+%% system, please include the references within the manuscript file itself. You may do this  %%
+%% by copying the reference list from your .bbl file, paste it into the main manuscript .tex %%
+%% file, and delete the associated \verb+\bibliography+ commands.                            %%
+%%===========================================================================================%%
+
+\bibliography{sn-bibliography}% common bib file
+%% if required, the content of .bbl file can be included here once bbl is generated
+%%\input sn-article.bbl
+%\input sn-article.bbl
 
 \end{document}
