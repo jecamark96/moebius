@@ -28,7 +28,7 @@ proof-
   moreover
   have "(1 - (cmod u)\<^sup>2) *(1 - (cmod v)\<^sup>2) > 0"
     using assms
-    by (simp add: power_less_one_iff)
+    using cmod_def by force
   ultimately 
   show ?thesis
     by simp

@@ -70,9 +70,8 @@ lemma artanh_monotone2:
   fixes x::real
   assumes "x\<ge>0" "x<1" "y\<ge>0" "y<1" "x\<le>y"
   shows "ln ((1+x)/(1-x)) \<le> ln((1+y)/(1-y))"
-  using assms ln_mono artanh_monotone1
-  by force
-
+  using artanh_monotone1 assms(1) assms(4) assms(5) by force
+  
 lemma artanh_monotone:
   fixes x y :: real
   assumes "x \<ge> 0" "x < 1" "0 \<le> y" "y < 1" 

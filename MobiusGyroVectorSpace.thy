@@ -530,7 +530,7 @@ proof-
        by force
      finally show ?thesis
        using *
-       by (smt (verit, best) gamma_factor_def gamma_factor_positive mult_eq_0_iff mult_le_cancel_left_pos mult_sign_intros(5) power_less_one_iff)
+       using Mobius_gyrocarrier'.gyronorm_def gamma_factor_positive norm_lt_one by auto
    qed
 
    ultimately show ?thesis 
@@ -841,7 +841,7 @@ lemma double'_cmod:
 proof-
   have **: "1 - (cmod v)\<^sup>2 > 0"
     using assms
-    by (simp add: power_less_one_iff)
+    using real_sqrt_lt_1_iff by fastforce
 
   have "?lhs = 2 * (1 / (1 - (cmod v)\<^sup>2)) / (2 * (1 / (1 - (cmod v)\<^sup>2)) - 1)"
     using gamma_factor_square_norm[OF assms]
@@ -923,7 +923,9 @@ lemma double'_otimes'_2:
 proof-
   have "v * 2 / (1 + cor (cmod v) * cor (cmod v)) =
         v * 4 / (2 + 2 * (cor (cmod v) * cor (cmod v)))"
-    by (metis (no_types, lifting) mult.left_commute nonzero_mult_divide_mult_cancel_left numeral_Bit0_eq_double numeral_One ring_class.ring_distribs(1) zero_neq_numeral)
+
+    by (metis (no_types, lifting) distrib_left_numeral mult_2 nonzero_mult_divide_mult_cancel_left numeral_Bit0 one_add_one times_divide_eq_right zero_neq_numeral)
+
   then show ?thesis
     using assms
     unfolding double'_def otimes'_def otimes'_k_def double'_cmod[OF assms] scaleR_conv_of_real

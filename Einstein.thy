@@ -224,7 +224,7 @@ proof-
     using real_sqrt_gt_0_iff
     by simp
   then show ?thesis
-    using power_less1_D by blast
+    using real_less_rsqrt by force
 qed
 
 lemma gamma_factor_oplus_e':
