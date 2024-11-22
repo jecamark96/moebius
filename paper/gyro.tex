@@ -146,7 +146,7 @@
 
 \begin{document}
 
-\title[Article Title]{Article Title}
+\title{Formalization of Gyrovector Spaces as Models of Hyperbolic Geometry and Special Relativity}
 
 %%=============================================================%%
 %% GivenName	-> \fnm{Joergen W.}
@@ -180,7 +180,7 @@
   remarkable syntactical similarities to standard Euclidean and
   Cartesian geometry (e.g., points on the line between $a$ and $b$
   satisfy the parametric equation
-  $ a \oplus t\otimes(\ominus a \oplus b)$, for $t \in \mathbb{R}$,
+  $a \oplus t\otimes(\ominus a \oplus b)$, for $t \in \mathbb{R}$,
   while the hyperbolic Pythagorean theorem is expressed as
   $a^2\oplus b^2 = c^2$, where $\otimes$, $\oplus$, and $\ominus$
   represent gyro operations).
@@ -225,13 +225,13 @@ Newtonian and Galilean mechanics.
 Analytic definitions of hyperbolic geometry are typically framed in
 the extended complex plane, heavily relying on linear algebra
 techniques (such as Hermitian matrices) and hyperbolic trigonometry
-\cite{schwerdtfeger}. Unlike the Cartesian approach used in
-Euclidean geometry, hyperbolic geometry does not incorporate vectors
-in the same manner. In Euclidean geometry, vectors form a natural
-framework: vector addition is associative and commutative, forming an
-Abelian group, and vectors can be scaled by real numbers, creating a
-vector space. The dot (inner) product and vector norm are easily
-defined, establishing the Euclidean metric,
+\cite{schwerdtfeger,jar-poincare}. Unlike the Cartesian approach used
+in Euclidean geometry, hyperbolic geometry does not incorporate
+vectors in the same manner. In Euclidean geometry, vectors form a
+natural framework: vector addition is associative and commutative,
+forming an Abelian group, and vectors can be scaled by real numbers,
+creating a vector space. The dot (inner) product and vector norm are
+easily defined, establishing the Euclidean metric,
 $d(A, B) = \vert\overrightarrow{AB}\vert$. However, these concepts are
 not as straightforward to define in the hyperbolic plane, leading to
 analytic definitions of hyperbolic geometry that do not employ vector
@@ -244,20 +244,22 @@ developed algebraic structures known as \emph{gyrogroups} and
 \emph{gyrovector spaces}, enabling the definition and use of
 ''vectors'' for the formalization of hyperbolic geometry. Although
 operations with these ''vectors'' do not form traditional vector
-spaces-vector addition, for instance, is neither commutative nor
-associative-the elements, called gyrovectors, along with their
-associated operations, satisfy enough algebraic properties to allow a
-formalism of hyperbolic geometry that is strikingly similar in syntax
-to the classical treatment of Euclidean geometry.
+spaces (vector addition, for instance, is neither commutative nor
+associative, except in the special case of collinear vectors) the
+elements, called gyrovectors, along with their associated operations,
+satisfy enough algebraic properties to allow a formalism of hyperbolic
+geometry that is strikingly similar in syntax to the classical
+treatment of Euclidean geometry.
 
 Interestingly, these structures were first discovered through an
-examination of Einstein's velocity addition laws, which were then
-unified with classical Galilean velocity addition. This unification
-revealed a deep connection between the special theory of relativity
-and hyperbolic geometry. The experimentally discovered Thomas
-precession (also known as Thomas gyration) was identified as a
-''missing link'' between Einstein's velocity addition formula and
-ordinary vector addition.\cite{ungar-analytic}
+examination of Einstein's velocity addition laws, that hold in special
+relativity, which were then unified with classical Galilean velocity
+addition. This unification revealed a deep connection between the
+special theory of relativity and hyperbolic geometry. The
+experimentally discovered Thomas precession (also known as Thomas
+gyration) was identified as a ''missing link'' between Einstein's
+velocity addition formula and ordinary vector
+addition.\cite{ungar-analytic}
 
 In this paper, we present a formalization of gyrovector spaces and
 their connections with hyperbolic geometry and special relativity,
@@ -299,7 +301,7 @@ Klein-Beltrami disks. Finally, in Section \ref{sec:conclusions}, we
 present our conclusions and propose potential directions for future
 work.
 
-\section{Related work}
+\subsection{Related work}
 
 Over the past decade, significant progress has been made in
 formalizing various geometries and their models using proof
@@ -339,7 +341,7 @@ fully mechanically verified development within the theorem prover
 Isabelle/HOL\cite{amai-complexplane}. Simi\' c, Mari\' c and Boutry
 developed a formalization of the Poincar\'e disc model of hyperbolic
 geometry within the Isabelle/HOL proof
-assistant\cite{amai-poincare}. They showed that model is defined
+assistant\cite{jar-poincare}. They showed that model is defined
 within the complex projective line $\mathbb{C}P^1$ and adheres to
 Tarski's axioms, except for Euclid's axiom, which it negates while
 satisfying the existence of limiting parallels. The formalization
@@ -351,9 +353,18 @@ builds upon this work, leveraging some of the established
 results. This connection is elaborated further in Section
 \ref{sec:models}.
 
-There have been attempts to describe some fragments of physics with the help of mathematical logic. A very interesting paper about giving the axioms of relativistic theory is \cite{logical-relativity}, but it lacks a computer formalization, making it a potential path for future work. Another theoritical paper about the axiomatization of physics is A. Kapustin's paper\cite{lifeq}. Regarding formalization, we are familiar with Jacques Fleuriot's paper involving both geometry and physics\cite{jf}. As far as we know, this is the first attempt to formalize gyrovector spaces.
+There have been attempts to formalize some areas of physics with the
+help of mathematical logic. A very interesting paper about giving the
+axioms of relativistic theory is \cite{logical-relativity}, but it
+lacks a computer formalization, making it a potential path for future
+work. Another theoritical paper about the axiomatization of physics is
+A. Kapustin's paper\cite{lifeq}. Jacques Fleuriot used a combination
+of geometry theorem proving and non-standard analysis in order to
+formalize elements of Newton's Principia in Isabelle/HOL\cite{jf}. Up
+to the best of our knowledge, this is the first attempt to formalize
+gyrovector spaces and their applications.
 
-\subsection{Background}\label{sec:background}
+\section{Background}\label{sec:background}
 
 In this section we will describe
 Isabelle/HOL\footnote{https://isabelle.in.tum.de/} and its main
@@ -380,7 +391,7 @@ like specific operations or elements (e.g., a binary operation
 $\oplus$ and an identity element $e$ in a group). The \textbf{assumes}
 keyword is used to specify the properties or axioms these parameters
 must satisfy (e.g., associativity of $\oplus$ and the identity
-property of $0$). The \textbf{interpretation} command is used to
+property of $e$). The \textbf{interpretation} command is used to
 instantiate a locale with specific parameters and assumptions (for
 example to show that integers form a group when neutral $e$ is
 interpreted by $0$ and the group operation $\oplus$ is interpreted by
@@ -390,8 +401,8 @@ abstract properties and results of an algebraic structure to concrete
 examples, enabling seamless reuse of previously proven theorems under
 the given interpretation.
 
-Algebraic structures that have just a single operation are specified
-using \emph{type classes} (very similar to Haskell)
+Algebraic structures that use just a single type are specified using
+\emph{type classes} (very similar to Haskell)
 \cite{isabelle-classes}. Classes are very similar to locales but the
 main difference is that classes are suitable for defining type-based
 properties and structures, while locales are more general and flexible
@@ -519,6 +530,7 @@ straightforward. Since it is an algebraic operation on a single type
 we define it as a type class\cite{isabelle-classes}. First we define a
 groupoid and a groupoid automorphism.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -535,10 +547,12 @@ groupoid and a groupoid automorphism.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 Next we define a gyrogroup. We define subtraction using addition and
 left inverse.
-     
+
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -558,12 +572,13 @@ left inverse.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 
 Our particullar interest is in gyrocommutative gyrogroups, since, as
 we will see, some of them give a rise to gyrovector spaces.
 
-
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -573,9 +588,12 @@ we will see, some of them give a rise to gyrovector spaces.
 \end{tabbing}
 }
 \end{small}
+\smallskip
+
 
 Lemma \ref{lemma:left_cancel} can be formulated and proved in the Isar language as follows:
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -593,6 +611,7 @@ Lemma \ref{lemma:left_cancel} can be formulated and proved in the Isar language 
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 However, good support for automated theorem proving in Isabelle/HOL
 can provide a much shorter proof than the one given in the
@@ -601,6 +620,7 @@ given a list of axioms and previous lemmas used in that automated
 proof. This proof (including the relevant list of lemmas) is found by
 the tool Sledgehammer\cite{sledgehammer}.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -613,6 +633,7 @@ the tool Sledgehammer\cite{sledgehammer}.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 We have formally proved a large number of lemmas and theorems about
 gyrogroups (given in Chapter 2 and 3 in \cite{ungar-analytic}). Our
@@ -720,6 +741,7 @@ $\mathit{in\_domain}$ checks if the given element is in the part of
 $V$ that corresponds to $G$. Norm and inner product are inherited from
 the carrier space $V$.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -745,6 +767,7 @@ the carrier space $V$.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 In a very similar manner we formalize embedding of $\lVert G\rVert$
 (defined as \texttt{norms} in the previous locale) into $G$.  We
@@ -767,6 +790,7 @@ set $\lVert G\rVert$, which is in this case the open interval
 $(-1, 1)$ first to complex numbers and then to points in the
 Poincar\'e disc).
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -778,10 +802,12 @@ Poincar\'e disc).
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 Next we introduce the assumption that the inner product must be
 invariant under gyrations.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -792,11 +818,13 @@ invariant under gyrations.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 Finally, we define gyrovector spaces as gyrocarriers that include the
 gyro scalar multiplication $\otimes$ and satisfy the given gyrovector
 space axioms.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -815,6 +843,7 @@ space axioms.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 In this abstract setup we proved a large number of lemmas and theorems
 that hold in gyrovector spaces (given in Chapter 8 in
@@ -830,6 +859,7 @@ fully analogous to the Euclidean case $x = y + t (z - y)$). This
 allows to introduce the definition of collinearity (note that we also
 include a degenerate case where $x=y$).
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -839,9 +869,11 @@ include a degenerate case where $x=y$).
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 Collinearity enables the definition of lines.
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -851,11 +883,13 @@ Collinearity enables the definition of lines.
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 
 Definition of the betweenness relation is quite similar (and again
 analogous to the Euclidean case).
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -866,10 +900,12 @@ analogous to the Euclidean case).
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 Gyro-distance between two points is defined as the norm of their
 difference (again analogously to the Euclidean case).
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -879,6 +915,7 @@ difference (again analogously to the Euclidean case).
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 It is very easy to prove basic properties of these notions.  For
 example, one very important property is that all these properties are
@@ -888,6 +925,7 @@ notions (proofs of these are very simple and fully automated, using
 previously proven lemmas about gyrovector spaces).
 
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -905,6 +943,7 @@ previously proven lemmas about gyrovector spaces).
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 As an illustration, we give an informal proof that translations
 preserve collinearity (in Isabelle/HOL this is proved by automated
@@ -954,7 +993,7 @@ spaces we must define the operations $\oplus$ and $\otimes$.
 \subsection{M\"obius gyrogroup}\label{sec:mobiusgyrogroup}
 
 M\"obius gyrovector space comes from the Poincar\'e disc model of
-hyperbolic geometry. In \cite{amai-poincare} it was formally proved
+hyperbolic geometry. In \cite{jar-poincare} it was formally proved
 that all direct isometries of the Poincar\'e disc (given in the
 complex plane) are of the form:
 
@@ -1010,6 +1049,7 @@ gyrogroup domain $G=\mathbb{P}$.\footnote{Note that we introduced the
   notation $\mathbb{P}$ for the same set that is denoted by $V_1$ in
   \cite{ungar-analytic}.}
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -1019,6 +1059,7 @@ gyrogroup domain $G=\mathbb{P}$.\footnote{Note that we introduced the
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 This lifting introduces the function \texttt{of\_complex} and
 \texttt{to\_complex} that converts between $\mathbb{C}$ and
@@ -1030,6 +1071,7 @@ on the representation type $\mathbb{C}$. For example, inner product
 and norm are naturally lifted from $\mathbb{C}$ to the Poincar\'e disc
 (and the notation $\cdot$ and $\llangle\_\rrangle$ is introduced).
 
+\smallskip
 \begin{small}
 {\tt
 \begin{tabbing}
@@ -1040,12 +1082,14 @@ and norm are naturally lifted from $\mathbb{C}$ to the Poincar\'e disc
 \end{tabbing}
 }
 \end{small}
+\smallskip
 
 We define the M\"obius addition by the following sequence of
 definitions (first we define it on the representation type
 $\mathbb{C}$ and then we lift it to the abstract type $\mathbb{P}$ of
 points of the Poincar\'e disc).
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1058,11 +1102,13 @@ points of the Poincar\'e disc).
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 Note that this definition must be followed by a proof that the result
 of the defined function always belongs to the unit disc if its
 arguments are in the unit disc.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1074,6 +1120,7 @@ arguments are in the unit disc.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 \noindent The proof of this lemma is not trivial, but is quite
 technical and non-interesting. Note that such proofs are usually
@@ -1084,6 +1131,7 @@ theory.
 
 We formalize the gyration by the next sequence of definitions.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1095,11 +1143,13 @@ We formalize the gyration by the next sequence of definitions.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 For this definition to be valid, it must be proved that the result of
 gyration is in the unit disc if all its areguments are in the unit
 disc (which is easy, since $|1+a\overline{b}| = |1+\overline{a}b|$).
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1111,6 +1161,7 @@ disc (which is easy, since $|1+a\overline{b}| = |1+\overline{a}b|$).
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 One of the central results of our formalization is that with such
 gyration, $(\mathbb{P}, \oplus_m)$ is a gyrocommutative gyrogroup,
@@ -1130,6 +1181,7 @@ alternative definitions of the same notion, so we formalized (and
 later used) an alternative definition of M\"obius addition (and, of
 course, proved that it is equivalent to the original one).
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1143,6 +1195,7 @@ course, proved that it is equivalent to the original one).
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 \subsection{M\"obius gyrovector space}
 
@@ -1177,6 +1230,7 @@ disc.\footnote{In section \ref{einstein_gvs} we shall see that the
   $\otimes_m$, $\otimes_e$ and by $\otimes_{me}$, depending on the
   context.}
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1190,6 +1244,7 @@ disc.\footnote{In section \ref{einstein_gvs} we shall see that the
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 We did not find an explicit proof that
 $(\mathbb{P}, \oplus_m, \otimes_{me})$ is a gyrovector space in the
@@ -1202,6 +1257,7 @@ Very important characterization of $\otimes_{me}$ uses hyperbolic
 trigonometric functions (instead of power function used in the
 original definition).
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1213,6 +1269,7 @@ original definition).
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 
 Our proof would be much harder (or almost impossible) if we didn't use
@@ -1236,6 +1293,7 @@ We defined the Lorentz $\gamma$-factor in the following way (assuming
 without loss of generality that $c=1$):
 
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1248,6 +1306,7 @@ without loss of generality that $c=1$):
 \end{tabbing}
 \end{small}
 \tt}
+\smallskip
 
 
 Most gyrovector space axioms were non-trivial, but rather
@@ -1260,6 +1319,7 @@ First we proved a lemma that claims that $\gamma$-factor is a
 monotonically increasing function on the iterval $[0, 1)$ and so its
 inverse function.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1272,11 +1332,13 @@ inverse function.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 After that we have proved the following lemma that expresses the
 $\gamma$-factor of the norm of the M\"obius sum of two points in terms
 of their $\gamma$-factors.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1288,10 +1350,12 @@ of their $\gamma$-factors.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 From this, we could prove the triangle inequallity for the
 $\gamma$-factors.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1302,6 +1366,7 @@ $\gamma$-factors.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 \noindent The triangle inequality holds from this by the monotonicity
 of the inverse $\gamma$-factor.
@@ -1352,7 +1417,7 @@ Let us first define Einstein's velocity addition $\oplus_e$.
   $V_1 = \{v\in V: \norm{v}<1\}$ be a unit ball in $V$. Einstein
   addition $\oplus_e$ is a binary operation defined in $V$ as:
   
-  $$u \oplus_e v = \frac{1}{1+u\cdot v}\Big\{u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u\cdot v)u\Big\}$$
+  $$u \oplus_e v = \frac{1}{1+u\cdot v}\Big(u+\frac{1}{\gamma_u}v+\frac{\gamma_u}{1+\gamma_u}(u\cdot v)u\Big)$$
   
   \noindent where $\gamma_u$ is the Lorentz $\gamma$-factor and
   $\cdot$ and $\norm{\cdot}$ are the inner product and norm that the
@@ -1367,6 +1432,7 @@ way as in the M\"obius case (Equation \ref{eq:otimes}).
 Einstein addition in $\mathbb{P}$ is formally defined by the following
 definitions.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1380,10 +1446,12 @@ definitions.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 To lift this definition from complex numbers to Poincar\'e disc, one
 must prove that the Poincar\'e disc is closed under this operation.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1394,6 +1462,7 @@ must prove that the Poincar\'e disc is closed under this operation.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 Given the complexity of the expression in the definition of Einstein
 addition, this proof is not trivial. We managed to prove it using
@@ -1408,6 +1477,7 @@ the Einstein sum of two points in terms of their $\gamma$-factors.
 \noindent It is formalized as follows (the formalization gives the
 statement on the representation type $\mathbb{C}$):
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1418,6 +1488,7 @@ statement on the representation type $\mathbb{C}$):
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 \noindent The proof of this lemma is not hard, but is technically
 involved. With this lemma it is not hard to prove that the unit disc
@@ -1528,12 +1599,11 @@ $$\frac
 
 We simplify our expression more using the following equations:
 
-\begin{footnotesize}
 \begin{eqnarray*}
   1+\frac{\gamma_v-1}{\gamma_v+1}=\frac{2\gamma_v}{\gamma_v+1}, \qquad 1-\frac{\gamma_u-1}{\gamma_u+1}=\frac{2}{\gamma_u+1}\\
   1+\frac{\gamma_u-1}{\gamma_u+1}\cdot \frac{\gamma_v-1}{\gamma_v+1}= \frac{2(1+\gamma_u\gamma_v)}{(1+\gamma_u)(1+\gamma_v)}
 \end{eqnarray*}
-\end{footnotesize}
+
 
 and we get:
 
@@ -1557,7 +1627,7 @@ $$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_{u \otimes_e
 From Lemma \ref{lemma:gammaeinstein} and Definition
 \ref{def:einsteinaddition} of Einstein addition, we can conclude that:
 
-$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_u \gamma_v (1+u\cdot v)}{\gamma_u \gamma_v (1+u\cdot v) + 1}\Big\{\frac{1}{1+u\cdot v}\Big( u +\frac{1}{\gamma_u}v + \frac{\gamma_u}{\gamma_u + 1}(u\cdot v)\cdot u \Big)\Big\}$$
+$$\frac{1}{2}\otimes_e (u \otimes_e v) = \frac{\gamma_u \gamma_v (1+u\cdot v)}{\gamma_u \gamma_v (1+u\cdot v) + 1}\Big(\frac{1}{1+u\cdot v}\Big( u +\frac{1}{\gamma_u}v + \frac{\gamma_u}{\gamma_u + 1}(u\cdot v)\cdot u \Big)\Big)$$
 
 Cancelling $1 + u\cdot v$ (that is not zero), and putting the two
 sides together, we see that the theorem holds.
@@ -1565,6 +1635,7 @@ sides together, we see that the theorem holds.
 
 Formal statement of this theorem is quite direct.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1574,6 +1645,7 @@ Formal statement of this theorem is quite direct.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 \noindent Its formal proof directly follows the informal one,
 carefully checking every step of computation and simplification.
@@ -1582,6 +1654,7 @@ The previous result enables expressing Einstein addition in terms of
 M\"obius addition an scalar multiplication, which are operations whose
 properties are by now formally analyzed.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1591,12 +1664,14 @@ properties are by now formally analyzed.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 
 Since many axioms use gyrations we needed to prove that the
 isomorphism map $u \mapsto (1/2)\otimes_m u$ preserves gyrations,
 which enables expressing Einstein gyration via M\"obius gyration.
 
+\smallskip
 {\tt
 \begin{small}
   \begin{tabbing}
@@ -1610,6 +1685,7 @@ which enables expressing Einstein gyration via M\"obius gyration.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 
 From these connections it is very easy to prove that Einstein addition
@@ -1618,6 +1694,7 @@ definition of $\oplus_E$ dealing with lots of hard calculations).
 Here is an example of one such simple and readable proof (in Isar
 language). The lemma proves that Einstein addition is gyroassociative.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1640,10 +1717,12 @@ language). The lemma proves that Einstein addition is gyroassociative.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 Isabelle/HOL automation is powerfull enough to find this proof fully
 automatically.
 
+\smallskip
 {\tt
 \begin{small}
 \begin{tabbing}
@@ -1655,6 +1734,7 @@ automatically.
 \end{tabbing}
 \end{small}
 }
+\smallskip
 
 To prove gyrovector space axioms, some additional work needs to be
 done. We proved the connection of the isomorphism function
@@ -1752,7 +1832,7 @@ section, we will demonstrate that these structures correspond
 precisely to well-known models of hyperbolic geometry. Specifically,
 we will formally show that the M\"obius gyrovector space is
 essentially equivalent to the Poincar\'e disc model (formally
-described in \cite{amai-poincare}). Since Einstein velocity addition
+described in \cite{jar-poincare}). Since Einstein velocity addition
 is isomorphic to M\"obius addition (as we formally established in the
 previous section), this implies that relativistic physics is grounded
 in hyperbolic geometry. It can also be shown that the Einstein
@@ -1764,7 +1844,7 @@ To demonstrate that the M\"obius gyrovector space is a valid model of
 hyperbolic geometry, we must show that it satisfies all axioms of
 absolute geometry and the negation of the parallel postulate. These
 axioms can be taken, for example, as Tarski's axioms \cite{tarski}. In
-\cite{amai-poincare}, it was proven that the Poincar\'e disc, defined
+\cite{jar-poincare}, it was proven that the Poincar\'e disc, defined
 using homogeneous coordinates in projective space $\mathbb{C}P^1$,
 satisfies these axioms. Instead of directly proving that M\"obius
 gyrovector space concepts (such as points, collinearity, betweenness,
@@ -1774,20 +1854,20 @@ disc model. Consequently, we know that they must satisfy all the
 axioms, and additionally, we know that the M\"obius gyrovector space
 is fundamentally the same as the Poincar\'e disc model.
 
-In \cite{amai-poincare}, h-points in the Poincar\'e disc were defined
+In \cite{jar-poincare}, h-points in the Poincar\'e disc were defined
 as a subtype of $\mathbb{C}P^1$ with norm less than 1. Points in
 $\mathbb{C}P^1$ are represented by pairs of complex numbers (their
 homogeneous coordinates). Since all points within the Poincar\'e disc
 are finite (note that $\mathbb{C}P^1$ contains both finite and
 infinite points), these points can be identified with the complex
 numbers in the unit disc. Thus, we identify the unit disc
-$\mathbb{P}'$ set in $\mathbb{C}P^1$ defined in \cite{amai-poincare}
+$\mathbb{P}'$ set in $\mathbb{C}P^1$ defined in \cite{jar-poincare}
 with the unit disc $\mathbb{P}$ set in $\mathbb{C}$ as defined in the
 present paper (formally, there exists a natural bijection between the
 two abstract types \texttt{PoincareDisc} and \texttt{PoincareDisc'}).
 
 A fundamental aspect of each model of hyperbolic geometry is the
-distance function. In \cite{amai-poincare}, it was shown that the
+distance function. In \cite{jar-poincare}, it was shown that the
 distance between points in $\mathbb{P'}$, represented by the
 homogeneous coordinates of complex numbers $u$ and $v$ (with norm less
 than 1), can be calculated by:
@@ -1820,7 +1900,7 @@ betweenness in gyrovector spaces is defined in Section
 $u, v \in \mathbb{P}$ (we shall this by $\mathfrak{B}(u, x, v)$) if
 there exists a real number $t \in [0, 1]$ such that
 $x = u \oplus t \otimes (\ominus u \oplus v)$. In contrast, in
-\cite{amai-poincare}, a point $x \in \mathbb{P}'$ is between points
+\cite{jar-poincare}, a point $x \in \mathbb{P}'$ is between points
 $u, v \in \mathbb{P}'$ (we shall denote this by
 $\mathfrak{B}'(u, x, v)$) if and only if the cross-ratio of the points
 $u$, $x$, $v$, and the inversion of $x$ wrt. the unit circle is a real
@@ -1848,7 +1928,7 @@ type of complex numbers, this translation is expressed by
 
 $$z \mapsto \frac{z - u}{1 - \overline{u}z}.$$
 
-In \cite{amai-poincare}, it was formally demonstrated that these
+In \cite{jar-poincare}, it was formally demonstrated that these
 transformations, known as Blaschke factors, preserve many relations,
 including betweenness. Therefore, we have
 
@@ -1874,7 +1954,7 @@ $\frac{\tanh(t \cdot \atanh (\lVert v' \rVert))}{\lVert v' \rVert} \in
 
 $$\mathfrak{B}(0, x', v') \longleftrightarrow (\exists t' \in [0, 1])(x' = t' \cdot v').$$
 
-In \cite{amai-poincare}, it was formally proven that this condition is
+In \cite{jar-poincare}, it was formally proven that this condition is
 equivalent to $x'$ being between $0$ and $v'$ according to the
 cross-ratio-based definition of betweenness, i.e.,
 
@@ -1918,7 +1998,7 @@ complicated definition of this operation for each axiom.
 
 Finally, we proved that the M\"obius gyrovector space is equivalent to
 the Poincar\'e disc model (previously formalized in
-\cite{amai-poincare}), and therefore is a model of Tarski's axioms for
+\cite{jar-poincare}), and therefore is a model of Tarski's axioms for
 hyperbolic geometry. This yields a new formal model of the Poincar\'e
 disc, with a syntactically much cleaner definition than the classical
 one (developed in the projective line $\mathbb{C}P^1$) and potentially
