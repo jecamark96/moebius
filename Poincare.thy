@@ -1,5 +1,5 @@
 theory Poincare
-  imports Complex_Main "HOL-Analysis.Inner_Product"
+  imports Complex_Main "HOL-Analysis.Inner_Product" GammaFactor
 begin
 
 typedef PoincareDisc = "{z::complex. cmod z < 1}"
@@ -45,5 +45,31 @@ lemma norm_geq_zero:
 lemma square_norm_inner:
   shows "(\<llangle>u\<rrangle>)\<^sup>2 = u \<cdot> u"
   by transfer (simp add: dot_square_norm)
+
+lift_definition gammma_factor_p :: "PoincareDisc \<Rightarrow> real" ("\<gamma>\<^sub>p") is gamma_factor
+  done
+
+lemma gamma_factor_p_nonzero [simp]:
+  shows "\<gamma>\<^sub>p u \<noteq> 0"
+  apply transfer
+  unfolding gamma_factor_def
+  using gamma_factor_nonzero
+  by auto
+
+lemma gamma_factor_p_positive [simp]:
+  shows "\<gamma>\<^sub>p u > 0"
+  by transfer (simp add: gamma_factor_positive)
+
+lemma norm_square_gamma_factor_p:
+  shows "(\<llangle>u\<rrangle>)^2 = 1 - 1 / (\<gamma>\<^sub>p u)^2"
+  by transfer (simp add: norm_square_gamma_factor)
+
+lemma norm_square_gamma_factor_p':
+  shows "(\<llangle>u\<rrangle>)^2 = ((\<gamma>\<^sub>p u)^2 - 1) / (\<gamma>\<^sub>p u)^2"
+  by transfer (simp add: norm_square_gamma_factor')
+
+lemma gamma_factor_p_square_norm:
+  shows "(\<gamma>\<^sub>p u)\<^sup>2 = 1 / (1 - (\<llangle>u\<rrangle>)\<^sup>2)"
+  by transfer (simp add: gamma_factor_square_norm)
 
 end

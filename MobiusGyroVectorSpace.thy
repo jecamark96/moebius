@@ -1,5 +1,5 @@
 theory MobiusGyroVectorSpace
-imports Main MobiusGyroGroup  GyroVectorSpace GammaFactor HyperbolicFunctions
+imports Main MobiusGyroGroup  GyroVectorSpace Gyrotrigonometry GammaFactor HyperbolicFunctions
 begin
 
 (* --------------------------------------------------------- *)
@@ -493,7 +493,8 @@ proof-
 
     have "\<gamma> ?expr1 = 1 / sqrt(1 - ((cmod (?expr1)) * cmod(?expr1)))"
       using * **
-      by (metis Rep_PoincareDisc gamma_factor_def mem_Collect_eq power2_eq_square)
+      unfolding gamma_factor_def power2_eq_square
+      by (metis norm_lt_one norm_of_real norm_p.rep_eq real_norm_def)
     moreover
     have "cmod ?expr1 = ?expr1"
       by (smt (verit, ccfv_threshold) Mobius_gyrocarrier'.gyronorm_def mult_less_0_iff norm_divide norm_not_less_zero norm_of_real of_real_1 of_real_add of_real_divide of_real_mult)
@@ -504,9 +505,12 @@ proof-
        using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc gamma_factor_oplus_m_triangle_lemma
        using \<open>cmod ?expr1 = ?expr1\<close> 
        by force
-
+     then have "\<gamma> (cor ?expr1) = (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) / (sqrt (1-\<llangle>a\<rrangle>*\<llangle>a\<rrangle>) * sqrt (1-\<llangle>b\<rrangle>*\<llangle>b\<rrangle>))"
+       unfolding gamma_factor_def
+       by (metis norm_of_real real_norm_def)       
     then show ?thesis
-      using \<open>?expr1 = ?expr2\<close> ***
+      using \<open>?expr1 = ?expr2\<close>[symmetric]
+      using  ***
       by simp
   qed
 
@@ -529,8 +533,9 @@ proof-
        using Mobius_gyrocarrier'.gyronorm_def
        by force
      finally show ?thesis
-       using *
-       using Mobius_gyrocarrier'.gyronorm_def gamma_factor_positive norm_lt_one by auto
+       using *[symmetric]
+       using Mobius_gyrocarrier'.gyronorm_def gamma_factor_positive norm_lt_one
+       by (simp add: gamma_factor_positive)
    qed
 
    ultimately show ?thesis 
@@ -552,7 +557,7 @@ next
     by (smt (verit, best) Mobius_gyrocarrier'.gyronorm_def \<open>to_complex a \<noteq> - to_complex b\<close> ab_left_minus add_right_cancel divide_eq_0_iff gamma_factor_norm_oplus_m gamma_factor_positive oplus_m'_def oplus_m.rep_eq norm_eq_zero norm_le_zero_iff of_real_0 zero_less_mult_iff)
   moreover
   have "?e2 > 0"
-    by (metis Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc \<open>0 < \<llangle>a \<oplus>\<^sub>m b\<rrangle>\<close> dual_order.refl gamma_factor_increasing gamma_factor_oplus_m_triangle linorder_not_le mem_Collect_eq of_real_0 zero_less_norm_iff)
+    by (smt (verit, best) calculation gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_lt_one norm_zero zero_less_norm_iff)
   moreover
   have "?e1 < 1" "?e2 < 1"
     using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc 
@@ -560,7 +565,7 @@ next
   ultimately 
   show ?thesis
     using gamma_factor_increase_reverse[of ?e1 ?e2]
-    by (smt (verit, best) gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_p.rep_eq norm_of_real)
+    by (smt (verit, del_insts) gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_p.rep_eq real_norm_def)
 qed
 
 lemma mobius_gyroauto_norm:
@@ -733,6 +738,7 @@ next
     using Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def gyrocarrier'.gyronorm_def gyroplus_PoincareDisc_def
     by fastforce 
 qed
+
 
 (* ---------------------------------------------------------------------------- *)
 
@@ -935,5 +941,6 @@ qed
 lemma double: 
   shows "double u = 2 \<otimes> u"
   by transfer (simp add: double'_otimes'_2)
+
 
 end
