@@ -27,6 +27,7 @@ definition gyrominus :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<ominus
 
 end
 
+
 context gyrogroup
 begin
 
@@ -594,7 +595,6 @@ end
 class gyrocommutative_gyrogroup = gyrogroup + 
   assumes gyro_commute: "a \<oplus> b = gyr a b (b \<oplus> a)"
 begin
-
 lemma gyroautomorphic_inverse:
   shows "\<ominus> (a \<oplus> b) = \<ominus> a \<ominus>\<^sub>b b"
   using gyro_commute gyrocommute_iff_gyroatomorphic_inverse 
@@ -691,7 +691,7 @@ lemma gyro_commute_misc_4:
   by (metis gyr_commute_misc_4' gyr_even gyr_misc_1 gyro_inv_idem gyro_left_cancel' gyrominus_def)
 
 text \<open>Thm 3.15 (3.40)\<close>
-lemma gyr_inv_2:
+lemma gyr_inv_2':
   shows "gyr a (\<ominus>b) = gyr (\<ominus> a \<oplus> b) (a \<oplus> b) \<circ> gyr a b"
   by (metis comp_id gyr_commute_misc_2 local.gyr_even local.gyr_id local.gyr_misc_1 local.gyro_inv_idem local.gyro_left_cancel')
 
@@ -1036,6 +1036,79 @@ lemma
   by (rule gyro_polygonal_addition_lemma)  
 
 end
+
+locale gyrogroup_isomorphism = 
+  fixes \<phi> :: "'a::gyrocommutative_gyrogroup \<Rightarrow> 'b" 
+  fixes gyrozero' :: "'b" ("0\<^sub>g\<^sub>1")
+  fixes gyroplus' :: "'b \<Rightarrow> 'b \<Rightarrow> 'b" (infixl "\<oplus>\<^sub>1" 100)
+  fixes gyroinv' :: "'b \<Rightarrow> 'b" ("\<ominus>\<^sub>1")
+  assumes \<phi>zero [simp]: "\<phi> 0\<^sub>g = 0\<^sub>g\<^sub>1"
+  assumes \<phi>plus [simp]: "\<phi> (a \<oplus> b) = (\<phi> a) \<oplus>\<^sub>1 (\<phi> b)"
+  assumes \<phi>minus [simp]: "\<phi> (\<ominus> a) = \<ominus>\<^sub>1 (\<phi> a)"
+  assumes \<phi>bij [simp]: "bij \<phi>"
+begin
+
+definition gyr' where
+ "gyr' a b x = \<ominus>\<^sub>1 (a \<oplus>\<^sub>1 b) \<oplus>\<^sub>1 (a \<oplus>\<^sub>1 (b \<oplus>\<^sub>1 x))"
+
+lemma \<phi>gyr [simp]:
+  shows "\<phi> (gyr a b z) = gyr' (\<phi> a) (\<phi> b) (\<phi> z)"
+  by (simp add: gyr'_def gyr_def)
+
+end
+
+sublocale gyrogroup_isomorphism \<subseteq> gyrogroupoid gyrozero' gyroplus'
+  by unfold_locales
+
+sublocale gyrogroup_isomorphism \<subseteq> gyrocommutative_gyrogroup gyrozero' gyroplus' gyroinv' gyr'
+proof
+  fix a
+  show "0\<^sub>g\<^sub>1 \<oplus>\<^sub>1 a = a"
+    by (metis \<phi>bij \<phi>plus \<phi>zero bij_iff gyro_left_id)
+next
+  fix a
+  show "\<ominus>\<^sub>1 a \<oplus>\<^sub>1 a = 0\<^sub>g\<^sub>1"
+    by (metis \<phi>bij \<phi>minus \<phi>plus \<phi>zero bij_iff gyro_left_inv)
+next
+  fix a b z
+  show "a \<oplus>\<^sub>1 (b \<oplus>\<^sub>1 z) = a \<oplus>\<^sub>1 b \<oplus>\<^sub>1 gyr' a b z"
+    using \<phi>gyr[of "inv \<phi> a" "inv \<phi> b" "inv \<phi> z"]
+    by (metis \<phi>bij \<phi>plus bij_inv_eq_iff gyro_left_assoc)
+next
+  fix a b
+  show "gyr' a b = gyr' (a \<oplus>\<^sub>1 b) b"
+  proof
+    fix z
+    show "gyr' a b z = gyr' (a \<oplus>\<^sub>1 b) b z"
+      using \<phi>gyr[of "inv \<phi> a" "inv \<phi> b" "inv \<phi> z"]
+      by (smt (z3) \<phi>bij \<phi>gyr \<phi>plus bij_inv_eq_iff gyr_aut_inv_3 inv_gyr_sym)
+  qed
+next
+  fix a b
+  have *: "gyr' a b = \<phi> \<circ> (gyr (inv \<phi> a) (inv \<phi> b)) \<circ> (inv \<phi>)"
+  proof
+    fix z
+    show "gyr' a b z = (\<phi> \<circ> gyr (inv \<phi> a) (inv \<phi> b) \<circ> inv \<phi>) z"
+      by (metis \<phi>bij \<phi>gyr bij_inv_eq_iff comp_def)
+  qed
+  show "gyroaut (gyr' a b)"
+    unfolding gyroaut_def
+  proof safe
+    show "bij (gyr' a b)"
+      using * \<phi>bij gyr_gyroaut
+      by (metis bij_comp bij_imp_bij_inv gyrogroupoid_class.gyroaut_def)
+  next
+    fix x y
+    show "gyr' a b (x \<oplus>\<^sub>1 y) = gyr' a b x \<oplus>\<^sub>1 gyr' a b y"
+      using *
+      by (smt (verit, del_insts) \<phi>bij \<phi>plus bij_inv_eq_iff comp_def gyr_distrib)
+  qed
+next
+  fix a b
+  show "a \<oplus>\<^sub>1 b = gyr' a b (b \<oplus>\<^sub>1 a)"
+    using \<phi>gyr[of "inv \<phi> a" "inv \<phi> b" "inv \<phi> (b \<oplus>\<^sub>1 a)"]
+    by (metis (no_types, lifting) \<phi>bij \<phi>plus bij_inv_eq_iff gyro_commute)
+qed
 
 
 end

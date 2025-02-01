@@ -1,10 +1,12 @@
 theory MobiusGyrotrigonometry
-  imports Main Gyrotrigonometry GammaFactor Poincare MobiusGyroVectorSpace MoreComplex
+  imports Main Gyrotrigonometry GammaFactor PoincareDisc MobiusGyroVectorSpace MoreComplex
 begin
+
+
 
 lemma m_gamma_h1:
   shows "\<ominus>\<^sub>m a \<oplus>\<^sub>m b = of_complex ((to_complex b - to_complex a) / (1 - cnj (to_complex a) * to_complex b))"
-  by (metis Rep_PoincareDisc_inverse add_uminus_conv_diff complex_cnj_minus mult_minus_left ominus_m'_def ominus_m.rep_eq oplus_m'_def oplus_m.rep_eq uminus_add_conv_diff)
+  by (metis Mobius_gyrocarrier'.of_carrier add_uminus_conv_diff complex_cnj_minus mult_minus_left ominus_m'_def ominus_m.rep_eq oplus_m'_def oplus_m.rep_eq uminus_add_conv_diff)
   
 lemma m_gamma_h2:
   shows "(\<llangle>\<ominus>\<^sub>m a \<oplus>\<^sub>m b\<rrangle>)\<^sup>2 = 
@@ -115,10 +117,9 @@ proof-
     by (smt (verit, del_insts) mult.commute mult_1 of_real_1 of_real_divide of_real_eq_iff of_real_mult times_divide_eq_left)
 qed
 
-
 lemma T8_25_help1:
    assumes "A t \<noteq> B t" "A t \<noteq> C t" "C t \<noteq> B t"
-           "a = (\<llangle>Mobius_gyrovector_space.get_a t\<rrangle>)\<^sup>2" "b = (\<llangle>Mobius_gyrovector_space.get_b t\<rrangle>)\<^sup>2" "c = (\<llangle>Mobius_gyrovector_space.get_c t\<rrangle>)\<^sup>2"
+           "a = (\<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>)\<^sup>2" "b = (\<llangle>Mobius_gyrovector_space.get_b t\<rrangle>)\<^sup>2" "c = (\<llangle>Mobius_gyrovector_space.get_c t\<rrangle>)\<^sup>2"
    shows "to_complex ((of_complex a) \<oplus>\<^sub>m (of_complex b) \<oplus>\<^sub>m (\<ominus>\<^sub>m (of_complex c))) =
           (a + b - c - a*b*c) / (1 + a*b - a*c - b*c)" (is "?lhs = ?rhs")
 proof-

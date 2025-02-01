@@ -1,6 +1,6 @@
 theory MobiusGyroGroup
   imports Complex_Main HOL.Real_Vector_Spaces HOL.Transcendental MoreComplex
-          GyroGroup Poincare
+          GyroGroup PoincareDisc
 begin
 
 definition ozero_m' :: "complex" where
@@ -10,6 +10,13 @@ lift_definition ozero_m :: PoincareDisc  ("0\<^sub>m") is ozero_m'
   unfolding ozero_m'_def
   by simp
 
+lemma to_complex_0 [simp]:
+  shows "to_complex 0\<^sub>m = 0"
+  by transfer (simp add: ozero_m'_def)
+
+lemma to_complex_0_iff [iff]:
+  shows "to_complex x = 0 \<longleftrightarrow> x = 0\<^sub>m"
+  by transfer (simp add: ozero_m'_def)
 
 definition oplus_m' :: "complex \<Rightarrow> complex \<Rightarrow> complex"  where
   "oplus_m' a z = (a + z) / (1 + (cnj a) * z)"
@@ -310,12 +317,25 @@ end
 
 (* ------------------------------------------------------------------- *)
 
+lemma oplusM_reals:
+  assumes "Im (to_complex x) = 0" "Im (to_complex y) = 0"
+  shows "Im (to_complex (x \<oplus>\<^sub>m y)) = 0"
+  using assms
+  by (transfer, auto simp add: oplus_m'_def complex_is_Real_iff) 
+
+lemma oplusM_pos_reals:
+  assumes "Im (to_complex x) = 0" "Im (to_complex y) = 0"
+  assumes "Re (to_complex x) \<ge> 0" "Re (to_complex y) \<ge> 0"
+  shows "Re (to_complex (x \<oplus>\<^sub>m y)) \<ge> 0"
+  using assms
+  by (transfer, auto simp add: oplus_m'_def complex_is_Real_iff) 
+
 definition gyr\<^sub>m_alternative :: "PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc \<Rightarrow> PoincareDisc" where
   "gyr\<^sub>m_alternative u v w = \<ominus>\<^sub>m (u \<oplus>\<^sub>m v) \<oplus>\<^sub>m (u \<oplus>\<^sub>m (v \<oplus>\<^sub>m w))"
 
 lemma gyr_m_alternative_gyr_m:
   shows "gyr\<^sub>m_alternative u v w = gyr\<^sub>m u v w"
-  by (simp add: Mobius_gyrogroup.gyr_def gyr\<^sub>m_alternative_def)
+  by (metis gyr\<^sub>m_alternative_def gyr_m_inv gyr_m_left_assoc gyr_m_left_loop m_left_id m_left_inv)
 
 definition oplus_m'_alternative :: "complex \<Rightarrow> complex \<Rightarrow> complex" where 
   "oplus_m'_alternative u v =

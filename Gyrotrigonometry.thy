@@ -4,7 +4,7 @@ begin
 
 datatype 'a otriangle = M_gyrotriangle (A:'a) (B:'a) (C:'a)
 
-context gyrovector_space
+context pre_gyrovector_space
 begin
 
 definition unit :: "'a \<Rightarrow> 'b" where
@@ -66,7 +66,7 @@ proof-
   finally show ?thesis
     unfolding angle_def unit_def
     using t1 t2
-    by (smt (verit, best) scale_prop1)
+    by (smt (verit, best) scale_prop1 times_zero)
 qed
 
 definition get_a :: "'a otriangle \<Rightarrow> 'a" where

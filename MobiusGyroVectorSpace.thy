@@ -1,27 +1,43 @@
 theory MobiusGyroVectorSpace
-imports Main MobiusGyroGroup  GyroVectorSpace Gyrotrigonometry GammaFactor HyperbolicFunctions
+imports Main MobiusGyroGroup  GyroVectorSpace  GammaFactor HyperbolicFunctions
 begin
 
 (* --------------------------------------------------------- *)
 
-interpretation Mobius_gyrocarrier': gyrocarrier' where
-  to_carrier = to_complex and
-  of_carrier = of_complex and
-  in_domain = "\<lambda> z. cmod z < 1" 
+lemma norms:
+  shows "{x. \<exists>a. x = cmod (to_complex a)} \<union> {x. \<exists>a. x = - cmod (to_complex a)} = {x. \<bar>x\<bar> < 1}"
+proof-
+  { 
+    fix x :: real
+    assume "\<bar>x\<bar> < 1" 
+    then have "cmod (Complex x 0) < 1"
+      by (simp add: complex_norm)
+    then have "to_complex (PoincareDisc.of_complex (Complex x 0)) = x"
+      by (simp add: complex_of_real_def of_complex_inverse)
+    then have "\<exists>a. x = cmod (to_complex a) \<or> (\<exists> a. x = - cmod (to_complex a))"
+      by (metis abs_eq_iff' norm_of_real)
+  }
+  moreover
+  have "\<And> a. cmod (to_complex a) < 1"
+    using to_complex by force
+  ultimately show ?thesis
+    by auto
+qed
+
+global_interpretation Mobius_gyrocarrier': gyrocarrier'
+  where to_carrier = to_complex 
 rewrites
   "Mobius_gyrocarrier'.gyroinner = inner_p" and
-  "Mobius_gyrocarrier'.gyronorm = norm_p"
+  "Mobius_gyrocarrier'.gyronorm = norm_p" and
+  "Mobius_gyrocarrier'.carrier = {z. cmod z < 1}" and
+  "Mobius_gyrocarrier'.norms = {x. abs x < 1}"
+defines
+  of_complex = "gyrocarrier'.of_carrier to_complex"
 proof-
-  show *: "gyrocarrier' to_complex of_complex (\<lambda>z. cmod z < 1)"
+  show *: "gyrocarrier' to_complex"
   proof
-    fix b
-    assume "cmod b < 1"
-    then show "to_complex (of_complex b) = b"
-      by (simp add: Abs_PoincareDisc_inverse)
-  next
-    fix a
-    show "of_complex (to_complex a) = a"
-      by (simp add: Rep_PoincareDisc_inverse)
+    show "inj to_complex"
+      by (simp add: inj_on_def to_complex_inject)
   next
     show "to_complex 0\<^sub>g = 0"
       by (simp add: gyrozero_PoincareDisc_def ozero_m'_def ozero_m.rep_eq)
@@ -39,7 +55,32 @@ proof-
     unfolding gyrocarrier'.gyronorm_def[OF *]
     apply transfer
     by simp
+
+  show "gyrocarrier'.carrier to_complex = {z. cmod z < 1}"
+    unfolding gyrocarrier'.carrier_def[OF *]
+    using type_definition.Rep_range type_definition_PoincareDisc
+    by blast
+
+  show "gyrocarrier'.norms to_complex = {x. \<bar>x\<bar> < 1}"
+    using norms
+    unfolding gyrocarrier'.norms_def[OF *]
+    unfolding gyrocarrier'.gyronorm_def[OF *]
+    by auto
 qed
+
+lemma Mobius_gyrocarrier'_norms [simp]: 
+  shows "gyrocarrier'.norms to_complex = {x. abs x < 1}"
+  using Mobius_gyrocarrier'.norms_def
+  unfolding gyrocarrier'.norms_def[OF Mobius_gyrocarrier'.gyrocarrier'_axioms]
+            gyrocarrier'.gyronorm_def[OF Mobius_gyrocarrier'.gyrocarrier'_axioms]
+  using norm_p.rep_eq 
+  by presburger
+
+lemma Mobius_gyrocarrier'_carrier [simp]: 
+  shows "gyrocarrier'.carrier to_complex = {z. cmod z < 1}"
+  unfolding gyrocarrier'.carrier_def[OF Mobius_gyrocarrier'.gyrocarrier'_axioms]
+  using type_definition.Rep_range type_definition_PoincareDisc
+  by blast
 
 (* --------------------------------------------------------- *)
 
@@ -61,9 +102,9 @@ proof-
   moreover have " (cnj ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (to_complex v)*(cnj (to_complex u))) ))*  ((1 + (to_complex u) * cnj (to_complex v)) / (1 + (to_complex v)*(cnj (to_complex u)))) = 1"
   proof-
     have *: "cmod (to_complex u) < 1"
-      using Rep_PoincareDisc by blast
+      using to_complex by blast
     moreover have **:"cmod (to_complex v) < 1"
-      using Rep_PoincareDisc by blast
+      using to_complex by blast
     moreover have "cmod (((1 + (to_complex u) * cnj (to_complex v)) / (1 +  (to_complex v)*(cnj (to_complex u))))) =1"
       using  cmod_mix_cnj[OF * **] 
       by force
@@ -78,27 +119,55 @@ proof-
     by presburger
 qed
 
-interpretation Mobius_gyrocarrier': gyrocarrier'' to_complex of_complex "\<lambda> z. cmod z < 1" "of_complex \<circ> cor" "cmod \<circ> to_complex"
-proof
-  fix x
-  assume "x \<in> Mobius_gyrocarrier'.norms"
-  then have "Im x = 0" "cmod x < 1" "Re x \<ge> 0"
-    unfolding Mobius_gyrocarrier'.norms_def
-    by auto (simp add: norm_geq_zero norm_lt_one)+
-  then show "(cmod \<circ> to_complex) ((of_complex \<circ> cor) x) = x"
-    by (simp add: Abs_PoincareDisc_inverse)
-qed
-
-interpretation Mobius_gyrocarrier: gyrocarrier to_complex of_complex "\<lambda> z. cmod z < 1" "of_complex \<circ> cor" "cmod \<circ> to_complex"
+interpretation Mobius_gyrocarrier: gyrocarrier 
+  where to_carrier = to_complex
 proof
   fix u v a b
   have "gyr u v a \<cdot> gyr u v b = a \<cdot> b"
     by (simp add: gyr_PoincareDisc_def moebius_gyroauto)
   then show "gyrocarrier'.gyroinner to_complex (gyr u v a) (gyr u v b) =
              gyrocarrier'.gyroinner to_complex a b"  
-    using Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyroinner_def gyrocarrier'.gyroinner_def 
+    using gyrocarrier'.gyroinner_def[OF Mobius_gyrocarrier'.gyrocarrier'_axioms] Mobius_gyrocarrier'.gyroinner_def 
     by fastforce
 qed
+
+
+global_interpretation Mobius_gyrocarrier_norms_embed': gyrocarrier_norms_embed'
+  where to_carrier = to_complex
+rewrites
+  "Mobius_gyrocarrier_norms_embed'.reals = of_complex ` cor ` {x. abs x < 1}"
+proof-
+  show *: "gyrocarrier_norms_embed' to_complex"
+    by unfold_locales auto
+
+  show "gyrocarrier_norms_embed'.reals to_complex = of_complex ` cor ` {x. \<bar>x\<bar> < 1}"
+    unfolding gyrocarrier_norms_embed'.reals_def[OF *]
+    using Mobius_gyrocarrier'_norms of_complex_def
+    by presburger
+qed
+
+lemma Mobius_gyrocarrier_norms_embed'_to_real':
+  assumes "x \<in> Mobius_gyrocarrier_norms_embed'.reals"
+  shows "Mobius_gyrocarrier_norms_embed'.to_real' x = Re (to_complex x)"
+  using assms
+  using Mobius_gyrocarrier_norms_embed'.to_real'_def of_complex_inverse
+  by fastforce
+
+lemma Mobius_gyrocarrier_norms_embed'_of_real':
+  assumes "x \<in> Mobius_gyrocarrier'.norms"
+  shows "Mobius_gyrocarrier_norms_embed'.of_real' x = PoincareDisc.of_complex (cor x)"
+  using assms
+  by (metis Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier_norms_embed'.of_real'_def comp_apply mem_Collect_eq norm_of_real of_complex_inverse)
+
+lemma gyronorm_Re:
+  assumes "Re (to_complex x) \<ge> 0" "Im (to_complex x) = 0"
+  shows "\<llangle>x\<rrangle> = Re (to_complex x)"
+  using assms
+  by (simp add: Mobius_gyrocarrier'.gyronorm_def cmod_eq_Re)
+
+lemma Mobius_gyrocarrier_norms_embed'_reals [simp]: 
+  shows "gyrocarrier_norms_embed'.reals to_complex = of_complex ` cor ` {x. \<bar>x\<bar> < 1}"
+  by (simp add: Mobius_gyrocarrier_norms_embed'.gyrocarrier_norms_embed'_axioms gyrocarrier_norms_embed'.reals_def of_complex_def)
 
 (* --------------------------------------------------------- *)
 definition otimes'_k :: "real \<Rightarrow> complex \<Rightarrow> real" where
@@ -317,20 +386,20 @@ proof-
   let ?f = "\<lambda> r a. tanh (r * artanh (cmod (to_complex a)))"
 
   have *: "to_complex (\<bar>r\<bar> \<otimes> a) = ?f \<bar>r\<bar> a * (to_complex a / \<llangle>a\<rrangle>)"
-    using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc otimes'_def otimes'_k_tanh otimes.rep_eq
+    using Mobius_gyrocarrier'.gyronorm_def to_complex otimes'_def otimes'_k_tanh otimes.rep_eq
     by force
   then have "\<llangle>r \<otimes> a\<rrangle> = cmod (?f r a * (to_complex a / \<llangle>a\<rrangle>))"
-    by (metis (no_types, lifting) Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_def otimes'_k_tanh otimes.rep_eq mem_Collect_eq norm_mult norm_of_real)
+    by (metis (no_types, lifting) Mobius_gyrocarrier'.gyronorm_def to_complex cmod_otimes' otimes'_def otimes'_k_tanh otimes.rep_eq mem_Collect_eq norm_mult norm_of_real)
   then have "\<llangle>r \<otimes> a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar> * cmod (to_complex a)"
     by (metis (no_types, opaque_lifting) norm_mult norm_of_real of_real_divide times_divide_eq_left times_divide_eq_right)
 
   have "?f \<bar>r\<bar> a = tanh(\<bar>r\<bar> * \<bar>artanh (cmod (to_complex a))\<bar>)"
-    by (smt (verit) Rep_PoincareDisc artanh_nonneg mem_Collect_eq norm_ge_zero)
+    by (smt (verit) to_complex artanh_nonneg mem_Collect_eq norm_ge_zero)
   then have "?f \<bar>r\<bar> a = \<bar>?f r a\<bar>"
     by (metis abs_mult tanh_real_abs)
 
   have "\<bar>?f r a / \<llangle>a\<rrangle>\<bar> = ?f \<bar>r\<bar> a / \<llangle>a\<rrangle>"
-    by (metis Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
+    by (metis Mobius_gyrocarrier'.gyronorm_def to_complex abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
   then have **:"?f \<bar>r\<bar> a / \<llangle>a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar>"
     by simp
 
@@ -344,7 +413,7 @@ proof-
     case False
     then have "\<bar>?f r a / \<llangle>a\<rrangle>\<bar> \<noteq>0"
       using assms
-      by (metis artanh_0 Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc abs_norm_cancel artanh_not_0 artanh_tanh_real divide_eq_0_iff linorder_not_less mem_Collect_eq mult_eq_0_iff norm_eq_zero not_less_iff_gr_or_eq zero_less_abs_iff)
+      by (metis artanh_0 Mobius_gyrocarrier'.gyronorm_def to_complex abs_norm_cancel artanh_not_0 artanh_tanh_real divide_eq_0_iff linorder_not_less mem_Collect_eq mult_eq_0_iff norm_eq_zero not_less_iff_gr_or_eq zero_less_abs_iff)
     then show ?thesis
       using * ** Mobius_gyrocarrier'.gyronorm_def 
             \<open>\<llangle>r \<otimes> a\<rrangle> = \<bar>?f r a / \<llangle>a\<rrangle>\<bar> * cmod (to_complex a)\<close> 
@@ -410,7 +479,7 @@ lemma gamma_factor_norm_oplus_m:
 proof-
   let ?a = "to_complex a" and ?b = "to_complex b"
   have "norm (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) < 1"
-    using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc abs_square_less_1
+    using Mobius_gyrocarrier'.gyronorm_def to_complex abs_square_less_1
     by fastforce
   then have *: "\<gamma> (\<llangle>a \<oplus>\<^sub>m b\<rrangle>) = 
                 1 / sqrt(1 - cmod (?a+?b) / cmod (1 + cnj ?a *?b) * cmod (?a+?b) / cmod (1 + cnj ?a *?b))"
@@ -427,7 +496,7 @@ proof-
       by force
     moreover
     have "?iz2 > 0"
-      using den_not_zero Rep_PoincareDisc
+      using den_not_zero to_complex
       by auto
     ultimately show ?thesis
       using zero_less_mult_iff
@@ -442,7 +511,7 @@ proof-
          cmod (1 + cnj (to_complex a) * (to_complex b))"
   proof-
     have "cmod (to_complex a) < 1" "cmod (to_complex b) < 1"
-      using Rep_PoincareDisc
+      using to_complex
       by auto
     then show ?thesis
       unfolding gamma_factor_def
@@ -480,11 +549,11 @@ proof-
     let ?expr1 =  "((\<llangle>a\<rrangle>) + (\<llangle>b\<rrangle>)) / (1 + (\<llangle>a\<rrangle>)*(\<llangle>b\<rrangle>))"
     let ?expr2 = "to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>))"
     have *: "?expr1 = ?expr2"
-      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier Rep_PoincareDisc oplus_m'_def oplus_m.rep_eq
+      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier to_complex oplus_m'_def oplus_m.rep_eq
       by auto
 
     have **: "norm (\<llangle>a\<rrangle>) < 1" "norm (\<llangle>b\<rrangle>) < 1"
-      using Rep_PoincareDisc abs_square_less_1 norm_p.rep_eq 
+      using to_complex abs_square_less_1 norm_p.rep_eq 
       by fastforce+
     then have ***: "\<gamma> (\<llangle>a\<rrangle>) = 1 / sqrt(1 - (\<llangle>a\<rrangle>) * (\<llangle>a\<rrangle>))"
                    "\<gamma> (\<llangle>b\<rrangle>) = 1 / sqrt(1 - (\<llangle>b\<rrangle>) * (\<llangle>b\<rrangle>))"
@@ -502,7 +571,7 @@ proof-
     have "\<gamma> ?expr1 = 1 / sqrt (1 - (Re ?expr1 * Re ?expr1))"
        by (metis Re_complex_of_real)
     then have "\<gamma> ?expr1 = (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) / (sqrt (1-\<llangle>a\<rrangle>*\<llangle>a\<rrangle>) * sqrt (1-\<llangle>b\<rrangle>*\<llangle>b\<rrangle>))"
-       using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc gamma_factor_oplus_m_triangle_lemma
+       using Mobius_gyrocarrier'.gyronorm_def to_complex gamma_factor_oplus_m_triangle_lemma
        using \<open>cmod ?expr1 = ?expr1\<close> 
        by force
      then have "\<gamma> (cor ?expr1) = (1 + \<llangle>a\<rrangle>*\<llangle>b\<rrangle>) / (sqrt (1-\<llangle>a\<rrangle>*\<llangle>a\<rrangle>) * sqrt (1-\<llangle>b\<rrangle>*\<llangle>b\<rrangle>))"
@@ -560,12 +629,28 @@ next
     by (smt (verit, best) calculation gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_lt_one norm_zero zero_less_norm_iff)
   moreover
   have "?e1 < 1" "?e2 < 1"
-    using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc 
+    using Mobius_gyrocarrier'.gyronorm_def to_complex 
     by auto
   ultimately 
   show ?thesis
     using gamma_factor_increase_reverse[of ?e1 ?e2]
     by (smt (verit, del_insts) gamma_factor_def gamma_factor_increasing gamma_factor_oplus_m_triangle norm_p.rep_eq real_norm_def)
+qed
+
+lemma mobius_triangle':
+  shows "\<llangle>a \<oplus>\<^sub>m b\<rrangle> \<le> Re (to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)))"
+proof-
+  have "\<llangle>of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)\<rrangle> = Re (to_complex (of_complex (\<llangle>a\<rrangle>) \<oplus>\<^sub>m of_complex (\<llangle>b\<rrangle>)))" (is "\<llangle>?x\<rrangle> = ?y")
+  proof (rule gyronorm_Re)
+    show "Re (to_complex ?x) \<ge> 0"
+      by (rule oplusM_pos_reals, simp_all add: norm_geq_zero norm_lt_one)
+  next
+    show "Im (to_complex ?x) = 0"
+      by (rule oplusM_reals, simp_all add: norm_geq_zero norm_lt_one)
+  qed
+  then show ?thesis
+    using mobius_triangle[of a b]
+    by simp
 qed
 
 lemma mobius_gyroauto_norm:
@@ -583,7 +668,7 @@ proof (cases "a = 0\<^sub>m")
 next
   case False
   have "\<llangle>r \<otimes> a\<rrangle> = \<bar>tanh (r * artanh (\<llangle>a\<rrangle>))\<bar>"
-    using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc cmod_otimes' otimes'_k_tanh otimes.rep_eq
+    using Mobius_gyrocarrier'.gyronorm_def to_complex cmod_otimes' otimes'_k_tanh otimes.rep_eq
     by force
   moreover
   have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)) = tanh (\<bar>r\<bar> * artanh (\<llangle>a\<rrangle>))"
@@ -591,28 +676,61 @@ next
     have "to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)) = 
           otimes'_k \<bar>r\<bar> (\<llangle>a\<rrangle>) * ((\<llangle>a\<rrangle>) / cmod (\<llangle>a\<rrangle>))" 
       using otimes_def otimes'_def
-      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier Rep_PoincareDisc otimes.rep_eq
-      by force 
+      using Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.to_carrier to_complex otimes.rep_eq
+      by (smt (verit, del_insts) False mem_Collect_eq norm_eq_zero norm_geq_zero norm_of_real of_real_divide of_real_mult to_complex_0_iff)
+    
     moreover
     have "cmod (cmod (to_complex a)) = cmod (to_complex a)"
       by simp
     then have "(\<llangle>a\<rrangle>) / cmod (\<llangle>a\<rrangle>) = 1"
       using \<open>a \<noteq> 0\<^sub>m\<close>
-      by (metis Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.of_carrier divide_self_if ozero_m'_def ozero_m_def norm_eq_zero)
+      by (metis Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.of_carrier div_self norm_eq_zero ozero_m'_def ozero_m.rep_eq)
     ultimately
     have "to_complex (\<bar>r\<bar> \<otimes> ( of_complex (cor(\<llangle>a\<rrangle>)))) = cor (otimes'_k \<bar>r\<bar> (cor (\<llangle>a\<rrangle>)))"
       by auto
     then show ?thesis
-      using Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc otimes'_k_tanh
+      using Mobius_gyrocarrier'.gyronorm_def to_complex otimes'_k_tanh
       by auto
   qed
   moreover 
   have "\<bar>tanh(r * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>\<bar> = 
          tanh (\<bar>r\<bar> * artanh (cmod (to_complex a))) / \<llangle>a\<rrangle>"
-    by (metis Mobius_gyrocarrier'.gyronorm_def Rep_PoincareDisc abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
+    by (metis Mobius_gyrocarrier'.gyronorm_def to_complex abs_divide abs_le_self_iff abs_mult_pos abs_norm_cancel artanh_nonneg dual_order.refl mem_Collect_eq  tanh_real_abs)
   ultimately 
   show ?thesis
     by (smt (verit, best) norm_of_real real_compex_cmod tanh_real_abs)
+qed
+
+lemma otimes_homogenity':
+  shows "\<llangle>r \<otimes> a\<rrangle> = Re (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)))"
+proof-
+  have *: "cor (\<llangle>a\<rrangle>) \<in> {z. cmod z < 1}"
+    by (simp add: norm_geq_zero norm_lt_one)
+  have **: "cmod (otimes' \<bar>r\<bar> (cor (\<llangle>a\<rrangle>))) < 1"
+    using cmod_otimes' cmod_otimes'_k norm_lt_one norm_p.rep_eq 
+    by force
+
+  have "Re (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>))) \<ge> 0"
+    unfolding otimes_def
+    using of_complex_inverse Mobius_gyrocarrier'.to_carrier[OF *] ** *
+    by (simp add: artanh_nonneg norm_geq_zero otimes'_def otimes'_k_tanh)
+    
+  moreover
+
+  have "Im (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>))) = 0"
+    unfolding otimes_def
+    using of_complex_inverse Mobius_gyrocarrier'.to_carrier[OF *] ** *
+    by (simp add: otimes'_def)
+
+  ultimately
+
+  have "Re (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>))) = cmod (to_complex (\<bar>r\<bar> \<otimes> of_complex (\<llangle>a\<rrangle>)))"
+    using cmod_eq_Re 
+    by force
+
+  then show ?thesis
+    using otimes_homogenity[of r a]
+    by simp
 qed
 
 lemma gyr_m_gyrospace:
@@ -626,7 +744,7 @@ proof-
 
     have "to_complex (r1 \<otimes> v) = ?e1"
          "to_complex (r2 \<otimes> v) = ?e2"
-      using Rep_PoincareDisc otimes'_def otimes'_k_tanh otimes.rep_eq
+      using to_complex otimes'_def otimes'_k_tanh otimes.rep_eq
       by auto
 
     moreover
@@ -644,7 +762,7 @@ proof-
       moreover
       have "1 + ?e2 * (cnj ?e1) \<noteq> 0"
         using \<open>to_complex (r1 \<otimes> v) = ?e1\<close> \<open>to_complex (r2 \<otimes> v) = ?e2\<close>
-        by (metis Rep_PoincareDisc  div_by_0 divide_eq_1_iff mem_Collect_eq cmod_mix_cnj norm_zero)
+        by (metis to_complex  div_by_0 divide_eq_1_iff mem_Collect_eq cmod_mix_cnj norm_zero)
       ultimately
       show ?thesis
         by simp
@@ -685,8 +803,53 @@ proof-
     by (metis Mobius_gyrocarrier'.of_carrier gyr_m'_def gyr\<^sub>m.rep_eq mult.commute)
 qed
 
-interpretation Mobius_gyrovector_space:
- gyrovector_space to_complex of_complex "\<lambda> z. cmod z < 1" "of_complex \<circ> cor" "cmod \<circ> to_complex" otimes
+
+lemma reals':
+  shows "cor ` {x. abs x < 1} = {z. cmod z < 1 \<and> Im z = 0}"
+  by (auto, simp add: complex_eq_iff norm_complex_def)
+
+lemma zero_times_m [simp]:
+  shows "0 \<otimes> x = 0\<^sub>m"
+  by transfer (simp add: otimes'_def otimes'_k_tanh ozero_m'_def)
+
+interpretation Mobius_gyrocarrier_norms_embed: gyrocarrier_norms_embed to_complex otimes
+proof
+  fix a b
+  assume "a \<in> gyrocarrier_norms_embed'.reals to_complex" "b \<in> gyrocarrier_norms_embed'.reals to_complex"
+  then obtain x y where "a = of_complex (cor x)" "b = of_complex (cor y)" "abs x < 1" "abs y < 1"
+    by auto
+  then show "a \<oplus> b \<in> gyrocarrier_norms_embed'.reals to_complex"
+    by (metis (mono_tags, lifting) Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier'.to_carrier Mobius_gyrocarrier_norms_embed'_reals gyroplus_PoincareDisc_def image_eqI mem_Collect_eq oplusM_reals reals' to_complex)
+next
+  fix a
+  assume "a \<in> gyrocarrier_norms_embed'.reals to_complex"
+  then obtain x where "a = of_complex (cor x)" "abs x < 1"
+    by auto
+  then have "\<ominus> a = of_complex (cor (-x))" "abs (-x) < 1"
+    unfolding gyroinv_PoincareDisc_def 
+    unfolding ominus_m_def
+    by (metis Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier'.to_carrier map_fun_apply mem_Collect_eq norm_of_real of_real_minus ominus_m'_def ominus_m.rep_eq to_complex_inverse, simp)
+  then show "\<ominus> a \<in> gyrocarrier_norms_embed'.reals to_complex"
+    by auto
+next
+  fix r a
+  assume "a \<in> gyrocarrier_norms_embed'.reals to_complex"
+  then obtain x where "a = of_complex (cor x)" "abs x < 1"
+    by auto
+  then have "a = PoincareDisc.of_complex (cor x)"  "abs x < 1"
+    using Mobius_gyrocarrier_norms_embed'.of_real'_def Mobius_gyrocarrier_norms_embed'_of_real' by auto
+  have "Im (to_complex (r \<otimes> a)) = 0"
+    by (simp add: \<open>\<bar>x\<bar> < 1\<close> \<open>a = MobiusGyroVectorSpace.of_complex (cor x)\<close> otimes'_def otimes.rep_eq)
+  moreover
+  have "abs (Re (to_complex (r \<otimes> a))) < 1"
+    by (metis Mobius_gyrocarrier'.gyronorm_def calculation cmod_eq_Re norm_lt_one)
+  ultimately
+  show "r \<otimes> a \<in> gyrocarrier_norms_embed'.reals to_complex"
+    unfolding Mobius_gyrocarrier_norms_embed'_of_real'
+    by (metis (mono_tags, lifting) Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier_norms_embed'_reals image_eqI mem_Collect_eq reals' to_complex)
+qed
+
+interpretation Mobius_pre_gyrovector_space: pre_gyrovector_space to_complex otimes
 proof
   fix a :: PoincareDisc
   show "1 \<otimes> a = a"
@@ -720,23 +883,27 @@ next
     by simp
   then show "gyr (r1 \<otimes> v) (r2 \<otimes> v) = id"
     by (simp add: gyr_PoincareDisc_def)
-next
+qed
+
+interpretation Mobius_gyrovector_space: gyrovector_space_norms_embed otimes to_complex 
+proof
   fix r a
   show "gyrocarrier'.gyronorm to_complex (r \<otimes> a) =
-           (cmod \<circ> to_complex)
-            (\<bar>r\<bar> \<otimes> (of_complex \<circ> cor) (gyrocarrier'.gyronorm to_complex a))"
-    using otimes_homogenity[of r a]
-    using Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def gyrocarrier'.gyronorm_def
-    by fastforce
+        Mobius_gyrocarrier_norms_embed.otimesR \<bar>r\<bar> (gyrocarrier'.gyronorm to_complex a)"
+    using otimes_homogenity'[of r a]
+    by (smt (verit, best) Im_eq_0 Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier_norms_embed'.of_real'_def Mobius_gyrocarrier_norms_embed'.to_real'_norm Mobius_gyrocarrier_norms_embed.otimesR_def abs_Re_le_cmod add.right_neutral comp_apply complex_eq gyrocarrier'.gyronorm_def mult_zero_right of_real_0 otimes_homogenity)
 next
   fix a b
-  show " gyrocarrier'.gyronorm to_complex (a \<oplus> b)
-           \<le> (cmod \<circ> to_complex)
-               ((of_complex \<circ> cor) (gyrocarrier'.gyronorm to_complex a) \<oplus>
-                (of_complex \<circ> cor) (gyrocarrier'.gyronorm to_complex b))"
-    using mobius_triangle[of a b]
-    using Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def gyrocarrier'.gyronorm_def gyroplus_PoincareDisc_def
-    by fastforce 
+  show "gyrocarrier'.gyronorm to_complex (a \<oplus> b)
+           \<le> Mobius_gyrocarrier_norms_embed'.oplusR (gyrocarrier'.gyronorm to_complex a) (gyrocarrier'.gyronorm to_complex b)"
+  proof-
+    have "Re (to_complex (of_complex (cmod (to_complex a)) \<oplus>\<^sub>m of_complex (cmod (to_complex b)))) = 
+          Mobius_gyrocarrier_norms_embed'.to_real' (Mobius_gyrocarrier_norms_embed'.of_real' (cmod (to_complex a)) \<oplus> Mobius_gyrocarrier_norms_embed'.of_real' (cmod (to_complex b)))"
+      by (smt (verit, ccfv_threshold) Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier_norms_embed'_of_real' Mobius_gyrocarrier_norms_embed'_to_real' complex_mod_minus_le_complex_mod gyroplus_PoincareDisc_def image_eqI mem_Collect_eq of_complex_inverse oplusM_reals reals' to_complex)
+    then show ?thesis
+      using mobius_triangle'[of a b]
+      by (simp add: Mobius_gyrocarrier'.gyrocarrier'_axioms Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier_norms_embed'.gyrocarrier_norms_embed'_axioms gyrocarrier'.gyronorm_def gyrocarrier_norms_embed'.oplusR_def gyroplus_PoincareDisc_def)
+  qed
 qed
 
 
@@ -757,11 +924,11 @@ qed
 
 lemma ominus_m_scale:
   shows "k \<otimes> (\<ominus>\<^sub>m u) = \<ominus>\<^sub>m (k \<otimes> u)"
-  using Mobius_gyrovector_space.scale_minus' gyroinv_PoincareDisc_def 
+  using Mobius_pre_gyrovector_space.scale_minus' gyroinv_PoincareDisc_def 
   by auto
 
 lemma otimes_2_oplus_m: "2 \<otimes> u = u \<oplus>\<^sub>m u"
-  using Mobius_gyrovector_space.times2 gyroplus_PoincareDisc_def
+  using Mobius_pre_gyrovector_space.times2 gyroplus_PoincareDisc_def
   by simp
 
 definition half' :: "complex \<Rightarrow> complex" where
@@ -824,13 +991,13 @@ qed
 
 lemma half:
   shows "half v = (1/2) \<otimes> v"
-  by (metis Mobius_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double otimes_2_half)
+  by (metis Mobius_pre_gyrovector_space.scale_assoc mult_2 real_scaleR_def scaleR_half_double otimes_2_half)
 
 lemma half':
   assumes "cmod u < 1"
   shows "otimes' (1/2) u = half' u"
   using assms half half.rep_eq[of "of_complex u"] otimes.rep_eq
-  by (simp add: Mobius_gyrocarrier'.to_carrier)
+  by simp
 
 lemma half_gamma':
   shows "to_complex ((1 / 2) \<otimes> u) = 
