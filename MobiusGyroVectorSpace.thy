@@ -1,5 +1,5 @@
 theory MobiusGyroVectorSpace
-imports Main MobiusGyroGroup  GyroVectorSpace  GammaFactor HyperbolicFunctions
+imports Main MobiusGyroGroup  GyroVectorSpace  Gyrotrigonometry GammaFactor HyperbolicFunctions
 begin
 
 (* --------------------------------------------------------- *)

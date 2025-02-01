@@ -1,8 +1,6 @@
 theory MobiusGyrotrigonometry
-  imports Main Gyrotrigonometry GammaFactor PoincareDisc MobiusGyroVectorSpace MoreComplex
+  imports Main GammaFactor PoincareDisc MobiusGyroVectorSpace MoreComplex
 begin
-
-
 
 lemma m_gamma_h1:
   shows "\<ominus>\<^sub>m a \<oplus>\<^sub>m b = of_complex ((to_complex b - to_complex a) / (1 - cnj (to_complex a) * to_complex b))"
@@ -119,7 +117,7 @@ qed
 
 lemma T8_25_help1:
    assumes "A t \<noteq> B t" "A t \<noteq> C t" "C t \<noteq> B t"
-           "a = (\<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>)\<^sup>2" "b = (\<llangle>Mobius_gyrovector_space.get_b t\<rrangle>)\<^sup>2" "c = (\<llangle>Mobius_gyrovector_space.get_c t\<rrangle>)\<^sup>2"
+           "a = (\<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>)\<^sup>2" "b = (\<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>)\<^sup>2" "c = (\<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>)\<^sup>2"
    shows "to_complex ((of_complex a) \<oplus>\<^sub>m (of_complex b) \<oplus>\<^sub>m (\<ominus>\<^sub>m (of_complex c))) =
           (a + b - c - a*b*c) / (1 + a*b - a*c - b*c)" (is "?lhs = ?rhs")
 proof-
@@ -132,7 +130,7 @@ proof-
 
   have "(of_complex a) \<oplus>\<^sub>m (of_complex b) = of_complex ((cor a + cor b) / (1 + cnj a * b))"
     using *
-    by (metis Mobius_gyrocarrier'.to_carrier Rep_PoincareDisc_inverse norm_of_real oplus_m'_def oplus_m.rep_eq real_norm_def)
+    by (metis (mono_tags, lifting) Mobius_gyrocarrier'.of_carrier Mobius_gyrocarrier'.to_carrier mem_Collect_eq norm_of_real oplus_m'_def oplus_m.rep_eq real_norm_def)
 
   have "?lhs = 
         (((a + b) / (1 + cnj a * b)) - c) / (1 - cnj((a + b) / (1 + cnj a * b))*c)"
@@ -153,13 +151,13 @@ qed
 lemma T8_25_help2:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t"
   shows "cos gamma = (a\<^sup>2 + b\<^sup>2 - c\<^sup>2 - (a*b*c)\<^sup>2) / (2 * a * b * (1 - c\<^sup>2))"
 proof-
-  let ?a = "Mobius_gyrovector_space.get_a t" and ?b = "Mobius_gyrovector_space.get_b t" and ?c = "Mobius_gyrovector_space.get_c t"
+  let ?a = "Mobius_pre_gyrovector_space.get_a t" and ?b = "Mobius_pre_gyrovector_space.get_b t" and ?c = "Mobius_pre_gyrovector_space.get_c t"
   have "\<ominus>\<^sub>m ?a \<oplus>\<^sub>m ?b = gyr\<^sub>m (\<ominus>\<^sub>m (C t)) (B t) ?c"
-    unfolding Mobius_gyrovector_space.get_a_def Mobius_gyrovector_space.get_b_def Mobius_gyrovector_space.get_c_def
+    unfolding Mobius_pre_gyrovector_space.get_a_def Mobius_pre_gyrovector_space.get_b_def Mobius_pre_gyrovector_space.get_c_def
     by (metis gyr_PoincareDisc_def gyro_translation_2a gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def)
   then have "\<llangle>\<ominus>\<^sub>m ?a \<oplus>\<^sub>m ?b\<rrangle> = \<llangle>?c\<rrangle>"
     by (simp add: mobius_gyroauto_norm)
@@ -173,18 +171,18 @@ proof-
     by (simp add: Mobius_gyrogroup.gyro_equation_right)
   then have "b \<noteq> 0" 
     using assms
-    unfolding Mobius_gyrovector_space.get_b_def
+    unfolding Mobius_pre_gyrovector_space.get_b_def
     using gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
-    by (metis Rep_PoincareDisc_inverse divide_eq_0_iff eq_iff_diff_eq_0 m_gamma_h1 m_left_inv norm_eq_zero norm_p.rep_eq)   
-    
+    by (simp add: Mobius_gyrocarrier'.gyronorm_def)
+
   have "\<ominus>\<^sub>m (C t) \<oplus>\<^sub>m B t \<noteq> 0\<^sub>m"
     using assms
     by (simp add: Mobius_gyrogroup.gyro_equation_right)
   then have "a \<noteq> 0" 
     using assms
-    unfolding Mobius_gyrovector_space.get_a_def
+    unfolding Mobius_pre_gyrovector_space.get_a_def
     using gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
-    by (metis Rep_PoincareDisc_inverse divide_eq_0_iff eq_iff_diff_eq_0 m_gamma_h1 m_left_inv norm_eq_zero norm_p.rep_eq)   
+    by (simp add: Mobius_gyrocarrier'.gyronorm_def)
 
   have "1 - c\<^sup>2 \<noteq> 0"
     using assms
@@ -192,23 +190,23 @@ proof-
 
   have inner: "inner (to_complex ?a) (to_complex ?b) = a * b * cos gamma"
   proof-
-    have "gamma = Mobius_gyrovector_space.angle (C t) (A t) (B t)"
-      using assms Mobius_gyrovector_space.get_gamma_def
+    have "gamma = Mobius_pre_gyrovector_space.angle (C t) (A t) (B t)"
+      using assms Mobius_pre_gyrovector_space.get_gamma_def
       by simp
-    then have *: "gamma = arccos (inner (Mobius_gyrovector_space.unit (\<ominus> (C t) \<oplus> A t)) (Mobius_gyrovector_space.unit (\<ominus> (C t) \<oplus> B t)))"
-      unfolding Mobius_gyrovector_space.angle_def 
+    then have *: "gamma = arccos (inner (Mobius_pre_gyrovector_space.unit (\<ominus> (C t) \<oplus> A t)) (Mobius_pre_gyrovector_space.unit (\<ominus> (C t) \<oplus> B t)))"
+      unfolding Mobius_pre_gyrovector_space.angle_def 
       by simp
-    then have "cos gamma = inner (Mobius_gyrovector_space.unit (\<ominus> (C t) \<oplus> A t)) (Mobius_gyrovector_space.unit (\<ominus> (C t) \<oplus> B t))"
-      using Mobius_gyrovector_space.norm_inner_unit cos_arccos_abs
+    then have "cos gamma = inner (Mobius_pre_gyrovector_space.unit (\<ominus> (C t) \<oplus> A t)) (Mobius_pre_gyrovector_space.unit (\<ominus> (C t) \<oplus> B t))"
+      using Mobius_pre_gyrovector_space.norm_inner_unit cos_arccos_abs
       by (metis real_norm_def)
-    then have **: "cos gamma = (inner (Mobius_gyrovector_space.unit ?a) (Mobius_gyrovector_space.unit ?b))"
+    then have **: "cos gamma = (inner (Mobius_pre_gyrovector_space.unit ?a) (Mobius_pre_gyrovector_space.unit ?b))"
       using assms 
-      unfolding Mobius_gyrovector_space.get_a_def Mobius_gyrovector_space.get_b_def
+      unfolding Mobius_pre_gyrovector_space.get_a_def Mobius_pre_gyrovector_space.get_b_def
       by (simp add: inner_commute)
     
     have "cos(gamma) * a * b = inner (to_complex ?a) (to_complex (?b))"
       using ** \<open>a \<noteq> 0\<close> \<open>b \<noteq> 0\<close> assms
-      unfolding Mobius_gyrovector_space.unit_def
+      unfolding Mobius_pre_gyrovector_space.unit_def
       by (metis (no_types, opaque_lifting) divide_inverse_commute inner_commute inner_scaleR_right mult.commute nonzero_mult_div_cancel_left times_divide_eq_right)
     then show ?thesis
       by (simp add: field_simps)
@@ -245,8 +243,8 @@ qed
 lemma T8_25_help3:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t"
           "beta_a = 1 / sqrt (1 + a\<^sup>2)" "beta_b = 1 / sqrt (1+b\<^sup>2)"
         shows "2 * beta_a\<^sup>2 * a * beta_b\<^sup>2 * b * cos gamma = (a\<^sup>2 + b\<^sup>2 - c\<^sup>2 - (a*b*c)\<^sup>2) / ((1 + a\<^sup>2) * (1 + b\<^sup>2) * (1-c\<^sup>2))"
 proof-
@@ -255,18 +253,18 @@ proof-
     by (simp add: Mobius_gyrogroup.gyro_equation_right)
   then have "b \<noteq> 0" 
     using assms
-    unfolding Mobius_gyrovector_space.get_b_def
+    unfolding Mobius_pre_gyrovector_space.get_b_def
     using gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
-    by (metis Rep_PoincareDisc_inverse divide_eq_0_iff eq_iff_diff_eq_0 m_gamma_h1 m_left_inv norm_eq_zero norm_p.rep_eq)   
+    by (simp add: Mobius_gyrocarrier'.gyronorm_def)
     
   have "\<ominus>\<^sub>m (C t) \<oplus>\<^sub>m B t \<noteq> 0\<^sub>m"
     using assms
     by (simp add: Mobius_gyrogroup.gyro_equation_right)
   then have "a \<noteq> 0" 
     using assms
-    unfolding Mobius_gyrovector_space.get_a_def
+    unfolding Mobius_pre_gyrovector_space.get_a_def
     using gyroinv_PoincareDisc_def gyroplus_PoincareDisc_def
-    by (metis Rep_PoincareDisc_inverse divide_eq_0_iff eq_iff_diff_eq_0 m_gamma_h1 m_left_inv norm_eq_zero norm_p.rep_eq)   
+    by (simp add: Mobius_gyrocarrier'.gyronorm_def)
 
   have "1 - c\<^sup>2 \<noteq> 0"
     using assms
@@ -292,8 +290,8 @@ proof-
 lemma T8_25_help4:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t"
           "beta_a = 1 / sqrt (1 + a\<^sup>2)" "beta_b = 1 / sqrt (1+b\<^sup>2)"
     shows "1 - 2 * beta_a\<^sup>2 * a * beta_b\<^sup>2 * b * cos gamma = 
           (1 + (a*b)\<^sup>2 - (a*c)\<^sup>2 - (b*c)\<^sup>2) / ((1 + a\<^sup>2) * (1 + b\<^sup>2) * (1-c\<^sup>2))"
@@ -323,8 +321,8 @@ qed
 lemma T25_help5:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t"
           "beta_a = 1 / sqrt (1 + a\<^sup>2)" "beta_b = 1 / sqrt (1+b\<^sup>2)"
     shows "(2 * beta_a\<^sup>2 * a * beta_b\<^sup>2 * b * cos gamma)  / (1 - 2 * beta_a\<^sup>2 * a * beta_b\<^sup>2 * b * cos gamma) =
            to_complex ((of_complex (a\<^sup>2)) \<oplus>\<^sub>m (of_complex (b\<^sup>2)) \<oplus>\<^sub>m (\<ominus>\<^sub>m (of_complex (c\<^sup>2))))" (is "?lhs = ?rhs")
@@ -333,7 +331,6 @@ proof-
   have *:"?den \<noteq> 0"
     using assms
     by (smt (verit, ccfv_threshold) divisors_zero norm_geq_zero norm_lt_one not_sum_power2_lt_zero pos2 power_less_one_iff)
-
 
   let ?nom1 = "a\<^sup>2 + b\<^sup>2 - c\<^sup>2 - (a*b*c)\<^sup>2" and ?nom2 = "1 + (a*b)\<^sup>2 - (a*c)\<^sup>2 - (b*c)\<^sup>2" 
 
@@ -354,8 +351,8 @@ qed
 lemma T25_MobiusCosineLaw:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t"
           "beta_a = 1 / sqrt (1 + a\<^sup>2)" "beta_b = 1 / sqrt (1+b\<^sup>2)"
         shows "c\<^sup>2 = to_complex ((of_complex (a\<^sup>2)) \<oplus>\<^sub>m (of_complex (b\<^sup>2)) \<oplus>\<^sub>m (\<ominus>\<^sub>m (of_complex 
                 (2 * beta_a\<^sup>2 * a * beta_b\<^sup>2 * b * cos(gamma) /
@@ -367,7 +364,7 @@ proof-
      by (simp add: norm_geq_zero norm_lt_one power_less_one_iff)+
   then have "c\<^sup>2 = to_complex (?a \<oplus>\<^sub>m ?b \<oplus>\<^sub>m (\<ominus>\<^sub>m (?a \<oplus>\<^sub>m ?b \<oplus>\<^sub>m (\<ominus>\<^sub>m ?c))))"
     using Mobius_gyrocommutative_gyrogroup.gyroautomorphic_inverse  Mobius_gyrogroup.gyrominus_def Mobius_gyrogroup.gyro_inv_idem  Mobius_gyrogroup.oplus_ominus_cancel
-    by (metis Mobius_gyrocarrier'.to_carrier norm_of_real real_norm_def)
+    by (metis (mono_tags, lifting) Mobius_gyrocarrier'.to_carrier mem_Collect_eq norm_of_real real_norm_def)
   then show ?thesis
     using T25_help5 assms
     by auto
@@ -379,8 +376,8 @@ abbreviation add_complex (infixl "\<oplus>\<^sub>m\<^sub>c" 100) where
 lemma T_MobiusPythagorean:
   fixes t :: "PoincareDisc otriangle"
   assumes "(A t) \<noteq> (B t)" "(A t) \<noteq> (C t)" "(C t) \<noteq> (B t)"
-          "a = \<llangle>Mobius_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_gyrovector_space.get_c t\<rrangle>"
-          "gamma = Mobius_gyrovector_space.get_gamma t" "gamma = pi / 2"
+          "a = \<llangle>Mobius_pre_gyrovector_space.get_a t\<rrangle>" "b = \<llangle>Mobius_pre_gyrovector_space.get_b t\<rrangle>" "c = \<llangle>Mobius_pre_gyrovector_space.get_c t\<rrangle>"
+          "gamma = Mobius_pre_gyrovector_space.get_gamma t" "gamma = pi / 2"
   shows "c\<^sup>2 = a\<^sup>2 \<oplus>\<^sub>m\<^sub>c b\<^sup>2"
   using assms T25_MobiusCosineLaw[OF assms(1-7)]
   by (metis (no_types, opaque_lifting) Mobius_gyrogroup.oplus_ominus_cancel cos_of_real_pi_half diff_self div_0 m_gamma_h1 mult.commute mult_zero_left of_real_divide of_real_numeral)
