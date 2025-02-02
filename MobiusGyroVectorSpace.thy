@@ -521,6 +521,22 @@ proof-
     .
 qed
 
+
+lemma gamma_factor_norm_oplus_m':
+  shows "γ⇩p (of_complex (cor (⟪a ⊕⇩m b⟫))) = 
+         γ⇩p (a) *  
+         γ⇩p (b) * 
+         cmod (1 + cnj (to_complex a) * (to_complex b))"
+proof-
+  have "norm ((cor (⟪a ⊕⇩m b⟫))) <1"
+    using norm_lt_one norm_p.rep_eq by auto
+  moreover have "γ⇩p (of_complex (cor (⟪a ⊕⇩m b⟫))) = γ  (⟪a ⊕⇩m b⟫)"
+    by (metis Mobius_gyrocarrier'.gyronorm_def Mobius_gyrocarrier'.norm_in_norms Mobius_gyrocarrier_norms_embed'.gyronorm_of_real' Mobius_gyrocarrier_norms_embed'.of_real'_def gamma_factor_def gammma_factor_p.rep_eq o_apply real_norm_def)
+  ultimately show ?thesis 
+    by (simp add: gamma_factor_norm_oplus_m gammma_factor_p.rep_eq)
+qed
+
+
 lemma gamma_factor_oplus_m_triangle_lemma:
   fixes x y ::real
   assumes "x \<ge> 0" "x < 1" "y \<ge> 0" "y < 1"
