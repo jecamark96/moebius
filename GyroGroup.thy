@@ -635,10 +635,30 @@ proof-
     by (smt bij_is_inj gyroaut_def gyr_gyroaut inv_gyr_sym gyr_even gyro_inv_idem o_inv_distrib o_inv_o_cancel)
 qed
 
+
 text ‹Thm 3.8 (3.23, 3.24)›
 lemma gyr_parallelogram_iff:
-  "d = (b ⊖⇩c⇩b c) ⊖⇩b a ⟷ ⊖c ⊕ d = gyr c (⊖b) (b ⊖⇩b a)"
-  oops
+  "d = (b  ⊕⇩c c) ⊖⇩b a ⟷ ⊖c ⊕ d = gyr c (⊖b) (b ⊖⇩b a)"
+proof-
+  have  "(b  ⊕⇩c c) ⊖⇩b a = (c  ⊕⇩c b)  ⊖⇩b (gyr  b (⊖c)  (gyr c (⊖b) a))"
+    by (metis cogyro_commute local.gyr_def local.gyr_even local.gyro_right_assoc local.oplus_ominus_cancel)
+    
+  moreover have " (c  ⊕⇩c b)  ⊖⇩b (gyr  b (⊖c)  (gyr c (⊖b) a)) = 
+   (c  ⊕⇩c b)  ⊖⇩b (gyr  c (gyr c (⊖b) b)  (gyr c (⊖b) a))"
+    using local.gyr_nested_4 by auto
+
+  moreover have "  (c  ⊕⇩c b)  ⊖⇩b (gyr  c (gyr c (⊖b) b)  (gyr c (⊖b) a)) =
+    c  \<oplus> (gyr  c (⊖b) b)  ⊖⇩b (gyr  c (gyr c (⊖b) b)  (gyr c (⊖b) a))"
+    using local.cogyroplus_def by presburger
+
+  moreover have "  c  \<oplus> (gyr  c (⊖b) b)  ⊖⇩b (gyr  c (gyr c (⊖b) b)  (gyr c (⊖b) a)) =
+    c  \<oplus> ((gyr  c (⊖b) b) ⊖⇩b  (gyr  c (⊖b) a)) "
+    by (simp add: local.gyr_inv_3 local.gyro_left_assoc local.gyrominus_def)
+  moreover have "(b  ⊕⇩c c) ⊖⇩b a =  c \<oplus> gyr c (⊖b) (b ⊖⇩b a)"
+    by (simp add: calculation(1) calculation(2) calculation(3) calculation(4) local.gyr_distrib_gyrominus)
+  ultimately show ?thesis
+    by (metis local.oplus_ominus_cancel)
+qed
 
 text ‹Thm 3.9 (3.26)›
 lemma gyr_commute_misc_3:
