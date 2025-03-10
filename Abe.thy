@@ -443,7 +443,29 @@ next
         by (metis (no_types, lifting) ‹x ∈ norms_all› bij_betw_inv_into_left lambda_one normed_gyrolinear_space'.norms_neg_def normed_gyrolinear_space'_axioms normed_gyrolinear_space'_def norms_all_def norms_def)
     qed
   qed
-qed 
+next
+  show "⋀x y a.
+       x ∈ norms_all ⟹
+       y ∈ norms_all ⟹ a ⊗⇩f (x  ⊕⇩f y) = a ⊗⇩f x  ⊕⇩f (a ⊗⇩f y)"
+  proof-
+    {
+    fix x y a
+    assume "x∈ norms_all \<and> y\<in> norms_all"
+    have "a ⊗⇩f (x  ⊕⇩f y) = (inv_into norms_all f') (a * f' ((inv_into norms_all f') ((f' x) + (f' y))))"
+      by (smt (verit, best) UNIV_I ‹x ∈ norms_all ∧ y ∈ norms_all› bij_betw_imp_surj_on inv_into_into norm_oplus_f_def norm_otimes_f_def normed_gyrolinear_space'.norms_neg_def normed_gyrolinear_space'_axioms normed_gyrolinear_space'_def norms_all_def norms_def)
+    moreover have "a ⊗⇩f x  ⊕⇩f (a ⊗⇩f y) = (inv_into norms_all f') ((f' (inv_into norms_all f' (a * (f' x))))+(f' (inv_into norms_all f' (a * (f' y)))))"
+      by (smt (verit) ‹x ∈ norms_all ∧ y ∈ norms_all› bij_betw_def inv_into_into iso_tuple_UNIV_I normed_gyrolinear_space'.norm_oplus_f_def normed_gyrolinear_space'.norm_otimes_f_def normed_gyrolinear_space'.norms_neg_def normed_gyrolinear_space'_axioms normed_gyrolinear_space'_def norms_all_def norms_def)
+    ultimately have "a ⊗⇩f (x  ⊕⇩f y) = a ⊗⇩f x  ⊕⇩f (a ⊗⇩f y)"
+      using UNIV_I bij_betw_imp_surj_on f_inv_into_f normed_gyrolinear_space'_axioms normed_gyrolinear_space'_def norms_all_def norms_def norms_neg_def ring_class.ring_distribs(1)
+      by (smt (verit, best) normed_gyrolinear_space'.norms_neg_def)
+  }
+   show "⋀x y a.
+       x ∈ norms_all ⟹
+       y ∈ norms_all ⟹ a ⊗⇩f (x  ⊕⇩f y) = a ⊗⇩f x  ⊕⇩f (a ⊗⇩f y)"
+     using ‹⋀y x a. x ∈ norms_all ∧ y ∈ norms_all ⟹ a ⊗⇩f (x ⊕⇩f y) = a ⊗⇩f x ⊕⇩f (a ⊗⇩f y)› by blast
+   qed
+qed
+
 
 lemma r2:
   shows "norm' (x ⊕ y) ≤ (norm' x)  ⊕⇩f (norm' y)"
